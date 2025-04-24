@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="cadastro.css">
 </head>
 <body>
+<?php include 'conexao.php'; ?>
     <div class="container">
         <img src="Mask group.svg" alt="Logo" class="logo">
 
@@ -13,7 +14,7 @@
 
         <div class="form-box">
     
-            <form action="cadastro.php" method="POST">
+            <form action="conexaocadastroadm.php" method="POST">
     
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>
