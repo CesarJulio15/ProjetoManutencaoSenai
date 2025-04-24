@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="cadastro.css">
 </head>
 <body>
+<?php include 'conexao.php'; ?>
     <div class="container">
         <img src="Mask group.svg" alt="Logo" class="logo">
 
@@ -14,7 +15,7 @@
         <div class="form-box">
             <h2>Cadastro</h2>
             <p paineltxt>Painel do administrador</p>
-            <form action="cadastro.php" method="POST">
+            <form action="conexaocadastro.php" method="POST">
                 <input type="text" name="nome" placeholder="Nome completo" required>
                 
                 <select name="tipo" required>
