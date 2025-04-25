@@ -2,49 +2,44 @@
 session_start();
 include 'conexao.php';
 
-
 if (!isset($_SESSION['credencial'])) {
     echo "<p>Usuário não autenticado! Acesse <a href='index.php'>Login</a> para autenticar-se.</p>";
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-   
     $titulo = htmlspecialchars($_POST["titulo"]);
     $descricao = $_POST["descricao"];
+    $status = $_POST["status"] ?? 'Pendente'; // Pega o status do formulário
     $responsavel = $_SESSION['credencial']; 
 
-    
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
         $fotoTmp = $_FILES['foto']['tmp_name'];
 
-        
         if (!empty($fotoTmp)) {
-      
             $fotoData = file_get_contents($fotoTmp);
-
-          
             $fotoType = $_FILES['foto']['type'];
             $validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+
             if (!in_array($fotoType, $validExtensions)) {
                 echo "<p>Formato de imagem não permitido!</p>";
                 exit();
             }
 
-            
+            // Verifica se o responsável existe na tabela de usuários
             $sqlVerificarResponsavel = "SELECT credencial FROM usuarios WHERE credencial = ?";
             $stmtVerificar = $conn->prepare($sqlVerificarResponsavel);
-            $stmtVerificar->bind_param("s", $_SESSION['credencial']);
+            $stmtVerificar->bind_param("s", $responsavel);
             $stmtVerificar->execute();
             $stmtVerificar->store_result();
 
             if ($stmtVerificar->num_rows === 1) {
-               
-                $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto) 
-                        VALUES (?, ?, ?, ?)";
-                
+                // Insere os dados no banco, incluindo o status
+                $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status) 
+                        VALUES (?, ?, ?, ?, ?)";
+
                 if ($stmt = $conn->prepare($sql)) {
-                    $stmt->bind_param("ssss", $titulo, $descricao, $responsavel, $fotoData);
+                    $stmt->bind_param("sssss", $titulo, $descricao, $responsavel, $fotoData, $status);
 
                     if ($stmt->execute()) {
                         echo "<p>Cadastro de manutenção realizado com sucesso!</p>";
