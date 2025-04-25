@@ -14,7 +14,7 @@
 
         <div class="form-box">
     
-            <form action="conexaocadastroadm.php" method="POST">
+            <form action="conexaoLogin.php" method="POST">
     
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>
