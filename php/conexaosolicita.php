@@ -4,13 +4,13 @@ include 'conexao.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = htmlspecialchars($_POST["titulo"]);
     $descricao = $_POST["descricao"];
- 
+    $responsavel = $_POST["responsavel"];
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
      
         $fotoTmp = $_FILES['foto']['tmp_name'];
         $fotoData = file_get_contents($fotoTmp); 
 
-        $sql = "INSERT INTO manutencao (titulo, descricao, foto) 
+        $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto) 
                 VALUES (?, ?, ?)";
         
        
