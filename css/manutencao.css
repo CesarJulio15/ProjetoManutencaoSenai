@@ -179,26 +179,28 @@ body {
 }
 
 /* Botão de adicionar */
-.add-button {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-    text-decoration: none;
+
+.add-button-img {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+  text-decoration: none;
 }
 
-.add-button:hover {
-    transform: scale(1.1);
+.add-button-img:hover {
+  transform: scale(1.1);
 }
 
 .add-button-img {
-    width: 35px;
-    height: 35px;
+  width: 45px;
+  height: 45px;
 }
+

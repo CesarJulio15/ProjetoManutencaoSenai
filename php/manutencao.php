@@ -53,11 +53,9 @@
             }
             ?>
         </section>
-
-        <a href="solicita.php" class="add-button">
-            <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
+        <a href="solicita.php">
+             <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
         </a>
-
     </main>
 
 </body>
