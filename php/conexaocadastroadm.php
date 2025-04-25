@@ -2,22 +2,25 @@
 include 'conexao.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  
     $credencial = $_POST['credencial'];
     $senha = $_POST['senha'];
 
-    $sql = "SELECT senha FROM usuarios WHERE tipo = 'administrador' AND credencial = ?";
+ 
+    $sql = "SELECT senha FROM administrador WHERE credencial = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $credencial);
     $stmt->execute();
     $stmt->store_result();
 
+    
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($senha_hash);
+        $stmt->bind_result($senha_hash); 
         $stmt->fetch();
 
+     
         if (password_verify($senha, $senha_hash)) {
             echo "<p>Acesso permitido ao painel do administrador.</p>";
-
         } else {
             echo "<p>Senha incorreta.</p>";
         }
@@ -25,8 +28,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "<p>Credencial inválida ou administrador não encontrado.</p>";
     }
 
+   
     $stmt->close();
     $conn->close();
 } else {
     echo "<p>Requisição inválida.</p>";
 }
+?>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Portal Senai Manutenções</title>
-    <link rel="stylesheet" href="cadastro.css">
+    <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 <body>
 <?php include 'conexao.php'; ?>
@@ -14,7 +14,7 @@
 
         <div class="form-box">
     
-            <form action="conexaocadastroadm.php" method="POST">
+            <form action="conexaoadm.php" method="POST">
     
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>
@@ -24,8 +24,8 @@
         </div>
 
         <div class="logos">
-            <img src="Clip path group.svg" alt="Techfix" class="Techfix">
-            <img src="senai-logo 5.svg" alt="Senai">
+            <img src="../img/Clip path group.svg" alt="Techfix" class="Techfix">
+            <img src="../img/senai-logo 5.svg" alt="Senai">
         </div>
     </div>
 </body>
