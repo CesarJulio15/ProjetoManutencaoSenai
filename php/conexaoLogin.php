@@ -7,7 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $senha = $_POST['senha'];
 
  
-    $sql = "SELECT senha FROM usuarios WHERE credencial = ?";
+    $sql = "SELECT senha FROM administrador WHERE credencial = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $credencial);
     $stmt->execute();
@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
      
         if (password_verify($senha, $senha_hash)) {
-            echo "<p>Acesso permitido.</p>";
+            echo "<p>Acesso permitido ao painel do administrador.</p>";
         } else {
             echo "<p>Senha incorreta.</p>";
         }
