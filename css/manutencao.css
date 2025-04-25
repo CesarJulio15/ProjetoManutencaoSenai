@@ -89,8 +89,11 @@ body {
 }
 
 .profile-icon img {
-    width: 40px;
-    height: 40px;
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    object-position: center center;
+    overflow: hidden;
 }
 
 .cards-container {

@@ -12,6 +12,8 @@ if (!isset($_SESSION['credencial'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
     <link rel="stylesheet" href="../css/manutencao.css">
+    <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+
 </head>
 <body>
 
@@ -33,8 +35,28 @@ if (!isset($_SESSION['credencial'])) {
                 <button class="status-btn">Concluído</button>
             </div>
             <div class="profile-icon">
-                <img src="../img/user-icon.png" alt="Perfil">
-            </div>
+    <?php
+    require_once 'conexao.php';
+
+    $credencial = $_SESSION['credencial']; 
+    $sql = "SELECT foto FROM usuarios WHERE credencial = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $credencial);
+    $stmt->execute();
+    $stmt->bind_result($foto);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!empty($foto)) {
+        $fotoBase64 = base64_encode($foto);
+        echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Foto do usuário' style='border-radius: 50%; width: 40px; height: 40px; object-fit: cover;'>";
+    } else {
+        echo "<img src='../img/user-icon.png' alt='Foto padrão'>";
+    }
+    ?>
+</div>
+
+
             <div class="welcome-msg">
                 <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
             </div>
