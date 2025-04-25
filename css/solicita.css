@@ -1,0 +1,122 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    background: linear-gradient(to bottom right, #e7e3e3, #c3bdbd);
+  }
+  
+  .sidebar {
+    width: 130px;
+    background-color: #b3acac;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+  }
+  
+  .logo-superior img {
+    width: 110px;
+  }
+  
+  .logo-inferior img {
+    width: 90px;
+  }
+  
+  .container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .card {
+    width: 300px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+  
+  .card-top {
+    background-color: #dfe3e8;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .icons .triangle {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 40px solid gray;
+    margin: auto;
+  }
+  
+  .square-circle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .square {
+    width: 30px;
+    height: 30px;
+    background-color: gray;
+  }
+  
+  .circle {
+    width: 30px;
+    height: 30px;
+    background-color: gray;
+    border-radius: 50%;
+  }
+  
+  .upload-icon {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 20px;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-body label {
+    display: block;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .card-body input,
+  .card-body textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #ddd;
+    resize: none;
+  }
+  
+  .card-body button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background-color: #f24848;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
