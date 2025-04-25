@@ -82,3 +82,37 @@ button:hover {
     height: 70px;
     margin: 10px;
 }
+
+
+.foto-label {
+    display: block;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.foto-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #999;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    background-color: #e0e0e0;
+}
+
+.foto-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-input {
+    display: none;
+}
+
+.foto-preview[src="../img/user.webp"] {
+    content: url("../img/user.webp"); 
+}
