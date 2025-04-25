@@ -25,6 +25,7 @@ session_start();
                     <option value="">Tipo</option>
                     <option value="funcionario">Funcionário</option>
                     <option value="manutencao">Equipe de manutenção</option>
+                    <option value="adm">Administrador</option>
                 </select>
 
                 <input type="text" name="credencial" placeholder="Credencial" required>

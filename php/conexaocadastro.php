@@ -17,7 +17,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql = "INSERT INTO usuarios (nome, tipo, credencial, senha, foto) 
                 VALUES (?, ?, ?, ?, ?)";
         
-       
         if ($stmt = $conn->prepare($sql)) {
          
             $stmt->bind_param("sssss", $nome, $tipo, $credencial, $senha, $fotoData);
