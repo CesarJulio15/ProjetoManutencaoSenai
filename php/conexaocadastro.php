@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          
             $stmt->bind_param("sssss", $nome, $tipo, $credencial, $senha, $fotoData);
 
-            //
+            
             if ($stmt->execute()) {
                 echo "<p>Cadastro realizado com sucesso!</p>";
             } else {
