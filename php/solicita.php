@@ -3,50 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Portal Senai Manutenções</title>
-  <link rel="stylesheet" href="../css/solicita.css">
+  <title>Solicitação de Reparo</title>
+  <link rel="stylesheet" href="../css/solicita.css" />
 </head>
 <body>
-  <header>
-    <div class="top-bar">
-      <span>Solicitar reparo</span>
+  <div class="sidebar">
+    <div class="logo-superior">
+      <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" />
     </div>
-  </header>
+    <div class="logo-inferior">
+      <img src="../img/TechFix.svg" alt="TechFix Facilities" />
+    </div>
+  </div>
 
   <div class="container">
-    <aside class="menu-lateral">
-      <img src="../img/senai-logo 5.svg" alt="Logo Portal Senai" class="logo">
-    </aside>
-
-    <main class="conteudo-principal">
-      <div class="form-box">
-        <div class="form-header">
-          <div class="shapes">
-            <div class="triangle"></div>
+    <div class="card">
+      <div class="card-top">
+        <div class="icons">
+          <div class="triangle"></div>
+          <div class="square-circle">
             <div class="square"></div>
             <div class="circle"></div>
           </div>
-          <div class="upload-icon">⤴️</div>
         </div>
-        <form>
-          <label for="desc-breve">Descrição Breve</label>
-          <input type="text" id="desc-breve" name="desc-breve">
-
-          <label for="desc-detalhada">Descrição detalhada</label>
-          <textarea id="desc-detalhada" name="desc-detalhada" rows="6"></textarea>
-
-          <button type="submit">Criar</button>
-        </form>
+        <div class="upload-icon">⬆️</div>
       </div>
-    </main>
+      <div class="card-body">
+        <label for="descBreve">Descrição Breve</label>
+        <input type="text" id="descBreve" placeholder="Digite aqui..." />
 
-    <aside class="menu-lateral-direito">
-      <div class="icone-usuario">👤</div>
-    </aside>
+        <label for="descDetalhada">Descrição detalhada</label>
+        <textarea id="descDetalhada" rows="5" placeholder="Detalhe o problema..."></textarea>
+
+        <button type="submit">Criar</button>
+      </div>
+    </div>
   </div>
-
-  <footer>
-    <img src="logo-techfix.png" alt="Logo Techfix" class="logo-footer">
-  </footer>
 </body>
 </html>
