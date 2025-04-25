@@ -39,5 +39,8 @@
       </div>
     </div>
   </div>
+  <a href="manutencao.php">
+             <img src="../img/MinusCircle.svg" alt="Adicionar" class="add-button-img">
+        </a>
 </body>
 </html>
