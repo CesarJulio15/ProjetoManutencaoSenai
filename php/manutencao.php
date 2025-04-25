@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['credencial'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -28,47 +35,49 @@
             <div class="profile-icon">
                 <img src="../img/user-icon.png" alt="Perfil">
             </div>
+            <div class="welcome-msg">
+                <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
+            </div>
         </header>
 
         <section class="cards-container">
         <?php
-require_once 'conexao.php'; // garante que $conn está definido
+        require_once 'conexao.php';
 
-$sql = "SELECT * FROM manutencao";
-$result = $conn->query($sql);
+        $sql = "SELECT * FROM manutencao";
+        $result = $conn->query($sql);
 
-while ($row = $result->fetch_assoc()) {
-?>
-    <div class="card">
-        <div class="card-header">
-            <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
-            <span><?php echo $row['responsavel']; ?></span>
-            <div class="flag"></div>
-        </div>
-        <div class="card-body">
-            <div class="card-image">
-                <?php
-                if (!empty($row['foto'])) {
-                    $fotoBase64 = base64_encode($row['foto']);
-                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
-                }
-                ?>
+        while ($row = $result->fetch_assoc()) {
+        ?>
+            <div class="card">
+                <div class="card-header">
+                    <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
+                    <span><?php echo $row['responsavel']; ?></span>
+                    <div class="flag"></div>
+                </div>
+                <div class="card-body">
+                    <div class="card-image">
+                        <?php
+                        if (!empty($row['foto'])) {
+                            $fotoBase64 = base64_encode($row['foto']);
+                            echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
+                        }
+                        ?>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <h4><?php echo $row['titulo']; ?></h4>
+                    <p><?php echo $row['descricao']; ?></p>
+                    <button class="status pending">Pendente</button>
+                </div>
             </div>
-        </div>
-        <div class="card-footer">
-            <h4><?php echo $row['titulo']; ?></h4>
-            <p><?php echo $row['descricao']; ?></p>
-            <button class="status pending">Pendente</button> <!-- Pode ajustar conforme o status real -->
-        </div>
-    </div>
-<?php
-}
-?>
-
+        <?php
+        }
+        ?>
         </section>
 
         <a href="solicita.php">
-             <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
+            <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
         </a>
     </main>
 

@@ -6,7 +6,9 @@
     <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 <body>
-<?php include 'conexao.php'; ?>
+<?php include 'conexao.php'; 
+session_start();
+?>
     <div class="container">
         <img src="../img/Mask group.svg" alt="Logo" class="logo">
 
