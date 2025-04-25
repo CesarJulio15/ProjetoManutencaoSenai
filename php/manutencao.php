@@ -10,7 +10,7 @@
 
     <aside class="sidebar">
         <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
-        <div class="spacer"></div> <!-- Espaço para afastar -->
+        <div class="spacer"></div>
         <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
     </aside>
 
@@ -31,28 +31,42 @@
         </header>
 
         <section class="cards-container">
-            <?php
-            for ($i = 0; $i < 8; $i++) {
-            ?>
-                <div class="card">
-                    <div class="card-header">
-                        <div class="avatar">A</div>
-                        <span>Nome do Funcionário</span>
-                        <div class="flag"></div>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-image"></div>
-                    </div>
-                    <div class="card-footer">
-                        <h4>Descrição Breve</h4>
-                        <p>Descrição</p>
-                        <button class="status pending">Pendente</button>
-                    </div>
-                </div>
-            <?php
-            }
-            ?>
+        <?php
+require_once 'conexao.php'; // garante que $conn está definido
+
+$sql = "SELECT * FROM manutencao";
+$result = $conn->query($sql);
+
+while ($row = $result->fetch_assoc()) {
+?>
+    <div class="card">
+        <div class="card-header">
+            <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
+            <span><?php echo $row['responsavel']; ?></span>
+            <div class="flag"></div>
+        </div>
+        <div class="card-body">
+            <div class="card-image">
+                <?php
+                if (!empty($row['foto'])) {
+                    $fotoBase64 = base64_encode($row['foto']);
+                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
+                }
+                ?>
+            </div>
+        </div>
+        <div class="card-footer">
+            <h4><?php echo $row['titulo']; ?></h4>
+            <p><?php echo $row['descricao']; ?></p>
+            <button class="status pending">Pendente</button> <!-- Pode ajustar conforme o status real -->
+        </div>
+    </div>
+<?php
+}
+?>
+
         </section>
+
         <a href="solicita.php">
              <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
         </a>
