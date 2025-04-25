@@ -22,8 +22,8 @@
     <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="card">
       <div class="drag-area">
         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-        <button>Insira uma foto</button>
-        <input type="file" name="foto" hidden>
+        <button type="button">Insira uma foto</button>
+        <input type="file" id="foto"  name="foto" hidden>
       </div>
       <div class="card-body">
         <label for="titulo">Descrição Breve</label>
@@ -91,58 +91,71 @@
       border-radius: 5px;
     }
   </style>
+<script>
+  const dropArea = document.querySelector(".drag-area"),
+        button = dropArea.querySelector("button"),
+        input = dropArea.querySelector("input"),
+        icon = dropArea.querySelector(".icon");
 
-  <script>
-    const dropArea = document.querySelector(".drag-area"),
-          dragText = dropArea.querySelector("header"),
-          button = dropArea.querySelector("button"),
-          input = dropArea.querySelector("input");
-    let file;
+  let file;
 
-    button.onclick = () => {
-      input.click();
-    }
+  button.onclick = () => {
+    input.click();
+  }
 
-    input.addEventListener("change", function() {
-      file = this.files[0];
-      dropArea.classList.add("active");
-      showFile();
-    });
+  input.addEventListener("change", function () {
+    file = this.files[0];
+    dropArea.classList.add("active");
+    showFile();
+  });
 
-    dropArea.addEventListener("dragover", (event) => {
-      event.preventDefault();
-      dropArea.classList.add("active");
-      dragText.textContent = "Release to Upload File";
-    });
+  dropArea.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropArea.classList.add("active");
+  });
 
-    dropArea.addEventListener("dragleave", () => {
+  dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("active");
+  });
+
+  dropArea.addEventListener("drop", (event) => {
+    event.preventDefault();
+    input.files = event.dataTransfer.files;
+    file = input.files[0];
+    showFile();
+  });
+
+  function showFile() {
+    let fileType = file.type;
+    let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    if (validExtensions.includes(fileType)) {
+      let fileReader = new FileReader();
+      fileReader.onload = () => {
+        // Esconde os elementos padrão
+        icon.style.display = "none";
+        button.style.display = "none";
+
+        // Mostra a imagem sem remover o input
+        const previewImg = document.createElement("img");
+        previewImg.src = fileReader.result;
+        previewImg.alt = "Prévia da imagem";
+        previewImg.style.maxHeight = "200px";
+        previewImg.style.borderRadius = "5px";
+        previewImg.style.marginTop = "10px";
+
+        // Remove imagem antiga se houver
+        const oldImg = dropArea.querySelector("img");
+        if (oldImg) oldImg.remove();
+
+        dropArea.appendChild(previewImg);
+      };
+      fileReader.readAsDataURL(file);
+    } else {
+      alert("Este não é um arquivo de imagem válido!");
       dropArea.classList.remove("active");
-      dragText.textContent = "Drag & Drop to Upload File";
-    });
-
-    dropArea.addEventListener("drop", (event) => {
-      event.preventDefault();
-      file = event.dataTransfer.files[0];
-      showFile();
-    });
-
-    function showFile() {
-      let fileType = file.type;
-      let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
-      if (validExtensions.includes(fileType)) {
-        let fileReader = new FileReader();
-        fileReader.onload = () => {
-          let fileURL = fileReader.result;
-          let imgTag = `<img src="${fileURL}" alt="image">`;
-          dropArea.innerHTML = imgTag;
-        }
-        fileReader.readAsDataURL(file);
-      } else {
-        alert("This is not an Image File!");
-        dropArea.classList.remove("active");
-        dragText.textContent = "Drag & Drop to Upload File";
-      }
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>

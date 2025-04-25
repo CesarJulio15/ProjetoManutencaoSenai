@@ -8,22 +8,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $senha = $_POST['senha'];
 
     // Preparar a consulta usando prepared statements para evitar SQL Injection
-    $sql = "SELECT nome, senha FROM usuarios WHERE credencial = ?";
+    $sql = "SELECT id, nome, senha, tipo FROM usuarios WHERE credencial = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $credencial);
+    $stmt->bind_param("s", $credencial); // Bind do parâmetro credencial
     $stmt->execute();
     $stmt->store_result();
 
     // Verifica se o usuário existe
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($nome, $senha_hash);
+        $stmt->bind_result($id, $nome, $senha_hash, $tipo);
         $stmt->fetch();
 
         // Verifica se a senha corresponde ao hash armazenado
         if (password_verify($senha, $senha_hash)) {
+            // Senha correta, inicia a sessão do usuário
+            $_SESSION['id'] = $id;
             $_SESSION['credencial'] = $credencial;
-            $_SESSION['nome'] = $nome; // Armazena o nome para saudação
-            header("Location: manutencao.php"); // Redireciona após login
+            $_SESSION['nome'] = $nome;
+            $_SESSION['tipo'] = $tipo; // Tipo de usuário (funcionario ou manutencao)
+
+            // Redireciona para a página apropriada dependendo do tipo de usuário
+            if ($tipo == 'manutencao') {
+                header("Location: manutencao.php"); // Redireciona para a página de manutenção
+            } else {
+                header("Location: manutencao.php"); // Redireciona para a página de administrador (exemplo)
+            }
             exit();
         } else {
             echo "<script>alert('Senha incorreta!');</script>"; // Alerta de erro
@@ -63,6 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <img src="../img/Clip path group.svg" alt="Techfix" class="Techfix">
             <img src="../img/senai-logo 5.svg" alt="Senai">
         </div>
-    </div>
+    </div> 
 </body>
 </html>
