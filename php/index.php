@@ -13,9 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("s", $credencial); // Bind do parâmetro credencial
     $stmt->execute();
     $stmt->store_result();
+    echo "<script>console.log('Credenciais encontradas: " . $stmt->num_rows . "');</script>";
 
     // Verifica se o usuário existe
     if ($stmt->num_rows === 1) {
+        
         $stmt->bind_result($id, $nome, $senha_hash, $tipo);
         $stmt->fetch();
 

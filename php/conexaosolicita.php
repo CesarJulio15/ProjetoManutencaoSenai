@@ -4,7 +4,7 @@ include 'conexao.php';
 
 
 if (!isset($_SESSION['credencial'])) {
-    echo "<p>Usuário não autenticado! Acesse <a href='login.php'>Login</a> para autenticar-se.</p>";
+    echo "<p>Usuário não autenticado! Acesse <a href='index.php'>Login</a> para autenticar-se.</p>";
     exit();
 }
 
