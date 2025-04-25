@@ -8,13 +8,13 @@
 <body>
 <?php include 'conexao.php'; ?>
     <div class="container">
-        <img src="Mask group.svg" alt="Logo" class="logo">
+        <img src="../img/Mask group.svg" alt="Logo" class="logo">
 
         <h1><span class="portal">Portal Senai</span><br><span class="manutencao">Manutenções</span></h1>
 
         <div class="form-box">
     
-            <form action="conexaoadm.php" method="POST">
+            <form action="conexaocadastroadm.php" method="POST">
     
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>

@@ -8,7 +8,7 @@
 <body>
 <?php include 'conexao.php'; ?>
     <div class="container">
-        <img src="Mask group.svg" alt="Logo" class="logo">
+        <img src="../img/Mask group.svg" alt="Logo" class="logo">
 
         <h1><span class="portal">Portal Senai</span><br><span class="manutencao">Manutenções</span></h1>
 
