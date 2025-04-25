@@ -77,15 +77,13 @@ if (!isset($_SESSION['credencial'])) {
                     <span><?php echo $row['responsavel']; ?></span>
                     <div class="flag"></div>
                 </div>
-                <div class="card-body">
-                    <div class="card-image">
-                        <?php
+                <div class="card-body card-image">
+                <?php
                         if (!empty($row['foto'])) {
                             $fotoBase64 = base64_encode($row['foto']);
                             echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
                         }
                         ?>
-                    </div>
                 </div>
                 <div class="card-footer">
                     <h4><?php echo $row['titulo']; ?></h4>
