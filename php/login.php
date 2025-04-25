@@ -31,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 <body>
+<?php include 'conexao.php'; 
+session_start();
+?>
+    <div class="container">
+        <img src="../img/Mask group.svg" alt="Logo" class="logo">
 
 <div class="container">
     <img src="../img/Mask group.svg" alt="Logo" class="logo">
