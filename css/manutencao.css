@@ -171,16 +171,15 @@ body {
     color: white;
 }
 
-.add-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #6c00ff;
-    color: white;
-    font-size: 30px;
+.add-button-img {
     width: 60px;
     height: 60px;
-    border: none;
+    object-fit: cover;
     border-radius: 50%;
-    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.add-button-img:hover {
+    transform: scale(1.1);
 }
