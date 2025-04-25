@@ -10,6 +10,7 @@
 
     <aside class="sidebar">
         <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
+        <div class="spacer"></div> <!-- Espaço para afastar -->
         <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
     </aside>
 
@@ -25,14 +26,12 @@
                 <button class="status-btn">Concluído</button>
             </div>
             <div class="profile-icon">
-                <img src="user-icon.png" alt="Perfil">
+                <img src="../img/user-icon.png" alt="Perfil">
             </div>
         </header>
 
         <section class="cards-container">
             <?php
-            // Depois você vai pegar os dados usando GET ou POST aqui
-            // Exemplo de um card vazio (só para montar o front-end)
             for ($i = 0; $i < 8; $i++) {
             ?>
                 <div class="card">
@@ -55,11 +54,9 @@
             ?>
         </section>
 
-        <a href="solicita.php">
-             <img src="../img/Plus circle.svg" alt="Adicionar" class="add-button-img">
+        <a href="solicita.php" class="add-button">
+            <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
         </a>
-
-
 
     </main>
 
