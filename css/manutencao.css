@@ -223,19 +223,20 @@ body {
   height: 45px;
 }
 .add-user-img {
-    position: fixed;
-    bottom: 30px;
-    right: 90px;
-    width: 70px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-    text-decoration: none;
-  }
-  
+        position: fixed;
+        bottom: 30px;
+        right: 90px;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%; /* Corrigido */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        background: transparent; /* Tira o fundo */
+        border: none; /* Remove borda */
+        padding: 0;
+    }
   .add-user-img:hover {
     transform: scale(1.1);
   }

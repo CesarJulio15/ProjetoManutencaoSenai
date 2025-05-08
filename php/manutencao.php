@@ -108,10 +108,10 @@ $link = ($_SESSION['tipo'] === 'manutencao')
         ?>
         </section>
         <a href="solicita.php">
-            <img src="../img/PlusCircle.svg" alt="Adicionar" class="add-button-img">
+            <img src="../img/plus.png" alt="Adicionar" class="add-button-img">
             </a>
     <a href="cadastro.php">
-        <img src="../img/user.webp" alt="add-user" class="add-user-img">
+        <img src="../img/user.png" alt="add-user" class="add-user-img">
     </a>     
     </main>
 
