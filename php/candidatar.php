@@ -49,6 +49,7 @@ if (isset($_GET['titulo'])) {
     <meta charset="UTF-8">
     <title>Detalhe da Manutenção</title>
     <link rel="stylesheet" href="../css/candidatar.css">
+    <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
 <body>
     <aside class="sidebar">
