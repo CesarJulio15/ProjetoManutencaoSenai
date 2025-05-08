@@ -25,15 +25,12 @@ if (isset($_GET['titulo'])) {
 <body class="d-flex flex-column flex-md-row">
 
     <!-- Sidebar -->
-    <aside class="sidebar d-flex flex-column justify-content-between align-items-center">
+    <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
         <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
         <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
     </aside>
 
-
-
     <main class="content d-flex justify-content-center align-items-center min-vh-100 py-5 bg-light">
-        
         <div class="detalhe-container mx-auto">
             <h1 class="mb-3"><?php echo htmlspecialchars($row['titulo']); ?></h1>
             <p><strong>Descrição:</strong> <?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
@@ -50,35 +47,83 @@ if (isset($_GET['titulo'])) {
 
             <!-- Rodapé com botões -->
             <footer class="border-top pt-4 mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 flex-wrap">
-        
-        <!-- Voltar -->
-        <div class="flex-shrink-0">
-            <a href="manutencao.php" class="btn btn-danger">Voltar</a>
-        </div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 flex-wrap">
 
-        <!-- Botões de status -->
-        <div class="d-flex gap-2 flex-wrap justify-content-center">
-            <button class="status-btn btn btn-danger" data-status="Pendente">Pendente</button>
-            <button class="status-btn btn btn-warning text-white" data-status="Em Andamento">Em Andamento</button>
-            <button class="status-btn btn btn-success" data-status="Concluído">Concluído</button>
-        </div>
+                    <!-- Voltar -->
+                    <div class="flex-shrink-0">
+                        <a href="manutencao.php" class="btn btn-danger">Voltar</a>
+                    </div>
 
-        <!-- Excluir -->
-        <div class="flex-shrink-0">
-            <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
-                <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-                <button type="submit" class="btn p-0">
-                    <img src="../img/trash.png" alt="Excluir" width="24" height="24">
-                </button>
-            </form>
-        </div>
+                    <!-- Botões de status -->
+                    <div class="d-flex gap-2 flex-wrap justify-content-center">
+                        <button class="status-btn btn btn-danger" data-status="Pendente">Pendente</button>
+                        <button class="status-btn btn btn-warning text-white" data-status="Em Andamento">Em Andamento</button>
+                        <button class="status-btn btn btn-success" data-status="Concluído">Concluído</button>
+                    </div>
 
-    </div>
-</footer>
+                    <!-- Botão Designar (apenas para admin) -->
+                    <?php if ($_SESSION['tipo'] === 'adm') : ?>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designarModal">
+                            Designar
+                        </button>
+                    <?php endif; ?>
 
+                    <!-- Excluir -->
+                    <div class="flex-shrink-0">
+                        <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
+                            <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+                            <button type="submit" class="btn p-0">
+                                <img src="../img/trash.png" alt="Excluir" width="24" height="24">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </footer>
         </div>
     </main>
+
+    <!-- Modal Designar -->
+    <div class="modal fade" id="designarModal" tabindex="-1" aria-labelledby="designarModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="designar_executante.php">
+            <div class="modal-header">
+              <h5 class="modal-title" id="designarModalLabel">Designar Executante</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+
+              <?php
+                $usuarios = $conn->query("SELECT id, nome FROM usuarios WHERE tipo = 'manutencao'");
+                echo '<div class="form-group mb-3">';
+                echo '<label for="executante">Selecionar usuário:</label>';
+                echo '<select name="executante" id="executante" class="form-select" required>';
+                echo '<option value="">Selecione</option>';
+                while ($usuario = $usuarios->fetch_assoc()) {
+                    echo "<option value='{$usuario['id']}'>{$usuario['nome']}</option>";
+                }
+                echo '</select>';
+                echo '</div>';
+              ?>
+
+              <?php if (!empty($row['executante_id'])): ?>
+                  <div class="alert alert-warning mt-3">
+                      Já existe um executante designado. Você pode substituí-lo ou removê-lo abaixo.
+                  </div>
+                  <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="remover_executante" value="1" id="remover_executante">
+                      <label class="form-check-label" for="remover_executante">Remover executante atual</label>
+                  </div>
+              <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Salvar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <script>
         document.querySelectorAll('.status-btn').forEach(btn => {
