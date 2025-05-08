@@ -1,3 +1,4 @@
+/* Estilo geral */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -5,16 +6,18 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     flex-direction: column;
 }
 
 .container {
     text-align: center;
+    max-width: 100%;
+    padding: 20px;
 }
 
 .logo {
-    width: 250px;
+    max-width: 250px;
     margin-bottom: 10px;
 }
 
@@ -33,12 +36,15 @@ h1 {
     font-weight: bold;
 }
 
+/* Formulário */
 .form-box {
-    background-color: #ddd;
+    background-color: #bbb;
     padding: 25px;
     border-radius: 10px;
-    width: 300px;
+    width: 100%;
+    max-width: 400px;
     margin-top: 20px;
+    box-sizing: border-box;
 }
 
 .form-box h2 {
@@ -69,6 +75,7 @@ button:hover {
     background-color: #444;
 }
 
+/* Botão de Voltar */
 .volta button {
     background-color: #c54545;
     color: #ffffff;
@@ -84,6 +91,7 @@ button:hover {
     background-color: #751818;
 }
 
+/* Logos */
 .logos {
     margin-top: 20px;
 }
@@ -93,12 +101,23 @@ button:hover {
     margin: 10px;
 }
 
-.logos img.Techfix {
-    height: 70px;
-    margin: 10px;
+/* Responsividade para dispositivos móveis */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 22px;
+    }
+
+    .form-box {
+        width: 100%;
+        max-width: 90%;
+    }
+
+    .logos img {
+        height: 40px;
+    }
 }
 
-
+/* Imagem de perfil (caso utilizada) */
 .foto-label {
     display: block;
     margin-top: 10px;

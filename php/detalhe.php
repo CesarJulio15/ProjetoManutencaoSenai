@@ -28,7 +28,11 @@ if (isset($_GET['titulo'])) {
     </aside>
 
     <div class="content">
+        
+
+
         <div class="detalhe-container">
+
             <h1><?php echo htmlspecialchars($row['titulo']); ?></h1>
             <p><strong>Descrição:</strong> <?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
             <p><strong>Responsável:</strong> <?php echo htmlspecialchars($row['responsavel']); ?></p>
@@ -45,13 +49,23 @@ if (isset($_GET['titulo'])) {
 
           
             <footer>
-                <a href="manutencao.php" class="btn-voltar">Voltar</a>
-                <div class="status-buttons">
-                    <button class="status-btn pending" data-status="Pendente">Pendente</button>
-                    <button class="status-btn ongoing" data-status="Em Andamento">Em Andamento</button>
-                    <button class="status-btn completed" data-status="Concluído">Concluído</button>
-                </div>
-            </footer>
+                
+    <a href="manutencao.php" class="btn-voltar">Voltar</a>
+    <div class="status-buttons">
+        <button class="status-btn pending" data-status="Pendente">Pendente</button>
+        <button class="status-btn ongoing" data-status="Em Andamento">Em Andamento</button>
+        <button class="status-btn completed" data-status="Concluído">Concluído</button>
+
+    </div>
+
+    <form class="delete-icon-form" method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
+                <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+                <button type="submit">
+                    <img src="../img/trash.png" alt="Excluir">
+                </button>
+            </form>
+</footer>
+
         </div>
     </div>
     <script>

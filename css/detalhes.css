@@ -139,3 +139,21 @@ footer {
     margin-bottom: 10px;
 }
 
+.delete-icon-form {
+    top: 24px;
+    right: 24px;
+}
+
+.delete-icon-form button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-icon-form img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: auto;
+
+}
+
