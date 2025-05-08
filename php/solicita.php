@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -34,7 +35,7 @@
 
   <button type="submit">Criar</button>
 
-  <a href="manutencao.php" class="botao-voltar">Voltar</a>
+  <a href="manutencao.php" class="botao-voltar">Sair</a>
 </div>
 
     </form>
@@ -122,42 +123,77 @@
   });
 
   dropArea.addEventListener("drop", (event) => {
-    event.preventDefault();
-    input.files = event.dataTransfer.files;
-    file = input.files[0];
-    showFile();
-  });
+  event.preventDefault();
+  file = event.dataTransfer.files[0];
+  input.files = event.dataTransfer.files; 
+  showFile();
+});
 
-  function showFile() {
-    let fileType = file.type;
-    let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
-    if (validExtensions.includes(fileType)) {
-      let fileReader = new FileReader();
-      fileReader.onload = () => {
-        // Esconde os elementos padrão
-        icon.style.display = "none";
-        button.style.display = "none";
+function showFile() {
+  let fileType = file.type;
+  let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+  if (validExtensions.includes(fileType)) {
+    let fileReader = new FileReader();
+    fileReader.onload = () => {
+      icon.style.display = "none";
+      button.style.display = "none";
 
-        // Mostra a imagem sem remover o input
-        const previewImg = document.createElement("img");
-        previewImg.src = fileReader.result;
-        previewImg.alt = "Prévia da imagem";
-        previewImg.style.maxHeight = "200px";
-        previewImg.style.borderRadius = "5px";
-        previewImg.style.marginTop = "10px";
+      // Remove imagem antiga e botão se houver
+      const oldImg = dropArea.querySelector("img");
+      const oldRemoveBtn = dropArea.querySelector(".remove-btn");
+      if (oldImg) oldImg.remove();
+      if (oldRemoveBtn) oldRemoveBtn.remove();
 
-        // Remove imagem antiga se houver
-        const oldImg = dropArea.querySelector("img");
-        if (oldImg) oldImg.remove();
+      const previewImg = document.createElement("img");
+      previewImg.src = fileReader.result;
+      previewImg.alt = "Prévia da imagem";
+      previewImg.style.maxHeight = "200px";
+      previewImg.style.borderRadius = "5px";
+      previewImg.style.marginTop = "10px";
 
-        dropArea.appendChild(previewImg);
+      const removeBtn = document.createElement("button");
+removeBtn.innerText = "✖ Remover imagem";
+removeBtn.className = "remove-btn";
+removeBtn.style.marginTop = "15px";
+removeBtn.style.padding = "10px 20px";
+removeBtn.style.fontSize = "16px";
+removeBtn.style.border = "none";
+removeBtn.style.borderRadius = "25px";
+removeBtn.style.cursor = "pointer";
+removeBtn.style.backgroundColor = "#b81313";
+removeBtn.style.color = "#fff";
+removeBtn.style.transition = "background-color 0.3s ease";
+removeBtn.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+removeBtn.style.fontWeight = "bold";
+
+removeBtn.onmouseover = () => {
+  removeBtn.style.backgroundColor = "#991010";
+};
+removeBtn.onmouseleave = () => {
+  removeBtn.style.backgroundColor = "#b81313";
+};
+
+
+      removeBtn.onclick = (e) => {
+        e.preventDefault();
+        previewImg.remove();
+        removeBtn.remove();
+        input.value = ""; // limpa input
+        icon.style.display = "block";
+        button.style.display = "inline-block";
+        dropArea.classList.remove("active");
       };
-      fileReader.readAsDataURL(file);
-    } else {
-      alert("Este não é um arquivo de imagem válido!");
-      dropArea.classList.remove("active");
-    }
+
+      dropArea.appendChild(previewImg);
+      dropArea.appendChild(removeBtn);
+    };
+    fileReader.readAsDataURL(file);
+  } else {
+    alert("Este não é um arquivo de imagem válido!");
+    dropArea.classList.remove("active");
   }
+}
+
 </script>
 
 </body>
