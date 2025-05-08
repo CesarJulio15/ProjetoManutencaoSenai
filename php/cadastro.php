@@ -1,3 +1,13 @@
+<?php
+session_start();
+include 'conexao.php';
+
+// Verifica se o usuário está logado e se é do tipo 'adm'
+if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
+    header("Location: login.php"); // Redireciona caso não seja administrador
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -13,7 +23,7 @@
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
 
-<?php include 'conexao.php'; session_start(); ?>
+
 
 <div class="container text-center">
     <!-- Logo principal -->

@@ -6,40 +6,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Solicitação de Reparo</title>
   <link rel="stylesheet" href="../css/solicita.css" />
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-  <div class="sidebar">
-    <div class="logo-superior">
-      <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" />
-    </div>
-    <div class="logo-inferior">
-      <img src="../img/TechFix.svg" alt="TechFix Facilities" />
-    </div>
-  </div>
+<body class="bg-body">
+  <div class="container-fluid p-0">
+    <div class="row g-0 min-vh-100 flex-column flex-md-row">
 
-  <div class="container">
-    <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="card">
-      <div class="drag-area">
-        <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-        <button type="button">Insira uma foto</button>
-        <input type="file" id="foto"  name="foto" hidden>
+      <!-- Sidebar -->
+      <div class="col-12 col-md-2 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
+        <div class="logo-superior">
+          <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="img-fluid" />
+        </div>
+        <div class="logo-inferior">
+          <img src="../img/TechFix.svg" alt="TechFix Facilities" class="img-fluid" />
+        </div>
       </div>
-      <div class="card-body">
-  <label for="titulo">Descrição Breve</label>
-  <input type="text" id="titulo" name="titulo" placeholder="Digite aqui..." required />
 
-  <label for="descDetalhada">Descrição detalhada</label>
-  <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema..." required></textarea>
+      <!-- Conteúdo -->
+      <div class="col container d-flex justify-content-center align-items-center py-5 bg-light">
+        <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="card w-100" style="max-width: 600px;">
+          <div class="drag-area text-center p-4">
+            <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <button type="button">Insira uma foto</button>
+            <input type="file" id="foto" name="foto" hidden>
+          </div>
+          <div class="card-body">
+            <label for="titulo">Descrição Breve</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Digite aqui..." required />
 
-  <button type="submit">Criar</button>
+            <label for="descDetalhada">Descrição detalhada</label>
+            <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema..." required></textarea>
 
-  <a href="manutencao.php" class="botao-voltar">Sair</a>
-</div>
-
-    </form>
+            <button type="submit">Criar</button>
+            <a href="manutencao.php" class="botao-voltar">Sair</a>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
+
 
   <style>
     .drag-area {
