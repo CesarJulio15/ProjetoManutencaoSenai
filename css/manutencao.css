@@ -50,6 +50,7 @@ body {
 }
 
 .search-box {
+    margin: auto;
     display: flex;
     align-items: center;
     background: white;
@@ -250,3 +251,6 @@ a {
     text-decoration: none;
 }
 
+.welcome-msg{
+    margin-left: auto;
+}

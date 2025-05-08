@@ -14,6 +14,93 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
+<style>
+@media (max-width: 768px) {
+    /* .card-body.card-image {
+        display: none !important;
+    } */
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .top-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .search-box {
+        width: 100%;
+        display: flex;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .search-box button {
+        padding: 10px;
+        background: none;
+        border: none;
+    }
+
+    .status-buttons {
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+        width: 100%;
+    }
+
+    .status-buttons .status-btn {
+        flex: 1;
+        font-size: 14px;
+        padding: 10px 0;
+        text-align: center;
+        border-radius: 5px;
+        background-color: #e0e0e0;
+    }
+
+    .status-buttons .status-btn.active {
+        background-color: red;
+        color: white;
+    }
+}
+@media (max-width: 768px) {
+    .welcome-msg,
+    .logout-btn {
+        display: none !important;
+    }
+}
+@media (max-width: 768px) {
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .card-link {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .card {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+
+</style>
+
 <body>
 
     <aside class="sidebar">
@@ -36,7 +123,7 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
             </div>
 
             <div class="welcome-msg">
-                <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
+                <?php echo htmlspecialchars($_SESSION['nome']); ?>
             </div>
             <div class="logout-btn">
                 <a href="logout.php" title="Sair">
