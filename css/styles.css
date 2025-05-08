@@ -15,7 +15,7 @@ body {
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
-    max-width: 480px;  /* Limitando a largura da container para telas menores */
+    max-width: 480px;
 }
 
 .logo {
@@ -92,40 +92,56 @@ button:hover {
     object-fit: contain;
 }
 
-/* Responsivo para telas menores (aumentando tudo) */
+/* Responsivo para telas menores (smartphones) */
 @media (max-width: 480px) {
     .container {
-        padding: 20px; /* Um pouco mais de espaçamento para melhorar o layout */
+        padding: 30px;
         width: 100%;
+        max-width: 100%;
     }
 
     .form-box {
-        padding: 30px; /* Mais espaçamento interno na caixa do formulário */
+        padding: 35px 25px;
+        max-width: 100%;
     }
 
-    input, button {
-        font-size: 1.3rem; /* Aumentando o tamanho da fonte */
-        padding: 18px; /* Aumentando o padding para mais conforto */
+    input,
+    button {
+        font-size: 1.4rem;
+        padding: 20px;
     }
 
     h1 {
-        font-size: 32px; /* Aumentando o tamanho do título */
+        font-size: 2rem;
+        margin: 15px 0;
+    }
+
+    .portal {
+        font-size: 1.8rem;
+    }
+
+    .manutencao {
+        font-size: 1.6rem;
     }
 
     .logo {
-        max-width: 220px; /* Aumentando o logo */
+        max-width: 250px;
+        width: 60vw;
+        margin-bottom: 30px;
     }
 
     .logos img {
-        height: 80px; /* Aumentando o tamanho das imagens */
+        height: 90px;
+        max-width: 100px;
     }
 
     .logos {
-        gap: 50px; /* Mais espaçamento entre os logos */
+        gap: 40px;
+        margin-top: 30px;
     }
 }
 
-/* Responsivo para telas maiores que 480px mas menores que 768px */
+/* Responsivo para tablets */
 @media (max-width: 768px) {
     .container {
         padding: 20px;

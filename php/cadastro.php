@@ -1,3 +1,13 @@
+<?php
+session_start();
+include 'conexao.php';
+
+// Verifica se o usuário está logado e se é do tipo 'adm'
+if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
+    header("Location: login.php"); // Redireciona caso não seja administrador
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -6,10 +16,6 @@
     <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 <body>
-    
-<?php include 'conexao.php'; 
-session_start();
-?>
     <div class="container">
         <img src="../img/Mask group.svg" alt="Logo" class="logo">
 
@@ -31,15 +37,12 @@ session_start();
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>
 
-               
-               
-
                 <button type="submit">Realizar Cadastro</button>
                 <div class="volta">
-    <a href="manutencao.php">
-        <button type="button">Voltar</button>
-    </a>
-</div>
+                    <a href="manutencao.php">
+                        <button type="button">Voltar</button>
+                    </a>
+                </div>
             </form>
         </div>
 
@@ -48,9 +51,9 @@ session_start();
             <img src="../img/senai-logo 5.svg" alt="Senai">
         </div>
     </div>
+
     <script>
-     
-        document.getElementById('foto').addEventListener('change', function(event) {
+        document.getElementById('foto')?.addEventListener('change', function(event) {
             const file = event.target.files[0];
             const reader = new FileReader();
 
@@ -65,4 +68,3 @@ session_start();
     </script>
 </body>
 </html>
-
