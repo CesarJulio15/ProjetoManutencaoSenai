@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-// Verifica se o usuário está logado e se é administrador
-if (!isset($_SESSION['usuario']) || $_SESSION['tipo'] !== 'adm') {
-    header("Location: index.php"); // Redireciona para login se não for ADM
-    exit();
-}
+include 'conexao.php';
 
-require_once 'conexao.php'; // Usa conexão existente
+// Verifica se o usuário está logado e se é do tipo 'adm'
+if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
+  header("Location: login.php"); // Redireciona caso não seja administrador
+  exit();
+}
 
 // Projetos concluídos
 $sql_concluidos = "SELECT titulo, descricao, responsavel, executante 
