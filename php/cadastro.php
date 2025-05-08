@@ -32,13 +32,7 @@ session_start();
                 <input type="password" name="senha" placeholder="Senha" required>
 
                
-                <label for="foto" class="foto-label">
-                    <div class="foto-container">
-                        <img src="../img/user.webp" alt="Foto de perfil" id="foto-preview" class="foto-preview">
-                    </div>
-                    <input type="file" name="foto" id="foto" accept="image/*" class="foto-input" required>
-                    insira uma foto
-                </label>
+               
 
                 <button type="submit">Realizar Cadastro</button>
                 <div class="volta">

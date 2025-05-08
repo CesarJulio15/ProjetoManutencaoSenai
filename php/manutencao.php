@@ -35,27 +35,7 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
     <a href="?status=Concluído" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>">Concluído</a>
 </div>
 
-            <div class="profile-icon">
-                <?php
-                require_once 'conexao.php';
-
-                $credencial = $_SESSION['credencial'];
-                $sql = "SELECT foto FROM usuarios WHERE credencial = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $credencial);
-                $stmt->execute();
-                $stmt->bind_result($foto);
-                $stmt->fetch();
-                $stmt->close();
-
-                if (!empty($foto)) {
-                    $fotoBase64 = base64_encode($foto);
-                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Foto do usuário' style='border-radius: 50%; width: 40px; height: 40px; object-fit: cover;'>";
-                } else {
-                    echo "<img src='../img/user-icon.png' alt='Foto padrão'>";
-                }
-                ?>
-            </div>
+           
 
             <div class="welcome-msg">
                 <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
