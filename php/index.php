@@ -46,31 +46,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Portal Senai Manutenções</title>
-    <link rel="stylesheet" href="../css/cadastro.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
-<body>
-    <div class="container">
-        <img src="../img/Mask group.svg" alt="Logo" class="logo">
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+    <div class="container text-center">
+        <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-3">
 
-        <h1><span class="portal">Portal Senai</span><br><span class="manutencao">Manutenções</span></h1>
+        <h1>
+            <span class="portal">Portal Senai</span><br>
+            <span class="manutencao">Manutenções</span>
+        </h1>
 
-        <div class="form-box">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4" style="max-width: 400px;">
             <form method="POST">
-                <input type="text" name="credencial" placeholder="Credencial" required>
-                <input type="password" name="senha" placeholder="Senha" required>
-                <button type="submit">Entrar</button>
+                <input type="text" name="credencial" class="form-control mb-3" placeholder="Credencial" required>
+                <input type="password" name="senha" class="form-control mb-3" placeholder="Senha" required>
+                <button type="submit" class="btn btn-dark w-100">Entrar</button>
             </form>
         </div>
 
-        <div class="logos">
-            <img src="../img/Clip path group.svg" alt="Techfix" class="Techfix">
-            <img src="../img/senai-logo 5.svg" alt="Senai">
+        <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-4">
+            <img src="../img/Clip path group.svg" alt="Techfix" class="img-fluid mx-2" style="height: 70px;">
+            <img src="../img/senai-logo 5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px;">
         </div>
     </div> 
 </body>
