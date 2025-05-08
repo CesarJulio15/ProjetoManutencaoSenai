@@ -1,7 +1,6 @@
 <?php
-
 session_start();
-if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao', ])) {
+if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao'])) {
     header("Location: index.php");
     exit;
 }
@@ -25,26 +24,25 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
 
     <main class="main-content">
         <header class="top-bar">
-        <form method="GET" class="search-box">
-  <input type="text" name="busca" placeholder="Buscar...">
-  <button type="submit"><img src="../img/IconSearch.svg" alt="Buscar"></button>
-</form>
-            <div class="status-buttons">
-    <a href="?status=Pendente" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pendente') ? 'active' : ''; ?>">Pendente</a>
-    <a href="?status=Em%20Andamento" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Em Andamento') ? 'active' : ''; ?>">Em andamento</a>
-    <a href="?status=Concluído" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>">Concluído</a>
-</div>
+            <form method="GET" class="search-box">
+                <input type="text" name="busca" placeholder="Buscar...">
+                <button type="submit"><img src="../img/IconSearch.svg" alt="Buscar"></button>
+            </form>
 
-           
+            <div class="status-buttons">
+                <a href="?status=Pendente" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pendente') ? 'active' : ''; ?>">Pendente</a>
+                <a href="?status=Em%20Andamento" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Em Andamento') ? 'active' : ''; ?>">Em andamento</a>
+                <a href="?status=Concluído" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>">Concluído</a>
+            </div>
 
             <div class="welcome-msg">
                 <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
             </div>
             <div class="logout-btn">
-    <a href="logout.php" title="Sair">
-        <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
-    </a>
-</div>
+                <a href="logout.php" title="Sair">
+                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                </a>
+            </div>
         </header>
 
         <section class="cards-container">
@@ -52,8 +50,6 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
         require_once 'conexao.php';
 
         // Filtra os dados com base no status
-        $status = isset($_GET['status']) ? $_GET['status'] : '';
-
         $status = isset($_GET['status']) ? $_GET['status'] : '';
         $busca = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
         
@@ -66,24 +62,38 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("s", $busca);
         }
-        
 
         $stmt->execute();
         $result = $stmt->get_result();
 
         while ($row = $result->fetch_assoc()) {
+            // Define a cor da flag com base no status
+            $flagColor = '';
+            switch ($row['status']) {
+                case 'Pendente':
+                    $flagColor = 'red';
+                    break;
+                case 'Em Andamento':
+                    $flagColor = 'yellow';
+                    break;
+                case 'Concluído':
+                    $flagColor = 'green';
+                    break;
+                default:
+                    $flagColor = 'gray'; // Default caso não tenha um status definido
+            }
         ?>
-       <?php
-$link = ($_SESSION['tipo'] === 'manutencao') 
-    ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
-    : 'detalhe.php?titulo=' . urlencode($row['titulo']);
-?>
-<a href="<?php echo $link; ?>" class="card-link">
+        <?php
+        $link = ($_SESSION['tipo'] === 'manutencao') 
+            ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
+            : 'detalhe.php?titulo=' . urlencode($row['titulo']);
+        ?>
+        <a href="<?php echo $link; ?>" class="card-link">
             <div class="card">
                 <div class="card-header">
                     <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
                     <span><?php echo htmlspecialchars($row['responsavel']); ?></span>
-                    <div class="flag"></div>
+                    <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
                 </div>
                 <div class="card-body card-image">
                     <?php
@@ -109,10 +119,10 @@ $link = ($_SESSION['tipo'] === 'manutencao')
         </section>
         <a href="solicita.php">
             <img src="../img/plus.png" alt="Adicionar" class="add-button-img">
-            </a>
-    <a href="cadastro.php">
-        <img src="../img/user.png" alt="add-user" class="add-user-img">
-    </a>     
+        </a>
+        <a href="cadastro.php">
+            <img src="../img/user.png" alt="add-user" class="add-user-img">
+        </a>
     </main>
 
 </body>
