@@ -205,10 +205,13 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
         ?>
         </section>
         <a href="solicita.php">
-            <img src="../img/plus.png" alt="Adicionar" class="add-button-img">
+            <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
         </a>
         <a href="cadastro.php">
-            <img src="../img/user.png" alt="add-user" class="add-user-img">
+            <img src="../img/adicionar-usuario.png" alt="add-user" class="add-user-img">
+        </a>
+        <a href="dashboard.php">
+            <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
         </a>
     </main>
 

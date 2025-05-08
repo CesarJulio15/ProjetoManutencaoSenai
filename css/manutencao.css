@@ -206,11 +206,9 @@ body {
   right: 30px;
   width: 60px;
   height: 60px;
-  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
   text-decoration: none;
 }
@@ -229,12 +227,9 @@ body {
         right: 90px;
         width: 70px;
         height: 70px;
-        border-radius: 50%; /* Corrigido */
         display: flex;
         justify-content: center;
         align-items: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        background: transparent; /* Tira o fundo */
         border: none; /* Remove borda */
         padding: 0;
     }
@@ -246,6 +241,27 @@ body {
     width: 45px;
     height: 45px;
   }
+
+  .add-dash-img {
+    position: fixed;
+    bottom: 30px;
+    right: 155px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none; /* Remove borda */
+    padding: 0;
+}
+.add-dash-img:hover {
+transform: scale(1.1);
+}
+
+.add-dash-img {
+width: 45px;
+height: 45px;
+}
 
 a {
     text-decoration: none;
