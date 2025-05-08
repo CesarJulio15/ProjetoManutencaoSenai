@@ -10,7 +10,6 @@ if (!isset($_SESSION['credencial'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = htmlspecialchars($_POST["titulo"]);
     $descricao = $_POST["descricao"];
-    $status = $_POST["status"] ?? 'Pendente'; // Pega o status do formulário
     $responsavel = $_SESSION['credencial']; 
 
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
@@ -34,12 +33,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmtVerificar->store_result();
 
             if ($stmtVerificar->num_rows === 1) {
-                // Insere os dados no banco, incluindo o status
-                $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status) 
-                        VALUES (?, ?, ?, ?, ?)";
+                // Insere os dados no banco (sem status)
+                $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto) 
+                        VALUES (?, ?, ?, ?)";
 
                 if ($stmt = $conn->prepare($sql)) {
-                    $stmt->bind_param("sssss", $titulo, $descricao, $responsavel, $fotoData, $status);
+                    $stmt->bind_param("ssss", $titulo, $descricao, $responsavel, $fotoData);
 
                     if ($stmt->execute()) {
                         echo "<p>Cadastro de manutenção realizado com sucesso!</p>";

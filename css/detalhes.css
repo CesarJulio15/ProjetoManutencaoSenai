@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    background: linear-gradient(to right, #dcdcdc, #e6e6e6);
+    height: 100vh;
+    align-items: center;    
+    justify-content: center;
+}
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Faz a barra ocupar toda a altura */
+    width: 163px;
+    background-color: #b3b3b3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* Cola as logos nas extremidades */
+    padding: 20px 0;
+}
+/* CONTEÚDO PRINCIPAL */
+
+
+.content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 20px;
+    width: 100%;
+}
+
+.detalhe-container {
+    background: #fff;
+    border: 2px solid #be4444;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+}
+
+.detalhe-container h1 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.detalhe-container p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.detalhe-container img {
+    display: block;
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    border-top: 2px solid #e60000;
+    padding-top: 20px;
+}
+
+.btn-voltar {
+    padding: 12px 25px;
+    background-color: #e60000;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 30px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.btn-voltar:hover {
+    background-color: #b30000;
+}
+
+.status-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.status-btn {
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.status-btn.pending {
+    background-color: #e60000; /* Vermelho */
+}
+
+.status-btn.ongoing {
+    background-color: #f39c12; /* Amarelo */
+}
+
+.status-btn.completed {
+    background-color: #2ecc71; /* Verde */
+}
+
+.status-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+.logo-senai {
+    width: 119.5px;
+    margin-top: 10px;
+}
+
+.logo-techfix {
+    width: 100px;
+    margin-bottom: 10px;
+}
+

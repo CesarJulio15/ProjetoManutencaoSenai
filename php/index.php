@@ -7,40 +7,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $credencial = $_POST['credencial'];
     $senha = $_POST['senha'];
 
-    // Preparar a consulta usando prepared statements para evitar SQL Injection
     $sql = "SELECT id, nome, senha, tipo FROM usuarios WHERE credencial = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $credencial); // Bind do parâmetro credencial
+    $stmt->bind_param("s", $credencial);
     $stmt->execute();
     $stmt->store_result();
     echo "<script>console.log('Credenciais encontradas: " . $stmt->num_rows . "');</script>";
 
-    // Verifica se o usuário existe
     if ($stmt->num_rows === 1) {
-        
         $stmt->bind_result($id, $nome, $senha_hash, $tipo);
         $stmt->fetch();
 
-        // Verifica se a senha corresponde ao hash armazenado
         if (password_verify($senha, $senha_hash)) {
-            // Senha correta, inicia a sessão do usuário
+            $tipo_normalizado = strtolower(trim($tipo));
+
             $_SESSION['id'] = $id;
             $_SESSION['credencial'] = $credencial;
             $_SESSION['nome'] = $nome;
-            $_SESSION['tipo'] = $tipo; // Tipo de usuário (funcionario ou manutencao)
+            $_SESSION['tipo'] = $tipo_normalizado;
 
-            // Redireciona para a página apropriada dependendo do tipo de usuário
-            if ($tipo == 'manutencao') {
-                header("Location: manutencao.php"); // Redireciona para a página de manutenção
+            // Redirecionamento com base no tipo
+            if ($tipo_normalizado === 'funcionario') {
+                header("Location: solicita.php");
+            } elseif ($tipo_normalizado === 'manutencao') {
+                header("Location: pagina_dos_profissionais_manutencao.php");
             } else {
-                header("Location: manutencao.php"); // Redireciona para a página de administrador (exemplo)
+                header("Location: manutencao.php");
             }
             exit();
         } else {
-            echo "<script>alert('Senha incorreta!');</script>"; // Alerta de erro
+            echo "<script>alert('Senha incorreta!');</script>";
         }
     } else {
-        echo "<script>alert('Credencial inválida!');</script>"; // Alerta de erro
+        echo "<script>alert('Credencial inválida!');</script>";
     }
 
     $stmt->close();
@@ -65,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <form method="POST">
                 <input type="text" name="credencial" placeholder="Credencial" required>
                 <input type="password" name="senha" placeholder="Senha" required>
-
                 <button type="submit">Entrar</button>
             </form>
         </div>

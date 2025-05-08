@@ -26,14 +26,17 @@
         <input type="file" id="foto"  name="foto" hidden>
       </div>
       <div class="card-body">
-        <label for="titulo">Descrição Breve</label>
-        <input type="text" id="titulo" name="titulo" placeholder="Digite aqui..." required />
+  <label for="titulo">Descrição Breve</label>
+  <input type="text" id="titulo" name="titulo" placeholder="Digite aqui..." required />
 
-        <label for="descDetalhada">Descrição detalhada</label>
-        <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema..." required></textarea>
+  <label for="descDetalhada">Descrição detalhada</label>
+  <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema..." required></textarea>
 
-        <button type="submit">Criar</button>
-      </div>
+  <button type="submit">Criar</button>
+
+  <a href="manutencao.php" class="botao-voltar">Voltar</a>
+</div>
+
     </form>
   </div>
 

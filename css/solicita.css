@@ -1,9 +1,9 @@
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
   body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -12,6 +12,7 @@
   }
   
   .sidebar {
+    
     width: 150px;
     background-color: #b3b3b3    ;
     display: flex;
@@ -28,7 +29,7 @@
   
   .logo-inferior img {
     width: 100px;
-    margin-bottom: 6  px;
+    margin-bottom: 6px;
   }
   
   .container {
@@ -40,7 +41,8 @@
   }
   
   .card {
-    width: 300px;
+    width: 600px;
+    
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -54,34 +56,7 @@
     position: relative;
   }
   
-  .icons .triangle {
-    width: 0;
-    height: 0;
-    border-left: 25px solid transparent;
-    border-right: 25px solid transparent;
-    border-bottom: 40px solid gray;
-    margin: auto;
-  }
-  
-  .square-circle {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  
-  .square {
-    width: 30px;
-    height: 30px;
-    background-color: gray;
-  }
-  
-  .circle {
-    width: 30px;
-    height: 30px;
-    background-color: gray;
-    border-radius: 50%;
-  }
+
   
   .upload-icon {
     position: absolute;
@@ -91,6 +66,7 @@
   }
   
   .card-body {
+  width: 550px;
     padding: 20px;
   }
   
@@ -104,15 +80,17 @@
   .card-body input,
   .card-body textarea {
     width: 100%;
-    padding: 8px;
+    padding: 6px;
     margin-top: 5px;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc; /* Aumente o valor aqui */
     border-radius: 4px;
     background-color: #ddd;
     resize: none;
   }
   
+  
   .card-body button {
+    margin-left: 5px;
     margin-top: 15px;
     width: 100%;
     padding: 10px;
@@ -122,6 +100,28 @@
     border-radius: 6px;
     cursor: pointer;
   }
+
+  .card-body button:hover {
+    background-color: #751818;
+}
+  .botao-voltar {
+    margin-left: 5px;
+    display: block;
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background-color: #f24848;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .botao-voltar:hover {
+    background-color: #751818;
+}
+  
   .add-button-img {
     position: fixed;
     bottom: 30px;
@@ -146,4 +146,8 @@
     height: 45px;
 }
 
-  
+
+.card-body button,
+.botao-voltar {
+  box-sizing: border-box;
+}

@@ -69,6 +69,21 @@ button:hover {
     background-color: #444;
 }
 
+.volta button {
+    background-color: #c54545;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.volta button:hover {
+    background-color: #751818;
+}
+
 .logos {
     margin-top: 20px;
 }

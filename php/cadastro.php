@@ -16,7 +16,7 @@ session_start();
         <h1><span class="portal">Portal Senai</span><br><span class="manutencao">Manutenções</span></h1>
 
         <div class="form-box">
-            <h2>Cadastro</h2>
+            <h2>Cadastrar usuário</h2>
             <p paineltxt>Painel do administrador</p>
             <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data">
                 <input type="text" name="nome" placeholder="Nome completo" required>
@@ -41,6 +41,11 @@ session_start();
                 </label>
 
                 <button type="submit">Realizar Cadastro</button>
+                <div class="volta">
+    <a href="manutencao.php">
+        <button type="button">Voltar</button>
+    </a>
+</div>
             </form>
         </div>
 
@@ -49,7 +54,6 @@ session_start();
             <img src="../img/senai-logo 5.svg" alt="Senai">
         </div>
     </div>
-
     <script>
      
         document.getElementById('foto').addEventListener('change', function(event) {
