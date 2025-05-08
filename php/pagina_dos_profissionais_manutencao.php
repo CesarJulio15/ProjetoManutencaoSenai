@@ -123,20 +123,6 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
             <a href="?status=em%20andamento" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'em andamento') ? 'active' : ''; ?>">Seus Trabalhos</a>
         </div>
 
-        <div class="profile-icon">
-            <?php
-            require_once 'conexao.php';
-            $credencial = $_SESSION['credencial']; 
-            $sql = "SELECT foto FROM usuarios WHERE credencial = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("s", $credencial);
-            $stmt->execute();
-            $stmt->bind_result($foto);
-            $stmt->fetch();
-            $stmt->close();
-
-            ?>
-        </div>
 
         <div class="welcome-msg">
             <?php echo "Olá, " . htmlspecialchars($_SESSION['nome']) . "!"; ?>
