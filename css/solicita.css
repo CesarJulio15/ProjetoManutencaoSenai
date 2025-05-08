@@ -151,3 +151,42 @@
 .botao-voltar {
   box-sizing: border-box;
 }
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #b3b3b3; /* mantém a cor original */
+  }
+
+  .logo-superior,
+  .logo-inferior {
+    margin: 0;
+  }
+
+  .logo-superior img,
+  .logo-inferior img {
+    width: 100px;
+  }
+
+  .container {
+    padding: 20px;
+  }
+
+  .card-body {
+    width: 100% !important;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+  }
+}
+
