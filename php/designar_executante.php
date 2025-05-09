@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Buscar a credencial do usuário a partir do ID
-    $sqlCred = "SELECT credencial FROM usuarios WHERE id = ?";
+    // Buscar a credencial e nome do usuário a partir do ID
+    $sqlCred = "SELECT credencial, nome FROM usuarios WHERE id = ?";
     $stmtCred = $conn->prepare($sqlCred);
     $stmtCred->bind_param("i", $executante_id);
     $stmtCred->execute();
@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($rowCred = $resultCred->fetch_assoc()) {
         $executante_credencial = $rowCred['credencial'];
+        $nome = $rowCred['nome'];
 
         // Atualizar a manutenção com a credencial e status
         $sql = "UPDATE manutencao SET executante = ?, status = 'Em Andamento' WHERE titulo = ?";
@@ -33,14 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ss", $executante_credencial, $titulo);
 
         if ($stmt->execute()) {
-            echo "Executante designado com sucesso!";
+            echo "<script>alert('Executante designado com sucesso! Designado: $nome'); window.location.href='manutencao.php';</script>";
         } else {
-            echo "Erro ao designar executante.";
+            echo "<script>alert('Erro ao designar executante: " . $stmt->error . "'); window.history.back();</script>";
         }
 
         $stmt->close();
     } else {
-        echo "Executante não encontrado.";
+        echo "<script>alert('Executante não encontrado.'); window.history.back();</script>";
     }
 
     $stmtCred->close();
