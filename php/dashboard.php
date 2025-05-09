@@ -76,33 +76,89 @@ $result_ranking = $conn->query($sql_ranking);
         </div>
       </div>
 
-      <!-- Aba Ranking de Responsáveis -->
-      <div class="tab-pane fade" id="ranking" role="tabpanel">
-        <div class="table-responsive">
-          <table class="table table-bordered">
-            <thead>
+<!-- Aba Ranking de Responsáveis -->
+<div class="tab-pane fade" id="ranking" role="tabpanel">
+  <div class="row">
+    <div class="col-12 col-lg-6 mb-4">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Responsável</th>
+              <th>Quantidade de Problemas Reportados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+              $responsaveis = [];
+              $quantidades = [];
+              if ($result_ranking->num_rows > 0):
+                while ($row = $result_ranking->fetch_assoc()):
+                  $responsaveis[] = $row['responsavel'];
+                  $quantidades[] = $row['total'];
+            ?>
               <tr>
-                <th>Responsável</th>
-                <th>Quantidade de Problemas Reportados</th>
+                <td><?= htmlspecialchars($row['responsavel']) ?></td>
+                <td><?= $row['total'] ?></td>
               </tr>
-            </thead>
-            <tbody>
-              <?php if ($result_ranking->num_rows > 0): ?>
-                <?php while ($row = $result_ranking->fetch_assoc()): ?>
-                  <tr>
-                    <td><?= htmlspecialchars($row['responsavel']) ?></td>
-                    <td><?= $row['total'] ?></td>
-                  </tr>
-                <?php endwhile; ?>
-              <?php else: ?>
-                <tr><td colspan="2">Nenhum dado encontrado.</td></tr>
-              <?php endif; ?>
-            </tbody>
-          </table>
-        </div>
+            <?php
+                endwhile;
+              else:
+            ?>
+              <tr><td colspan="2">Nenhum dado encontrado.</td></tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
       </div>
     </div>
+
+    <div class="col-12 col-lg-6">
+      <canvas id="graficoRanking"></canvas>
+    </div>
   </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Dados do gráfico enviados do PHP
+  const labels = <?= json_encode($responsaveis) ?>;
+  const data = <?= json_encode($quantidades) ?>;
+
+  const ctx = document.getElementById('graficoRanking').getContext('2d');
+  const grafico = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Total de Problemas',
+        data: data,
+        backgroundColor: 'rgba(102, 16, 242, 0.6)',
+        borderColor: 'rgba(102, 16, 242, 1)',
+        borderWidth: 2,
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'Ranking de Responsáveis',
+          font: {
+            size: 18
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
+</script>
 
   <!-- Botão Voltar fixado na parte inferior -->
   <div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;">
