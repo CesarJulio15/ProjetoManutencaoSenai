@@ -16,10 +16,6 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
 </head>
 <style>
 @media (max-width: 768px) {
-    /* .card-body.card-image {
-        display: none !important;
-    } */
-
     .sidebar {
         display: none !important;
     }
@@ -97,8 +93,6 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
         box-sizing: border-box;
     }
 }
-
-
 </style>
 
 <body>
@@ -153,54 +147,63 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
         $stmt->execute();
         $result = $stmt->get_result();
 
-        while ($row = $result->fetch_assoc()) {
-            // Define a cor da flag com base no status
-            $flagColor = '';
-            switch ($row['status']) {
-                case 'Pendente':
-                    $flagColor = 'red';
-                    break;
-                case 'Em Andamento':
-                    $flagColor = 'yellow';
-                    break;
-                case 'Concluído':
-                    $flagColor = 'green';
-                    break;
-                default:
-                    $flagColor = 'gray'; // Default caso não tenha um status definido
-            }
+        // Verifica se não há registros
+        if ($result->num_rows == 0) {
         ?>
-        <?php
-        $link = ($_SESSION['tipo'] === 'manutencao') 
-            ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
-            : 'detalhe.php?titulo=' . urlencode($row['titulo']);
-        ?>
-        <a href="<?php echo $link; ?>" class="card-link">
-            <div class="card">
-                <div class="card-header">
-                    <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
-                    <span><?php echo htmlspecialchars($row['responsavel']); ?></span>
-                    <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
-                </div>
-                <div class="card-body card-image">
-                    <?php
-                        if (!empty($row['foto'])) {
-                            $fotoBase64 = base64_encode($row['foto']);
-                            echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
-                        }
-                    ?>
-                </div>
-                <div class="card-footer">
-                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
-                    <p><?php echo htmlspecialchars($row['descricao']); ?></p>
-                    <button class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
-                        <?php echo htmlspecialchars($row['status']); ?>
-                    </button>
-                </div>
+            <div class="no-results">
+                <img src="../img/no-results 1.svg" alt="Sem pedidos" style="width: 200px; height: 300px;">
+                <p>Nenhum pedido de manutenção foi encontrado.</p>
             </div>
-        </a>
-
         <?php
+        } else {
+            while ($row = $result->fetch_assoc()) {
+                // Define a cor da flag com base no status
+                $flagColor = '';
+                switch ($row['status']) {
+                    case 'Pendente':
+                        $flagColor = 'red';
+                        break;
+                    case 'Em Andamento':
+                        $flagColor = 'yellow';
+                        break;
+                    case 'Concluído':
+                        $flagColor = 'green';
+                        break;
+                    default:
+                        $flagColor = 'gray'; // Default caso não tenha um status definido
+                }
+            ?>
+            <?php
+            $link = ($_SESSION['tipo'] === 'manutencao') 
+                ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
+                : 'detalhe.php?titulo=' . urlencode($row['titulo']);
+            ?>
+            <a href="<?php echo $link; ?>" class="card-link">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="avatar"><?php echo substr($row['responsavel'], 0, 1); ?></div>
+                        <span><?php echo htmlspecialchars($row['responsavel']); ?></span>
+                        <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
+                    </div>
+                    <div class="card-body card-image">
+                        <?php
+                            if (!empty($row['foto'])) {
+                                $fotoBase64 = base64_encode($row['foto']);
+                                echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
+                            }
+                        ?>
+                    </div>
+                    <div class="card-footer">
+                        <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
+                        <p><?php echo htmlspecialchars($row['descricao']); ?></p>
+                        <button class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
+                            <?php echo htmlspecialchars($row['status']); ?>
+                        </button>
+                    </div>
+                </div>
+            </a>
+            <?php
+            }
         }
         ?>
         </section>
