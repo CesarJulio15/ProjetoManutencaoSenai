@@ -2,7 +2,7 @@
 session_start();
 include 'conexao.php';
 
-if (!isset($_SESSION['credencial']) || $_SESSION['tipo'] !== 'adm') {
+if (!isset($_SESSION['nif']) || $_SESSION['tipo'] !== 'adm') {
     http_response_code(403);
     echo "Acesso não autorizado.";
     exit;
@@ -17,21 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Buscar a credencial e nome do usuário a partir do ID
-    $sqlCred = "SELECT credencial, nome FROM usuarios WHERE id = ?";
+    // Buscar o nif e nome do usuário a partir do ID
+    $sqlCred = "SELECT nif, nome FROM docentes WHERE id = ?";
     $stmtCred = $conn->prepare($sqlCred);
     $stmtCred->bind_param("i", $executante_id);
     $stmtCred->execute();
     $resultCred = $stmtCred->get_result();
 
     if ($rowCred = $resultCred->fetch_assoc()) {
-        $executante_credencial = $rowCred['credencial'];
+        $executante_nif = $rowCred['nif'];
         $nome = $rowCred['nome'];
 
-        // Atualizar a manutenção com a credencial e status
+        // Atualizar a manutenção com o nif e status
         $sql = "UPDATE manutencao SET executante = ?, status = 'Em Andamento' WHERE titulo = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $executante_credencial, $titulo);
+        $stmt->bind_param("ss", $executante_nif, $titulo);
 
         if ($stmt->execute()) {
             echo "<script>alert('Executante designado com sucesso! Designado: $nome'); window.location.href='manutencao.php';</script>";

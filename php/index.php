@@ -4,12 +4,12 @@ include 'conexao.php';
 
 // Se o formulário for enviado
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $credencial = $_POST['credencial'];
+    $nif = $_POST['nif'];
     $senha = $_POST['senha'];
 
-    $sql = "SELECT id, nome, senha, tipo FROM usuarios WHERE credencial = ?";
+    $sql = "SELECT id, nome, senha, tipo FROM docentes WHERE nif = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $credencial);
+    $stmt->bind_param("s", $nif);
     $stmt->execute();
     $stmt->store_result();
     echo "<script>console.log('Credenciais encontradas: " . $stmt->num_rows . "');</script>";
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $tipo_normalizado = strtolower(trim($tipo));
 
             $_SESSION['id'] = $id;
-            $_SESSION['credencial'] = $credencial;
+            $_SESSION['nif'] = $nif;
             $_SESSION['nome'] = $nome;
             $_SESSION['tipo'] = $tipo_normalizado;
 
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "<script>alert('Senha incorreta!');</script>";
         }
     } else {
-        echo "<script>alert('Credencial inválida!');</script>";
+        echo "<script>alert('NIF inválido!');</script>";
     }
 
     $stmt->close();
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4">
             <form method="POST">
-                <input type="text" name="credencial" class="form-control mb-3" placeholder="Credencial" required>
+                <input type="text" name="nif" class="form-control mb-3" placeholder="NIF" required>
                 <input type="password" name="senha" class="form-control mb-3" placeholder="Senha" required>
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
             </form>

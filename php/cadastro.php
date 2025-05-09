@@ -33,7 +33,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
 
     <!-- Formulário responsivo -->
     <div class="form-box bg-white shadow rounded p-4 mx-auto" style="max-width: 400px;">
-        <h2 class="mb-2">Cadastrar usuário</h2>
+        <h2 class="mb-2">Cadastrar docente</h2>
         <p class="text-muted">Painel do administrador</p>
 
         <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data">
@@ -51,7 +51,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
             </div>
 
             <div class="mb-3">
-                <input type="text" name="credencial" class="form-control" placeholder="Credencial" required>
+                <input type="text" name="nif" class="form-control" placeholder="NIF" required>
             </div>
 
             <div class="mb-3">

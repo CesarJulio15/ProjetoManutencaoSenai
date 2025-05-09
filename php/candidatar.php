@@ -2,14 +2,14 @@
 session_start();
 include 'conexao.php';
 
-$usuario_credencial = $_SESSION['credencial'] ?? null;
+$docente_nif = $_SESSION['nif'] ?? null;
 
 // Candidatar
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_POST['acao'])) {
     $titulo = $_POST['titulo'];
 
     if ($_POST['acao'] === 'candidatar') {
-        $executante = $usuario_credencial;
+        $executante = $docente_nif;
 
         $sql = "UPDATE manutencao SET status = 'em andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
         $stmt = $conn->prepare($sql);
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_
     if ($_POST['acao'] === 'concluir') {
         $sql = "UPDATE manutencao SET status = 'concluido' WHERE titulo = ? AND executante = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $titulo, $usuario_credencial);
+        $stmt->bind_param("ss", $titulo, $docente_nif);
         $stmt->execute();
         $stmt->close();
     }
@@ -41,7 +41,7 @@ if (isset($_GET['titulo'])) {
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        $jaExecutando = ($row['executante'] === $usuario_credencial);
+        $jaExecutando = ($row['executante'] === $docente_nif);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

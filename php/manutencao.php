@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao'])) {
+if (!isset($_SESSION['nif']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao'])) {
     header("Location: index.php");
     exit;
 }

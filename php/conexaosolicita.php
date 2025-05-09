@@ -2,7 +2,7 @@
 session_start();
 include 'conexao.php';
 
-if (!isset($_SESSION['credencial'])) {
+if (!isset($_SESSION['nif'])) {
     echo "<script>alert('Usuário não autenticado! Faça login.'); window.location.href='index.php';</script>";
     exit();
 }
@@ -10,7 +10,7 @@ if (!isset($_SESSION['credencial'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $titulo = htmlspecialchars($_POST["titulo"]);
     $descricao = $_POST["descricao"];
-    $responsavel = $_SESSION['credencial'];
+    $responsavel = $_SESSION['nif'];
 
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
         $fotoTmp = $_FILES['foto']['tmp_name'];
@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Verifica se o responsável existe na tabela de usuários
-            $sqlVerificarResponsavel = "SELECT credencial FROM usuarios WHERE credencial = ?";
+            $sqlVerificarResponsavel = "SELECT nif FROM docentes WHERE nif = ?";
             $stmtVerificar = $conn->prepare($sqlVerificarResponsavel);
             $stmtVerificar->bind_param("s", $responsavel);
             $stmtVerificar->execute();

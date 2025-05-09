@@ -6,7 +6,7 @@ if (isset($_POST['titulo'])) {
     $titulo = urldecode($_POST['titulo']);
 
     // Verifica se o usuário tem permissão para excluir (opcional)
-    if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm'])) {
+    if (!isset($_SESSION['nif']) || !in_array($_SESSION['tipo'], ['adm'])) {
         echo "Acesso negado!";
         exit;
     }

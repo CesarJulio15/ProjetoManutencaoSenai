@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao'])) {
+if (!isset($_SESSION['nif']) || !in_array($_SESSION['tipo'], ['adm', 'manutencao'])) {
     header("Location: index.php");
     exit;
 }
@@ -143,27 +143,27 @@ if (!isset($_SESSION['credencial']) || !in_array($_SESSION['tipo'], ['adm', 'man
 
         $status = isset($_GET['status']) ? $_GET['status'] : '';
         $busca = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
-        $credencial = $_SESSION['credencial'];
+        $nif = $_SESSION['nif'];
 
         if ($status == 'em andamento') {
             $status = 'em andamento';
             $sql = "SELECT * FROM manutencao WHERE executante = ? AND status = ? AND titulo LIKE ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sss", $credencial, $status, $busca);
+            $stmt->bind_param("sss", $nif, $status, $busca);
         } elseif ($status == 'pendente') {
             $status = 'pendente';
             $sql = "SELECT * FROM manutencao 
                     WHERE status = ? 
                     AND titulo LIKE ?
-                    AND titulo NOT IN (SELECT titulo FROM rejeicoes WHERE usuario = ?)";
+                    AND titulo NOT IN (SELECT titulo FROM rejeicoes WHERE docente = ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sss", $status, $busca, $credencial);
+            $stmt->bind_param("sss", $status, $busca, $nif);
         } else {
             $sql = "SELECT * FROM manutencao 
                     WHERE titulo LIKE ? 
-                    AND titulo NOT IN (SELECT titulo FROM rejeicoes WHERE usuario = ?)";
+                    AND titulo NOT IN (SELECT titulo FROM rejeicoes WHERE docente = ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $busca, $credencial);
+            $stmt->bind_param("ss", $busca, $nif);
         }
 
         $stmt->execute();

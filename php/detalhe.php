@@ -96,13 +96,13 @@ if (isset($_GET['titulo'])) {
               <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
 
               <?php
-                $usuarios = $conn->query("SELECT id, nome FROM usuarios WHERE tipo = 'manutencao'");
+                $docentes = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'manutencao'");
                 echo '<div class="form-group mb-3">';
                 echo '<label for="executante">Selecionar usuário:</label>';
                 echo '<select name="executante" id="executante" class="form-select" required>';
                 echo '<option value="">Selecione</option>';
-                while ($usuario = $usuarios->fetch_assoc()) {
-                    echo "<option value='{$usuario['id']}'>{$usuario['nome']}</option>";
+                while ($docente = $docente->fetch_assoc()) {
+                    echo "<option value='{$docente['id']}'>{$docente['nome']}</option>";
                 }
                 echo '</select>';
                 echo '</div>';
