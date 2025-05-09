@@ -40,7 +40,9 @@ if (isset($_GET['titulo'])) {
             <?php
                 if (!empty($row['foto'])) {
                     $fotoBase64 = base64_encode($row['foto']);
-                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
+             echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' style='max-height: 300px; max-width: 100%; height: auto; width: auto; display: block; margin: 0 auto; border-radius: 0px;'>";
+
+
                 }
             ?>
 
