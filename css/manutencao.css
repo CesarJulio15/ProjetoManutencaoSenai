@@ -76,11 +76,13 @@ body {
 
 .search-box {
   margin: auto;
+  margin-left: 10px;
   display: flex;
   align-items: center;
   background: white;
   border-radius: 20px;
   overflow: hidden;
+  justify-content: flex-start;
 }
 
 .search-box input {
@@ -208,9 +210,9 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
-  background: red;
+  width: 30px;
+  height: 25px;
+  background: gray;
   border-bottom-left-radius: 5px;
 }
 .flag.pendente {

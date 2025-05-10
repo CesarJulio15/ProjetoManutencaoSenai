@@ -64,7 +64,7 @@ if (isset($_GET['titulo'])) {
         <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
     </aside>
 
-    <main class="content d-flex justify-content-center align-items-center min-vh-100 py-5 bg-light">
+    <main class="content d-flex justify-content-center align-items-center min-vh-100 py-5">
         <header class="top-bar position-fixed top-0 end-0 p-3 d-flex align-items-center" style="z-index: 1050;">
             <div class="welcome-msg me-3 text-dark fw-bold">
                 <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
@@ -81,11 +81,11 @@ if (isset($_GET['titulo'])) {
 
         <div class="detalhe-container mx-auto">
                                 <!-- Voltar -->
-            <div class="text-start mb-4">
-                <a href="manutencao.php" class="btn btn-dark">← Voltar</a>
+            <div class="card-header d-lg-flex text-start mb-4 d-flex justify-content-between ">
+                <a href="manutencao.php" class="btn btn-dark ">← Voltar</a>
+                <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
             </div>
         <div class="info-detalhe mb-4 text-start">
-            <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
         <form method="POST" action="designar_executante.php" class="mt-3">
             <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
 
@@ -115,28 +115,29 @@ if (isset($_GET['titulo'])) {
         <label class="info-label">Descrição:</label>
         <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
     </div>
+    <div class="container-img">
             <?php
                 if (!empty($row['foto'])) {
                     $fotoBase64 = base64_encode($row['foto']);
                     echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
                 }
             ?>
+    </div>
+
             <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+
             <!-- Rodapé com botões -->
-            <footer class="border-top pt-4 mt-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 flex-wrap">
-                    <!-- Botões de status -->
-                    <div class="d-flex gap-2 flex-wrap justify-content-center">
+                         <div class="card-footer">
+                                                <?php if ($_SESSION['tipo'] === 'coordenador') : ?>
+                                                                        <div class="d-flex gap-2 flex-wrap justify-content-center">
                         <button class="status-btn btn btn-danger" data-status="Pendente">Pendente</button>
                         <button class="status-btn btn btn-warning text-white" data-status="Em Andamento">Em Andamento</button>
                         <button class="status-btn btn btn-success" data-status="Concluído">Concluído</button>
-                    </div>
-
-                    <!-- Botão Designar (apenas para admin) -->
-                    <?php if ($_SESSION['tipo'] === 'adm') : ?>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designarModal">
+                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designarModal">
                             Designar
                         </button>
+                    </div>
+
                     <?php endif; ?>
 
                     <!-- Excluir -->
@@ -148,8 +149,9 @@ if (isset($_GET['titulo'])) {
                             </button>
                         </form>
                     </div>
-                </div>
-            </footer>
+
+</div>
+
         </div>
     </main>
 
@@ -230,7 +232,6 @@ if (isset($_GET['titulo'])) {
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 
 </body>
 </html>

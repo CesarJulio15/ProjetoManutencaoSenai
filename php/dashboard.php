@@ -1,10 +1,10 @@
 <?php
-include 'conexao.php';
 session_start();
 if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     header("Location: index.php");
     exit();
 }
+include 'conexao.php';
 // Totais por status
 $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");
 $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
@@ -69,6 +69,60 @@ while ($row = $res->fetch_assoc()) {
     $dadosMesStatus[$status][$indiceMes] = (int)$row['total'];
 }
 
+$anoSelecionado = isset($_GET['ano']) ? (int)$_GET['ano'] : date('Y');
+
+$sql = "
+    SELECT MONTH(data_abertura) AS mes, status, COUNT(*) AS total
+    FROM manutencao
+    WHERE data_abertura IS NOT NULL AND YEAR(data_abertura) = $anoSelecionado
+    GROUP BY mes, status
+";
+
+// Totais por status hoje
+$hoje = date('Y-m-d');
+$totaisHoje = ["Pendente" => 0, "Em Andamento" => 0, "Concluido" => 0];
+$sqlHoje = "SELECT status, COUNT(*) as total FROM manutencao WHERE data_abertura = ? GROUP BY status";
+$stmtHoje = $conn->prepare($sqlHoje);
+$stmtHoje->bind_param("s", $hoje);
+$stmtHoje->execute();
+$resHoje = $stmtHoje->get_result();
+while ($row = $resHoje->fetch_assoc()) {
+    $totaisHoje[$row['status']] = $row['total'];
+}
+$totalHoje = array_sum($totaisHoje);
+
+// SLA exemplo: % concluído em menos de 3 dias
+$sqlSLA = "SELECT COUNT(*) as total, SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo FROM manutencao WHERE status = 'Concluido' AND data_encerramento IS NOT NULL";
+$resSLA = $conn->query($sqlSLA);
+$rowSLA = $resSLA->fetch_assoc();
+$sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
+
+// Tickets por atendente (executante)
+// Paginação para atendentes
+$pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
+$limite = 5;
+$offset = ($pagina - 1) * $limite;
+
+$totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
+$totalPaginas = ceil($totalRegistros / $limite);
+
+$sqlAtendentes = "
+SELECT d.nome,
+  SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
+  SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
+  SUM(CASE WHEN m.status = 'Concluido' THEN 1 ELSE 0 END) AS concluido
+FROM docentes d
+LEFT JOIN manutencao m ON d.id = m.executante
+WHERE d.tipo = 'Técnico'
+GROUP BY d.nome
+ORDER BY d.nome
+LIMIT $limite OFFSET $offset";
+
+$resAtendentes = $conn->query($sqlAtendentes);
+$atendentes = [];
+while ($row = $resAtendentes->fetch_assoc()) {
+    $atendentes[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -108,7 +162,7 @@ while ($row = $res->fetch_assoc()) {
     </header>
 
     <div class="dashboard-container d-flex flex-wrap flex-column justify-content-between gap-4">
-      <div class="cards-container d-flex flex-wrap flex-column justify-content-between gap-4"  style="flex: 1 1 150px; max-height: 160px;" id="cards-container">
+      <div class="cards-container d-flex flex-wrap flex-column justify-content-between mt-3 gap-4"  style="flex: 1 1 150px; max-height: 160px;" id="cards-container">
         <div class="card-metric bg-pendente text-center">
             <h4>Pendentes</h4>
             <h2><?= $pendentes ?></h2>
@@ -126,37 +180,91 @@ while ($row = $res->fetch_assoc()) {
             <h2><?= $rejeitados ?></h2>
         </div>
       </div>
+      <div class="d-flex flex-row justify-content-between gap-4">
+  <div class="card p-3 shadow-sm" style="flex:1; min-width:300px">
+    <h5>Status de Hoje</h5>
+    <ul class="list-group">
+      <li class="list-group-item">Pendente: <?= $totaisHoje['Pendente'] ?></li>
+      <li class="list-group-item">Em Andamento: <?= $totaisHoje['Em Andamento'] ?></li>
+      <li class="list-group-item">Concluído: <?= $totaisHoje['Concluido'] ?></li>
+      <li class="list-group-item fw-bold">Total: <?= $totalHoje ?></li>
+      <li class="list-group-item text-success">SLA (<= 3 dias): <?= $sla ?>%</li>
+    </ul>
+  </div>
+
+  <div class="card p-3 shadow-sm" style="flex:2; min-width:400px">
+  <h5>Tickets por Atendente</h5>
+  <table>
+    <thead><tr><th>Nome</th><th>Pendente</th><th>Andamento</th><th>Concluído</th></tr></thead>
+    <tbody>
+    <?php foreach ($atendentes as $a): ?>
+      <tr>
+        <td><?= htmlspecialchars($a['nome']) ?></td>
+        <td><?= $a['pendente'] ?></td>
+        <td><?= $a['andamento'] ?></td>
+        <td><?= $a['concluido'] ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+  <nav class="mt-2">
+    <ul class="pagination justify-content-center">
+      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+        <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
+          <a class="page-link" href="?pagina_atendentes=<?= $i ?>#tickets-atendentes"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+    </ul>
+  </nav>
+  </div>
+
+          <!-- Coluna central com tempo médio -->
+                  <div class="card-metric bg-secondary text-center " style="max-width:300px; height: 160px;">
+              <h4>Tempo Médio de Conclusão</h4>
+              <h2><?= $mediaDias ?> dias</h2>
+          </div> 
+
+      </div>
       <div class="d-flex flex-row justify-content-around">
-  <div class="p-2">            <!-- Gráfico de Pizza (à esquerda) -->
-       
+  <div class="p-2">            
+    <!-- Gráfico de Pizza (à esquerda) -->
           <div class="chart-container card p-3 shadow-sm" style="height: 400px;">
             <h5 class="text-center">Distribuição por Status</h5>
               <canvas id="statusChart"></canvas>
-          </div></div>
+          </div>
+        </div>
   <div class="p-2">
                                     <!-- Gráfico de Atendimentos por Mês -->
-
                   <div class="card p-3 shadow-sm" style="width: 700px;">
-          <h5 class="text-center">Pedidos por Mês</h5>
+                    <div class="d-flex flex-row justify-content-around">
+          <h5 class="text-center">Pedidos por Mês</h5>   
+<form method="GET" class="mb-3 d-flex gap-2 align-items-center">
+    <label for="anos" class="form-label mb-0">Comparar anos:</label>
+    <select name="anos[]" id="anos" class="form-select" style="width: auto;" multiple onchange="this.form.submit()">
+        <?php
+        $anosDisponiveis = $conn->query("SELECT DISTINCT YEAR(data_abertura) AS ano FROM manutencao ORDER BY ano DESC");
+        $anosSelecionados = isset($_GET['anos']) ? $_GET['anos'] : [date('Y')];
+
+        while ($a = $anosDisponiveis->fetch_assoc()) {
+            $selected = in_array($a['ano'], $anosSelecionados) ? 'selected' : '';
+            echo "<option value='{$a['ano']}' $selected>{$a['ano']}</option>";
+        }
+        ?>
+    </select>
+</form>             
+                    </div>
+
+          
           <canvas id="mesChart"></canvas>
       </div>
         </div>
   <div class="p-2"> 
-          <!-- Coluna central com tempo médio -->
-                  <div class="card-metric bg-secondary text-center " style="max-width:300px; height: 160px;">
-              <h4>Tempo Médio de atendimento</h4>
-              <h2><?= $mediaDias ?> dias</h2>
-          </div> 
+
            <div class="card p-3 shadow-sm w-100">
             <h5 class="text-center">Top 5 Responsáveis</h5>
             <canvas id="rankingChart"></canvas>
         </div></div>
 </div>
-
-              
-
-
-
 
         </div>
   </div>
