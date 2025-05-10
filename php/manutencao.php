@@ -14,74 +14,6 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
-<style>
-    @media (max-width: 768px) {
-        .sidebar {
-            display: none !important;
-        }
-        .top-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        .search-box {
-            width: 100%;
-            display: flex;
-            padding: 0;
-            margin-bottom: 10px;
-        }
-        .search-box input {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .search-box button {
-            padding: 10px;
-            background: none;
-            border: none;
-        }
-        .status-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 5px;
-            width: 100%;
-        }
-        .status-buttons .status-btn {
-            flex: 1;
-            font-size: 14px;
-            padding: 10px 0;
-            text-align: center;
-            border-radius: 5px;
-            background-color: #e0e0e0;
-        }
-        .status-buttons .status-btn.active {
-            background-color: red;
-            color: white;
-        }
-        .welcome-msg,
-        .logout-btn {
-            display: none !important;
-        }
-        .cards-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 10px;
-        }
-        .card-link {
-            width: 100%;
-            margin-bottom: 16px;
-        }
-        .card {
-            width: 100%;
-            box-sizing: border-box;
-        }
-    }
-</style>
-
 <body>
 <aside class="sidebar">
     <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
@@ -153,9 +85,9 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     } else {
         while ($row = $result->fetch_assoc()) {
             $flagColor = match ($row['status']) {
-                'Pendente' => 'red',
-                'Em Andamento' => 'yellow',
-                'Concluído' => 'green',
+                'Pendente' => '#a0352b',
+                'Em Andamento' => ' #e9963e',
+                'Concluído' => '#5b7f2e',
                 default => 'gray',
             };
 
