@@ -97,9 +97,9 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
         </form>
 
         <div class="status-buttons">
-            <a href="?status=Pendente" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pendente') ? 'active' : ''; ?>">Pendente</a>
-            <a href="?status=Em%20Andamento" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Em Andamento') ? 'active' : ''; ?>">Em andamento</a>
-            <a href="?status=Concluído" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>">Concluído</a>
+            <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pendente') ? 'active' : ''; ?>" data-status="Pendente">Pendente</a>
+            <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Em Andamento') ? 'active' : ''; ?>" data-status="Em Andamento">Em andamento</a>
+            <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>" data-status="Concluído">Concluído</a>
         </div>
 
             <div class="welcome-msg me-3 text-dark fw-bold">
@@ -204,6 +204,25 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     <a href="dashboard.php">
         <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
     </a>
+    <script>
+    document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const clickedStatus = this.dataset.status;
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentStatus = urlParams.get('status');
+
+            if (currentStatus === clickedStatus) {
+                urlParams.delete('status'); // Remove filtro
+            } else {
+                urlParams.set('status', clickedStatus); // Aplica novo filtro
+            }
+
+            // Mantém outros filtros, como busca
+            window.location.search = urlParams.toString();
+        });
+    });
+</script>
 </main>
 
 </body>
