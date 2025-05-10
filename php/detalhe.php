@@ -11,10 +11,10 @@ if (isset($_GET['titulo'])) {
 
     // JOIN para trazer o nome do responsável
     $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-FROM manutencao m
-JOIN docentes d1 ON m.responsavel = d1.id
-LEFT JOIN docentes d2 ON m.executante = d2.id
-WHERE m.titulo = ?";
+            FROM manutencao m
+            JOIN docentes d1 ON m.responsavel = d1.id
+            LEFT JOIN docentes d2 ON m.executante = d2.id
+            WHERE m.titulo = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $titulo);
     $stmt->execute();
@@ -29,11 +29,35 @@ WHERE m.titulo = ?";
     <title>Detalhe da Manutenção</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/detalhes.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
 <body class="d-flex flex-column flex-md-row">
-
+<?php if (!empty($alerta)) echo $alerta; ?>
+    <?php
+$alerta = '';
+if (isset($_SESSION['executante_sucesso'])) {
+    $alerta = "<script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Executante atualizado com sucesso!',
+            confirmButtonText: 'OK'
+        });
+    </script>";
+    unset($_SESSION['executante_sucesso']);
+} elseif (isset($_SESSION['executante_erro'])) {
+    $alerta = "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro ao atualizar executante.',
+            text: 'Tente novamente.',
+            confirmButtonText: 'OK'
+        });
+    </script>";
+    unset($_SESSION['executante_erro']);
+}
+?>
     <!-- Sidebar -->
     <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
         <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
@@ -60,22 +84,34 @@ WHERE m.titulo = ?";
             <div class="text-start mb-4">
                 <a href="manutencao.php" class="btn btn-dark">← Voltar</a>
             </div>
-<div class="info-detalhe mb-4 text-start">
-    <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
-<div class="d-flex flex-column flex-md-row gap-4 align-items-start mt-2">
-    <div class="d-flex">
-        <label class="info-label me-1">Responsável:</label>
-        <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+        <div class="info-detalhe mb-4 text-start">
+            <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
+<form method="POST" action="designar_executante.php" class="mt-3">
+    <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+
+    <div class="d-flex flex-column flex-md-row gap-4 align-items-start">
+        <div class="d-flex">
+            <label class="info-label me-1">Responsável:</label>
+            <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+        </div>
+
+        <div class="d-flex align-items-center">
+            <label class="info-label me-1">Executante:</label>
+            <select name="executante" class="form-select form-select-sm w-auto" required>
+                <option value="">Selecione</option>
+                <?php
+                $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
+                while ($tec = $tecnicos->fetch_assoc()) {
+                    $selected = ($row['executante'] == $tec['id']) ? 'selected' : '';
+                    echo "<option value='{$tec['id']}' $selected>{$tec['nome']}</option>";
+                }
+                ?>
+            </select>
+            <button type="submit" class="btn btn-sm btn-success ms-2">Salvar</button>
+        </div>
     </div>
-    <div class="d-flex">
-        <label class="info-label me-1">Executante:</label>
-        <p class="info-text mb-0">
-            <?php echo !empty($row['nome_executante']) 
-                ? htmlspecialchars($row['nome_executante']) 
-                : '<span class="text-muted fst-italic">Não designado</span>'; ?>
-        </p>
-    </div>
-</div>
+</form>
+
     <div class="info-item mt-3">
         <label class="info-label">Descrição:</label>
         <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
@@ -181,8 +217,11 @@ WHERE m.titulo = ?";
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
 </body>
 </html>
+
 <?php
     } else {
         echo "<p class='text-center mt-5 text-danger'>Manutenção não encontrada.</p>";
