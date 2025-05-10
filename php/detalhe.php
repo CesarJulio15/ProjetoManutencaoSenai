@@ -1,11 +1,20 @@
 <?php
 session_start();
 include 'conexao.php';
+if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+    header("Location: index.php");
+    exit();
+}
 
 if (isset($_GET['titulo'])) {
     $titulo = urldecode($_GET['titulo']);
 
-    $sql = "SELECT * FROM manutencao WHERE titulo = ?";
+    // JOIN para trazer o nome do responsável
+    $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+FROM manutencao m
+JOIN docentes d1 ON m.responsavel = d1.id
+LEFT JOIN docentes d2 ON m.executante = d2.id
+WHERE m.titulo = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $titulo);
     $stmt->execute();
@@ -32,10 +41,46 @@ if (isset($_GET['titulo'])) {
     </aside>
 
     <main class="content d-flex justify-content-center align-items-center min-vh-100 py-5 bg-light">
+        <header class="top-bar position-fixed top-0 end-0 p-3 d-flex align-items-center" style="z-index: 1050;">
+            <div class="welcome-msg me-3 text-dark fw-bold">
+                <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
+                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                    <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                </span>
+            </div>
+            <div class="logout-btn">
+                <a href="logout.php" title="Sair">
+                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                </a>
+            </div>
+        </header>
+
         <div class="detalhe-container mx-auto">
-            <h1 class="mb-3"><?php echo htmlspecialchars($row['titulo']); ?></h1>
-            <p><strong>Descrição:</strong> <?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
-            <p><strong>Responsável:</strong> <?php echo htmlspecialchars($row['responsavel']); ?></p>
+                                <!-- Voltar -->
+            <div class="text-start mb-4">
+                <a href="manutencao.php" class="btn btn-dark">← Voltar</a>
+            </div>
+<div class="info-detalhe mb-4 text-start">
+    <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
+<div class="d-flex flex-column flex-md-row gap-4 align-items-start mt-2">
+    <div class="d-flex">
+        <label class="info-label me-1">Responsável:</label>
+        <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+    </div>
+    <div class="d-flex">
+        <label class="info-label me-1">Executante:</label>
+        <p class="info-text mb-0">
+            <?php echo !empty($row['nome_executante']) 
+                ? htmlspecialchars($row['nome_executante']) 
+                : '<span class="text-muted fst-italic">Não designado</span>'; ?>
+        </p>
+    </div>
+</div>
+    <div class="info-item mt-3">
+        <label class="info-label">Descrição:</label>
+        <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
+    </div>
+
 
             <?php
                 if (!empty($row['foto'])) {
@@ -43,18 +88,10 @@ if (isset($_GET['titulo'])) {
                     echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
                 }
             ?>
-
             <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-
             <!-- Rodapé com botões -->
             <footer class="border-top pt-4 mt-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 flex-wrap">
-
-                    <!-- Voltar -->
-                    <div class="flex-shrink-0">
-                        <a href="manutencao.php" class="btn btn-danger">Voltar</a>
-                    </div>
-
                     <!-- Botões de status -->
                     <div class="d-flex gap-2 flex-wrap justify-content-center">
                         <button class="status-btn btn btn-danger" data-status="Pendente">Pendente</button>
@@ -73,7 +110,7 @@ if (isset($_GET['titulo'])) {
                     <div class="flex-shrink-0">
                         <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
                             <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-                            <button type="submit" class="btn p-0">
+                            <button type="submit" class="btn p-0 btn-excluir">
                                 <img src="../img/trash.png" alt="Excluir" width="24" height="24">
                             </button>
                         </form>
@@ -101,14 +138,14 @@ if (isset($_GET['titulo'])) {
                 echo '<label for="executante">Selecionar usuário:</label>';
                 echo '<select name="executante" id="executante" class="form-select" required>';
                 echo '<option value="">Selecione</option>';
-                while ($docente = $docente->fetch_assoc()) {
+                while ($docente = $docentes->fetch_assoc()) {
                     echo "<option value='{$docente['id']}'>{$docente['nome']}</option>";
                 }
                 echo '</select>';
                 echo '</div>';
               ?>
 
-              <?php if (!empty($row['executante_id'])): ?>
+              <?php if (!empty($row['executante'])): ?>
                   <div class="alert alert-warning mt-3">
                       Já existe um executante designado. Você pode substituí-lo ou removê-lo abaixo.
                   </div>

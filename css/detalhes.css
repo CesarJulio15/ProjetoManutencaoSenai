@@ -1,121 +1,180 @@
 /* Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    min-height: 100vh;
-    background: linear-gradient(to right, #dcdcdc, #e6e6e6);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #dcdcdc, #e6e6e6);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
-body, html {
-    height: 100%;
-    margin: 0;
+body,
+html {
+  height: 100%;
+  margin: 0;
 }
 
 main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Garante altura total da tela */
-    background-color: #f8f9fa; /* cor de fundo clara opcional */
-    padding: 20px; /* garante que não encoste nas bordas no mobile */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Garante altura total da tela */
+  background-color: #f8f9fa; /* cor de fundo clara opcional */
+  padding: 20px; /* garante que não encoste nas bordas no mobile */
+}
+.info-detalhe {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
 }
 
+.titulo-manutencao {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  border-left: 5px solid #be4444;
+  padding-left: 10px;
+  margin-bottom: 15px;
+}
+
+.info-label {
+  font-weight: bold;
+  color: #444;
+  display: block;
+  font-size: 1rem;
+}
+
+.info-text {
+  font-size: 1rem;
+  color: #333;
+  margin: 5px 0 0 0;
+  padding-left: 5px;
+}
 /* Sidebar */
 .sidebar {
-    width: 163px;
-    background-color: #b3b3b3;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    padding: 20px 0;
-    z-index: 1000;
+  width: 163px;
+  background-color: #b3b3b3;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  padding: 20px 0;
+  z-index: 1000;
 }
 
 .logo-senai {
-    width: 119.5px;
-    margin-top: 10px;
+  width: 119.5px;
+  margin-top: 10px;
 }
 
 .logo-techfix {
-    width: 100px;
-    margin-bottom: 10px;
+  width: 100px;
+  margin-bottom: 10px;
 }
-
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.welcome-msg {
+  margin-left: auto;
+  text-align: right;
+  padding-right: 20px;
+  padding-left: 10px;
+}
 /* Conteúdo principal */
 .content {
-    margin-left: 163px;
-    width: calc(100% - 163px);
+  margin-left: 163px;
+  width: calc(100% - 163px);
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        justify-content: space-around;
-        padding: 10px;
-    }
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px;
+  }
 
-    .content {
-        margin-left: 0;
-        width: 100%;
-    }
+  .content {
+    margin-left: 0;
+    width: 100%;
+  }
 
-    .logo-senai,
-    .logo-techfix {
-        margin: 0;
-        width: 80px;
-    }
+  .logo-senai,
+  .logo-techfix {
+    margin: 0;
+    width: 80px;
+  }
 }
 
 /* Cartão de detalhes */
 .detalhe-container {
-    background: #fff;
-    border: 2px solid #be4444;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    max-width: 720px;
-    width: 100%;
+  max-width: 720px;
+  max-height: 700px;
+  width: 100%;
+  border: 2px solid #be4444;
+  border-radius: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
-
+.detalhe-container img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+.detalhe-container .btn-excluir img {
+  width: 32px;
+  height: 32px;
+}
 .status-btn.btn-warning {
-    color: #fff !important; /* texto branco no botão amarelo */
+  color: #fff !important; /* texto branco no botão amarelo */
 }
 
 /* Botões */
 .status-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-    transition: 0.3s;
+  opacity: 0.9;
+  transform: scale(1.05);
+  transition: 0.3s;
 }
 
 form button {
-    background: none;
-    border: none;
-    cursor: pointer;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 /* Centraliza o conteúdo no desktop */
 @media (min-width: 768px) {
-    .detalhe-container {
-        margin: 0 auto;
-    }
+  .detalhe-container {
+    margin: 0 auto;
+  }
 }
 
 /* Corrige o texto do botão amarelo */
 .btn-warning {
-    color: #fff !important;
+  color: #fff !important;
 }
 
 /* Espaçamento uniforme para botões */
 footer .btn {
-    min-width: 120px;
-    font-weight: 500;
+  min-width: 120px;
+  font-weight: 500;
 }

@@ -1,4 +1,11 @@
 
+<?php
+session_start();
+if (!isset($_SESSION['id'])) {
+    header("Location: index.php");
+    exit();
+} 
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -18,7 +25,7 @@
     <div class="row g-0 min-vh-100 flex-column flex-md-row">
 
       <!-- Sidebar -->
-      <div class="col-12 col-md-2 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
+      <div class="col-12 col-md-1 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
         <div class="logo-superior">
           <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="img-fluid" />
         </div>

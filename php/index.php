@@ -2,44 +2,68 @@
 session_start();
 include 'conexao.php';
 
-// Se o formulário for enviado
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nif = $_POST['nif'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $identificacao = trim($_POST['login']);
     $senha = $_POST['senha'];
 
-    $sql = "SELECT id, nome, senha, tipo FROM docentes WHERE nif = ?";
+    // Limpa o NIF se tiver prefixo 'sn'
+    $nif_limpo = str_ireplace('sn', '', $identificacao);
+
+    $sql = "SELECT id, nome, nif, email, senha, tipo FROM docentes 
+            WHERE (nif = ? OR email = ?) AND docente_status = 'Ativo'";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $nif);
+    $stmt->bind_param("ss", $nif_limpo, $identificacao);
     $stmt->execute();
     $stmt->store_result();
-    echo "<script>console.log('Credenciais encontradas: " . $stmt->num_rows . "');</script>";
 
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($id, $nome, $senha_hash, $tipo);
+        $stmt->bind_result($id, $nome, $nif_db, $email_db, $senha_hash, $tipo);
         $stmt->fetch();
 
         if (password_verify($senha, $senha_hash)) {
-            $tipo_normalizado = strtolower(trim($tipo));
-
             $_SESSION['id'] = $id;
-            $_SESSION['nif'] = $nif;
             $_SESSION['nome'] = $nome;
-            $_SESSION['tipo'] = $tipo_normalizado;
+            $_SESSION['tipo'] = strtolower($tipo);
 
-            // Redirecionamento com base no tipo
-            if ($tipo_normalizado === 'funcionario') {
-                header("Location: solicita.php");
-            } elseif ($tipo_normalizado === 'manutencao') {
-                header("Location: pagina_dos_profissionais_manutencao.php");
-            } else {
-                header("Location: manutencao.php");
+            // Redireciona com base no tipo
+            switch (strtolower($tipo)) {
+                case 'docente':
+                    header("Location: solicita.php");
+                    break;
+                case 'técnico':
+                    header("Location: pagina_dos_profissionais_manutencao.php");
+                    break;
+                case 'coordenador':
+                    header("Location: manutencao.php");
+                    break;
+                default:
+                    echo "<script>alert('Tipo de usuário inválido.');</script>";
+                    break;
             }
             exit();
         } else {
-            echo "<script>alert('Senha incorreta!');</script>";
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Dados invalídos',
+                    confirmButtonColor: '#d33'
+                });
+            });
+        </script>";
         }
     } else {
-        echo "<script>alert('NIF inválido!');</script>";
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Dados invalídos',
+                confirmButtonColor: '#d33'
+            });
+        });
+    </script>";
     }
 
     $stmt->close();
@@ -53,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- essencial para responsividade -->
     <title>Portal Senai Manutenções</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
@@ -67,9 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </h1>
 
         <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4">
-            <form method="POST">
-                <input type="text" name="nif" class="form-control mb-3" placeholder="NIF" required>
-                <input type="password" name="senha" class="form-control mb-3" placeholder="Senha" required>
+
+                        <form method="POST" autocomplete="off">
+                <div class="mb-3">
+                    <input type="text" name="login" class="form-control" placeholder="E-mail ou NIF" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" name="senha" class="form-control" placeholder="Senha" required>
+                </div>
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
             </form>
         </div>

@@ -2,7 +2,7 @@
 $host = "localhost";         
 $usuario = "root";           
 $senha = "";                 
-$banco = "db_manutencao_integrado";         
+$banco = "db_manutencao";         
 
 $conn = new mysqli($host, $usuario, $senha, $banco);
 
