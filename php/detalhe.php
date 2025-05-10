@@ -34,30 +34,30 @@ if (isset($_GET['titulo'])) {
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
 <body class="d-flex flex-column flex-md-row">
-<?php if (!empty($alerta)) echo $alerta; ?>
+    <?php if (!empty($alerta)) echo $alerta; ?>
     <?php
-$alerta = '';
-if (isset($_SESSION['executante_sucesso'])) {
-    $alerta = "<script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Executante atualizado com sucesso!',
-            confirmButtonText: 'OK'
-        });
-    </script>";
-    unset($_SESSION['executante_sucesso']);
-} elseif (isset($_SESSION['executante_erro'])) {
-    $alerta = "<script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro ao atualizar executante.',
-            text: 'Tente novamente.',
-            confirmButtonText: 'OK'
-        });
-    </script>";
-    unset($_SESSION['executante_erro']);
-}
-?>
+        $alerta = '';
+        if (isset($_SESSION['executante_sucesso'])) {
+            $alerta = "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Executante atualizado com sucesso!',
+                    confirmButtonText: 'OK'
+                });
+            </script>";
+            unset($_SESSION['executante_sucesso']);
+        } elseif (isset($_SESSION['executante_erro'])) {
+            $alerta = "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao atualizar executante.',
+                    text: 'Tente novamente.',
+                    confirmButtonText: 'OK'
+                });
+            </script>";
+            unset($_SESSION['executante_erro']);
+        }
+    ?>
     <!-- Sidebar -->
     <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
         <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
@@ -86,38 +86,35 @@ if (isset($_SESSION['executante_sucesso'])) {
             </div>
         <div class="info-detalhe mb-4 text-start">
             <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
-<form method="POST" action="designar_executante.php" class="mt-3">
-    <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+        <form method="POST" action="designar_executante.php" class="mt-3">
+            <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
 
-    <div class="d-flex flex-column flex-md-row gap-4 align-items-start">
-        <div class="d-flex">
-            <label class="info-label me-1">Responsável:</label>
-            <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
-        </div>
+            <div class="d-flex flex-column flex-md-row gap-4 align-items-start">
+                <div class="d-flex">
+                    <label class="info-label me-1">Responsável:</label>
+                    <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+                </div>
 
-        <div class="d-flex align-items-center">
-            <label class="info-label me-1">Executante:</label>
-            <select name="executante" class="form-select form-select-sm w-auto" required>
-                <option value="">Selecione</option>
-                <?php
-                $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
-                while ($tec = $tecnicos->fetch_assoc()) {
-                    $selected = ($row['executante'] == $tec['id']) ? 'selected' : '';
-                    echo "<option value='{$tec['id']}' $selected>{$tec['nome']}</option>";
-                }
-                ?>
-            </select>
-            <button type="submit" class="btn btn-sm btn-success ms-2">Salvar</button>
-        </div>
-    </div>
-</form>
-
+                <div class="d-flex align-items-center">
+                    <label class="info-label me-1">Executante:</label>
+                    <select name="executante" class="form-select form-select-sm w-auto" required>
+                        <option value="">Selecione</option>
+                        <?php
+                        $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
+                        while ($tec = $tecnicos->fetch_assoc()) {
+                            $selected = ($row['executante'] == $tec['id']) ? 'selected' : '';
+                            echo "<option value='{$tec['id']}' $selected>{$tec['nome']}</option>";
+                        }
+                        ?>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-success ms-2">Salvar</button>
+                </div>
+            </div>
+        </form>
     <div class="info-item mt-3">
         <label class="info-label">Descrição:</label>
         <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
     </div>
-
-
             <?php
                 if (!empty($row['foto'])) {
                     $fotoBase64 = base64_encode($row['foto']);
@@ -211,8 +208,24 @@ if (isset($_SESSION['executante_sucesso'])) {
                     body: 'titulo=' + encodeURIComponent(titulo) + '&status=' + encodeURIComponent(status)
                 })
                 .then(response => response.text())
-                .then(data => alert(data))
-                .catch(error => alert('Erro: ' + error));
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Status atualizado!',
+                        text: 'O status foi alterado para "' + status + '".',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload(); // recarrega a página para refletir alterações
+                    });
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao atualizar',
+                        text: 'Não foi possível alterar o status.',
+                        confirmButtonText: 'OK'
+                    });
+                });
             });
         });
     </script>
