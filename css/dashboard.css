@@ -83,6 +83,36 @@ body {
   padding-right: 20px;
   padding-left: 10px;
 }
+
+.botao-voltar {
+  display: inline-flex;
+  width: fit-content;
+  height: fit-content;
+  padding: 10px;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+  color: white;
+  font-size: larger;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 100%;
+
+  cursor: pointer;
+}
+.btn-confirma,
+.botao-voltar {
+  width: 48px;
+  height: 48px;
+}
+.botao-voltar {
+  background: #f24848;
+}
+.botao-voltar:hover {
+  background-color: #751818;
+}
+
 .dashboard-container,
 .cards-container {
   margin: auto;
@@ -97,11 +127,18 @@ body {
   padding-top: 0;
 }
 .card-metric {
-  color: white;
+  color: whitesmoke;
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
   height: 100%;
+
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 .bg-pendente {
   background: #f39c12;
@@ -170,4 +207,57 @@ body {
 .analise-card canvas {
   width: 100% !important;
   height: 300px !important;
+}
+.title {
+  font-weight: bolder;
+}
+table {
+  border-collapse: collapse;
+  box-shadow: 0 5px 10px #e1e5ee;
+  background-color: white;
+  text-align: left;
+  overflow: hidden;
+}
+table thead {
+  color: whitesmoke;
+  background: #03a9f4;
+  box-shadow: 0 5px 10px #e1e5ee;
+}
+table th {
+  padding: 1rem 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+table td {
+  padding: 1rem 2rem;
+}
+table a {
+  text-decoration: none;
+  color: #2962ff;
+}
+table .status {
+  border-radius: 0.2rem;
+  background-color: red;
+  padding: 0.2rem 1rem;
+  text-align: center;
+}
+table .status-pending {
+  background-color: #fff0c2;
+  color: #a68b00;
+}
+table .status-paid {
+  background-color: #c8e6c9;
+  color: #388e3c;
+}
+table .status-unpaid {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+table .amount {
+  text-align: right;
+}
+table tr:nth-child(even) {
+  background-color: #f4f6fb;
 }

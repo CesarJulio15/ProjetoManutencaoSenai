@@ -133,7 +133,97 @@ while ($row = $resAtendentes->fetch_assoc()) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <link rel="stylesheet" href="../css/dashboard.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+  <style>
+.botao-voltar {
+  display: inline-flex;
+  width: fit-content;
+  height: fit-content;
+  padding: 10px;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+  color: white;
+  font-size: larger;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 100%;
+
+  cursor: pointer;
+}
+.btn-confirma,
+.botao-voltar {
+  width: 48px;
+  height: 48px;
+}
+.botao-voltar {
+  background: #f24848;
+}
+.botao-voltar:hover {
+  background-color: #751818;
+}
+
+.box {
+  /*width: 300px; */
+  border-bottom: 20px solid #03a9f4;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+.box h2 {
+  color: #fff;
+  background: #03a9f4;
+  padding: 10px 20px;
+  font-size: 20px;
+  font-weight: 700;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+.box ul {
+  position: relative;
+  background: #fff;
+}
+.box ul:hover li {
+  opacity: 0.2;
+}
+.box ul li {
+  list-style: none;
+  padding: 10px;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+  transition: transform 0.5s;
+}
+.box ul li:hover {
+  transform: scale(1.1);
+  z-index: 5;
+  background: #25bcff;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  opacity: 1;
+}
+.box ul li span {
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  background: #25bcff;
+  color: #fff;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  transform: translateY(-2px);
+}
+.box ul li:hover span {
+  background: #fff;
+  color: #25bcff;
+}
+
+  </style>
 </head>
 <body class="">
 
@@ -144,9 +234,7 @@ while ($row = $resAtendentes->fetch_assoc()) {
 </aside>
 <main class="main-content"> 
       <header class="top-bar">
-            <div class="text-center mt-4">
-            <a href="index.php" class="btn btn-secondary">Voltar</a>
-        </div>
+            <a href="index.php" class="btn btn-secondary botao-voltar"><i class="fa-solid fa-arrow-left"></i></a>
             <h2 class="text-center mb-4">Painel de Indicadores de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
                     <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
@@ -182,18 +270,21 @@ while ($row = $resAtendentes->fetch_assoc()) {
       </div>
       <div class="d-flex flex-row justify-content-between gap-4">
   <div class="card p-3 shadow-sm" style="flex:1; min-width:300px">
-    <h5>Status de Hoje</h5>
+    <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
+    <div class="box">
     <ul class="list-group">
       <li class="list-group-item">Pendente: <?= $totaisHoje['Pendente'] ?></li>
       <li class="list-group-item">Em Andamento: <?= $totaisHoje['Em Andamento'] ?></li>
       <li class="list-group-item">Concluído: <?= $totaisHoje['Concluido'] ?></li>
       <li class="list-group-item fw-bold">Total: <?= $totalHoje ?></li>
       <li class="list-group-item text-success">SLA (<= 3 dias): <?= $sla ?>%</li>
-    </ul>
+    </ul>        
+    </div>
+
   </div>
 
   <div class="card p-3 shadow-sm" style="flex:2; min-width:400px">
-  <h5>Tickets por Atendente</h5>
+  <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
   <table>
     <thead><tr><th>Nome</th><th>Pendente</th><th>Andamento</th><th>Concluído</th></tr></thead>
     <tbody>
@@ -229,7 +320,7 @@ while ($row = $resAtendentes->fetch_assoc()) {
   <div class="p-2">            
     <!-- Gráfico de Pizza (à esquerda) -->
           <div class="chart-container card p-3 shadow-sm" style="height: 400px;">
-            <h5 class="text-center">Distribuição por Status</h5>
+            <h5 class="title text-center"><i class="fa-solid fa-chart-pie"></i> Distribuição por Status</h5>
               <canvas id="statusChart"></canvas>
           </div>
         </div>
@@ -237,21 +328,7 @@ while ($row = $resAtendentes->fetch_assoc()) {
                                     <!-- Gráfico de Atendimentos por Mês -->
                   <div class="card p-3 shadow-sm" style="width: 700px;">
                     <div class="d-flex flex-row justify-content-around">
-          <h5 class="text-center">Pedidos por Mês</h5>   
-<form method="GET" class="mb-3 d-flex gap-2 align-items-center">
-    <label for="anos" class="form-label mb-0">Comparar anos:</label>
-    <select name="anos[]" id="anos" class="form-select" style="width: auto;" multiple onchange="this.form.submit()">
-        <?php
-        $anosDisponiveis = $conn->query("SELECT DISTINCT YEAR(data_abertura) AS ano FROM manutencao ORDER BY ano DESC");
-        $anosSelecionados = isset($_GET['anos']) ? $_GET['anos'] : [date('Y')];
-
-        while ($a = $anosDisponiveis->fetch_assoc()) {
-            $selected = in_array($a['ano'], $anosSelecionados) ? 'selected' : '';
-            echo "<option value='{$a['ano']}' $selected>{$a['ano']}</option>";
-        }
-        ?>
-    </select>
-</form>             
+          <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Pedidos por Mês</h5>           
                     </div>
 
           
@@ -261,7 +338,7 @@ while ($row = $resAtendentes->fetch_assoc()) {
   <div class="p-2"> 
 
            <div class="card p-3 shadow-sm w-100">
-            <h5 class="text-center">Top 5 Responsáveis</h5>
+            <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
             <canvas id="rankingChart"></canvas>
         </div></div>
 </div>

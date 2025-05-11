@@ -1,15 +1,12 @@
 <?php
-session_start();
+if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+    header("Location: index.php");
+    exit();
+}
 include 'conexao.php';
 
 if (isset($_POST['titulo'])) {
     $titulo = urldecode($_POST['titulo']);
-
-    // Verifica se o usuário tem permissão para excluir (opcional)
-    if (!isset($_SESSION['nif']) || !in_array($_SESSION['tipo'], ['adm'])) {
-        echo "Acesso negado!";
-        exit;
-    }
 
     // Exclui o registro da manutenção
     $sql = "DELETE FROM manutencao WHERE titulo = ?";

@@ -1,12 +1,10 @@
 <?php
 session_start();
-include 'conexao.php';
-
-// Verifica se o usuário está logado e se é do tipo 'adm'
-if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
-    header("Location: login.php"); // Redireciona caso não seja administrador
+if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+    header("Location: index.php");
     exit();
 }
+include 'conexao.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -14,14 +12,29 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
     <meta charset="UTF-8">
     <title>Portal Senai Manutenções</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/cadastro.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
 
-
-
+<main>
+          <header class="top-bar">
+                <div class="welcome-msg me-3 text-dark fw-bold">
+                    <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
+                    <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                        <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                    </span>
+                </div>
+                <div class="logout-btn">
+                    <a href="logout.php" title="Sair">
+                        <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                    </a>
+                </div>
+    </header>
 <div class="container text-center">
     <!-- Logo principal -->
     <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-3" style="max-width: 250px;">
@@ -32,11 +45,20 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
     </h1>
 
     <!-- Formulário responsivo -->
-    <div class="form-box bg-white shadow rounded p-4 mx-auto" style="max-width: 400px;">
-        <h2 class="mb-2">Cadastrar docente</h2>
-        <p class="text-muted">Painel do administrador</p>
+    <div class="form-box bg-white shadow rounded p-4 mx-auto" style="max-width: 600px;">
 
-        <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data">
+        <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data" style="width: 100%;">
+            <div class="topo-cadastro mt-3">
+    <div class="volta">
+        <a href="manutencao.php" class="btn btn-danger btn-volta w-100"><span class="material-symbols-outlined">
+            arrow_back_ios
+            </span></a>
+    </div>
+    <div class="titulo">
+        <h1>Cadastrar funcionário</h1>
+        <p>Painel do administrador</p>
+    </div>
+</div>
             <div class="mb-3">
                 <input type="text" name="nome" class="form-control" placeholder="Nome completo" required>
             </div>
@@ -44,9 +66,9 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
             <div class="mb-3">
                 <select name="tipo" class="form-select" required>
                     <option value="">Tipo</option>
-                    <option value="funcionario">Funcionário</option>
-                    <option value="manutencao">Equipe de manutenção</option>
-                    <option value="adm">Administrador</option>
+                    <option value="Docente">Funcionário</option>
+                    <option value="técnico">Equipe de manutenção</option>
+                    <option value="Coordenador">Administrador</option>
                 </select>
             </div>
 
@@ -57,11 +79,8 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
             <div class="mb-3">
                 <input type="password" name="senha" class="form-control" placeholder="Senha" required>
             </div>
-
-            <button type="submit" class="btn btn-dark w-100">Realizar Cadastro</button>
-
-            <div class="volta mt-3">
-                <a href="manutencao.php" class="btn btn-danger w-100">Voltar</a>
+            <div class="form-footer">
+            <button type="submit" class="btn btn-dark w-100 btn-confirma" title="Realizar Cadastro"><i class="fa-solid fa-check"></i></button>                
             </div>
         </form>
     </div>
@@ -71,7 +90,9 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'adm') {
         <img src="../img/Clip path group.svg" alt="Techfix" class="Techfix img-fluid" style="height: 70px;">
         <img src="../img/senai-logo 5.svg" alt="Senai" class="img-fluid" style="height: 50px;">
     </div>
-</div>
+</div>    
+</main>
+
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
