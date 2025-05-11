@@ -265,20 +265,31 @@ form button {
 }
 .btn-candidatar,
 .btn-rejeitar,
-.botao-volta {
+.botao-volta,
+.btn-confirma {
   min-width: 48px;
   min-height: 48px;
-  padding: 12px 25px;
+  width: fit-content;
+  height: fit-content;
   color: white;
-  font-size: larger;
-  font-weight: bold;
-  border-radius: 30px;
   text-align: center;
+  text-decoration: none;
+  padding: 12px 25px;
+  border-radius: 30px;
+  display: inline-flex;
+  padding: 10px;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
   border: none;
+  border-radius: 100%;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 }
-
+.card-body button,
+.btn-confirma,
+.botao-voltar {
+}
 .btn-confirma,
 .botao-voltar,
 .btn-rejeitar {
@@ -301,7 +312,7 @@ form button {
 
 /* Botão Rejeitar: cinza escuro */
 .btn-rejeitar {
-  background-color: #444;
+  background-color: #f24848;
 }
 
 .btn-rejeitar:hover {
@@ -310,6 +321,18 @@ form button {
 }
 .botao-volta:hover {
   transform: scale(1.1);
+}
+.form-footer {
+  display: inline-flex;
+  width: 100%;
+  gap: 10px;
+  margin: auto;
+  margin-top: 25px;
+  padding: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  align-content: center;
 }
 /* Espaçamento uniforme para botões */
 footer .btn {

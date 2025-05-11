@@ -159,7 +159,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
             </div>
             <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
             <!-- Rodapé com botões -->
-            <div class="card-footer mt-2 mb-2">
+            <div class="card-footer mt-2 mb-2 form-footer">
                <?php if ($_SESSION['tipo'] == 'coordenador') : ?>
                <div class="d-flex gap-2 flex-wrap justify-content-center">
                   <button class="status-btn btn btn-danger" data-status="Pendente" title="Pendente" style="background: #e91e63;">
@@ -172,39 +172,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designarModal">
                     <span class="material-symbols-outlined">engineering</span> Designar
                 </button>
-               </div>
-                <?php endif; ?>
-                <?php if ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
-                     <!-- Exibir botão "Candidatar" se não há executante -->
-                    <form method="post">
-                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                        <input type="hidden" name="acao" value="candidatar">
-                        <button type="submit" class="btn-candidatar" title="Candidatar-se">
-                           <span class="material-symbols-outlined">how_to_reg</span></button>
-                    </form>
-                    
-                <form action="rejeitar.php" method="post">
-                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
-                     <span class="material-symbols-outlined">person_cancel</span></button>
-                </form>
-                <?php elseif ($jaExecutando && $row['status'] !== 'concluido' && $_SESSION['tipo'] == 'técnico'): ?>
-                    <!-- Se o usuário atual for o executante, exibir "Concluir" -->
-                    <form method="post">
-                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                        <input type="hidden" name="acao" value="concluir">
-                        <button type="submit" class="btn-confirma" title="Concluir"><span class="material-symbols-outlined">check</span></button>
-                    </form>
-               <? elseif ($_SESSION['tipo'] == 'técnico'): ?>
-                <form action="rejeitar.php" method="post">
-                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
-                     <span class="material-symbols-outlined">person_cancel</span>
-                  </button>
-                </form>                     
-               <?php endif; ?>
-               <?php if ($_SESSION['tipo'] !== 'técnico') : ?>
-                     <!-- Excluir -->
+                                     <!-- Excluir -->
                      <div class="flex-shrink-0">
                         <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
                            <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
@@ -213,6 +181,32 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                            </button>
                         </form>
                      </div>
+               </div>
+                <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
+                     <!-- Exibir botão "Candidatar" se não há executante -->
+                    <form method="post">
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                        <input type="hidden" name="acao" value="candidatar">
+                        <button type="submit" class="btn-candidatar" title="Candidatar-se">
+                           <span class="material-symbols-outlined">how_to_reg</span></button>
+                    </form>
+                                    <form action="rejeitar.php" method="post">
+                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                     <span class="material-symbols-outlined">person_cancel</span></button>
+                </form>
+                <?php elseif ($jaExecutando && $row['status'] == 'Em Andamento' && $_SESSION['tipo'] == 'técnico'): ?>
+                    <!-- Se o usuário atual for o executante, exibir "Concluir" -->
+                    <form method="post">
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                        <input type="hidden" name="acao" value="concluir">
+                        <button type="submit" class="btn-confirma" title="Concluir"><span class="material-symbols-outlined">check</span></button>
+                    </form>
+                     <form action="rejeitar.php" method="post">
+                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                     <span class="material-symbols-outlined">person_cancel</span></button>
+                </form>
                <?php endif; ?>
             </div>
          </div>
