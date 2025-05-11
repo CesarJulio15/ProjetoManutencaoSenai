@@ -154,17 +154,26 @@
        $dadosMesStatus[$row['status']][$idx] = (int)$row['total'];
    }
    
-   // Totais por status hoje
+   // Totais por status hoje (aberturas + conclusões)
    $hoje = date('Y-m-d');
-   $totaisHoje = ["Pendente" => 0, "Em Andamento" => 0, "Concluído" => 0];
-   $sqlHoje = "SELECT status, COUNT(*) as total FROM manutencao WHERE data_abertura = ? GROUP BY status";
-   $stmtHoje = $conn->prepare($sqlHoje);
-   $stmtHoje->bind_param("s", $hoje);
-   $stmtHoje->execute();
-   $resHoje = $stmtHoje->get_result();
-   while ($row = $resHoje->fetch_assoc()) {
-       $totaisHoje[$row['status']] = $row['total'];
+   $totaisHoje = ["Pendente"=>0,"Em Andamento"=>0,"Concluído"=>0];
+
+   $sql = "
+      SELECT status, COUNT(*) AS total
+         FROM manutencao
+      WHERE (status = 'Concluído'   AND data_encerramento = ?)
+         OR (status <> 'Concluído'  AND data_abertura      = ?)
+   GROUP BY status
+   ";
+   $stmt = $conn->prepare($sql);
+   $stmt->bind_param("ss", $hoje, $hoje);
+   $stmt->execute();
+   $res = $stmt->get_result();
+   while ($row = $res->fetch_assoc()) {
+      $totaisHoje[$row['status']] = (int)$row['total'];
    }
+   $stmt->close();
+
    $totalHoje = array_sum($totaisHoje);
    
    // SLA exemplo: % concluído em menos de 3 dias
