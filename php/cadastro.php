@@ -1,10 +1,16 @@
 <?php
+// ATENÇÃO: não deixe nada (espaços, quebras de linha nem BOM) antes deste <?php
+
 session_start();
-if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+
+// Se não estiver logado OU não for coordenador, redireciona
+if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
     header("Location: index.php");
     exit();
 }
-include 'conexao.php';
+
+// Inclui conexão (sem saída de texto)
+require __DIR__ . '/conexao.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

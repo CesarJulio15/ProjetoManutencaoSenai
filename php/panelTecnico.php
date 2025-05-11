@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
     header("Location: index.php");
     exit();
 }
@@ -29,6 +29,13 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
         </form>
 
         <div class="status-buttons">
+            <?php if ($_SESSION['tipo'] == 'técnico'): ?>
+                <a href="#"
+                class="status-btn <?= isset($_GET['meus']) ? 'active' : '' ?>"
+                data-meus="1">
+                Seus Trabalhos
+                </a>                                                                
+            <?php endif; ?>
             <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Pendente') ? 'active' : ''; ?>" data-status="Pendente">Pendente</a>
             <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Em Andamento') ? 'active' : ''; ?>" data-status="Em Andamento">Em andamento</a>
             <a href="#" class="status-btn <?php echo (isset($_GET['status']) && $_GET['status'] == 'Concluído') ? 'active' : ''; ?>" data-status="Concluído">Concluído</a>
@@ -51,10 +58,22 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     <?php
     require_once 'conexao.php';
 
+    $meus = isset($_GET['meus']) && $_SESSION['tipo']==='técnico';
+
     $status = isset($_GET['status']) ? $_GET['status'] : '';
     $busca = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
+    if ($meus) {
+        // só ordens atribuídas a este técnico
+        $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+                FROM manutencao m
+                JOIN docentes d1 ON m.responsavel = d1.id
+                LEFT JOIN docentes d2 ON m.executante = d2.id
+                WHERE m.executante = ? AND m.titulo LIKE ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("is", $_SESSION['id'], $busca);
 
-    if ($status) {
+    }
+    elseif ($status) {
         $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
                 FROM manutencao m
                 JOIN docentes d1 ON m.responsavel = d1.id
@@ -91,7 +110,7 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
                 default => 'gray',
             };
 
-            $link = ($_SESSION['tipo'] === 'manutencao') 
+            $link = ($_SESSION['tipo'] === 'técnico') 
                 ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
                 : 'detalhe.php?titulo=' . urlencode($row['titulo']);
     ?>
@@ -127,6 +146,7 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     }
     ?>
     </section>
+    <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
     <a href="solicita.php">
         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
     </a>
@@ -136,6 +156,7 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     <a href="dashboard.php">
         <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
     </a>
+'   <?php endif; ?>
     <script>
     document.querySelectorAll('.status-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -154,6 +175,36 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
             window.location.search = urlParams.toString();
         });
     });
+</script>
+<script>
+document.querySelectorAll('.status-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Se for “Seus Trabalhos”
+    if (btn.dataset.meus !== undefined) {
+      if (urlParams.has('meus')) {
+        urlParams.delete('meus');
+      } else {
+        urlParams.delete('status');
+        urlParams.set('meus', '1');
+      }
+    } else {
+      // um botão de status normal
+      urlParams.delete('meus');
+      const status = btn.dataset.status;
+      if (urlParams.get('status') === status) {
+        urlParams.delete('status');
+      } else {
+        urlParams.set('status', status);
+      }
+    }
+
+    // mantém o termo de busca
+    window.location.search = urlParams.toString();
+  });
+});
 </script>
 </main>
 

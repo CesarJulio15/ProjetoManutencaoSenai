@@ -1,10 +1,12 @@
-
 <?php
 session_start();
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
     exit();
-} 
+}
+
+// Inclui conexão (sem saída de texto)
+require __DIR__ . '/conexao.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -56,10 +58,9 @@ if (!isset($_SESSION['id'])) {
             <input type="file" id="foto" name="foto" hidden>
           </div>
           <fieldset class="card-body">
-  <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
+          <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
             <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
-    
-<br>
+          <br>
             <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
 
           </fieldset>

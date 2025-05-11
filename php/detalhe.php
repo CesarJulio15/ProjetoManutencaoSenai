@@ -5,7 +5,9 @@
        header("Location: index.php");
        exit();
    }
-   
+
+   $tecnico_id = $_SESSION['id'] ?? null;
+
    if (isset($_GET['titulo'])) {
        $titulo = urldecode($_GET['titulo']);
    
@@ -21,6 +23,7 @@
        $result = $stmt->get_result();
    
        if ($row = $result->fetch_assoc()) {
+          $jaExecutando = ($row['executante'] === $tecnico_id);
    ?>
    <?php
      $status = $row['status'];
@@ -96,7 +99,7 @@
   <?php endif; ?>
          <!-- Voltar -->
          <div class="card-header d-lg-flex text-start mb-4 d-flex justify-content-between ">
-            <a href="manutencao.php" class="botao-voltar" title="Voltar">
+            <a href="paneltecnico.php" class="botao-voltar" title="Voltar">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
             </a>
             <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
@@ -132,7 +135,7 @@
             <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
             <!-- Rodapé com botões -->
             <div class="card-footer mt-2">
-               <?php if (in_array($_SESSION['tipo'], ['coordenador', 'manutencao'])) : ?>
+               <?php if ($_SESSION['tipo'] == 'coordenador') : ?>
                <div class="d-flex gap-2 flex-wrap justify-content-center">
                   <button class="status-btn btn btn-danger" data-status="Pendente" title="Pendente" style="background: #e91e63;">
                     <span class="material-symbols-outlined">pending_actions</span> Pendente</button>
@@ -145,16 +148,33 @@
                     <span class="material-symbols-outlined">engineering</span> Designar
                 </button>
                </div>
+                <?php endif; ?>
+                <?php if ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
+                     <!-- Exibir botão "Candidatar" se não há executante -->
+                    <form method="post">
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                        <input type="hidden" name="acao" value="candidatar">
+                        <button type="submit" class="btn-candidatar">Candidatar</button>
+                    </form>
+                <?php elseif ($jaExecutando && $row['status'] !== 'concluido' && $_SESSION['tipo'] == 'técnico'): ?>
+                    <!-- Se o usuário atual for o executante, exibir "Concluir" -->
+                    <form method="post">
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                        <input type="hidden" name="acao" value="concluir">
+                        <button type="submit" class="btn-concluir">Concluir</button>
+                    </form>                    
                <?php endif; ?>
-               <!-- Excluir -->
-               <div class="flex-shrink-0">
-                  <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
-                     <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-                     <button type="submit" class="btn p-0 btn-excluir">
-                     <img src="../img/trash.png" alt="Excluir" width="24" height="24">
-                     </button>
-                  </form>
-               </div>
+               <?php if ($_SESSION['tipo'] !== 'técnico') : ?>
+                     <!-- Excluir -->
+                     <div class="flex-shrink-0">
+                        <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
+                           <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+                           <button type="submit" class="btn p-0 btn-excluir">
+                           <img src="../img/trash.png" alt="Excluir" width="24" height="24">
+                           </button>
+                        </form>
+                     </div>
+               <?php endif; ?>
             </div>
          </div>
       </main>

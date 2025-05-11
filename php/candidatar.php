@@ -1,15 +1,19 @@
 <?php
 session_start();
+if (!isset($_SESSION['id']) || !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+    header("Location: index.php");
+    exit;
+}
 include 'conexao.php';
 
-$docente_nif = $_SESSION['nif'] ?? null;
+$tecnico_id = $_SESSION['id'] ?? null;
 
 // Candidatar
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_POST['acao'])) {
     $titulo = $_POST['titulo'];
 
     if ($_POST['acao'] === 'candidatar') {
-        $executante = $docente_nif;
+        $executante = $tecnico_id;
 
         $sql = "UPDATE manutencao SET status = 'em andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
         $stmt = $conn->prepare($sql);
@@ -22,12 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_
     if ($_POST['acao'] === 'concluir') {
         $sql = "UPDATE manutencao SET status = 'concluido' WHERE titulo = ? AND executante = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $titulo, $docente_nif);
+        $stmt->bind_param("ss", $titulo, $tecnico_id);
         $stmt->execute();
         $stmt->close();
     }
 
-    header("Location: pagina_dos_profissionais_manutencao.php");
+    header("Location: panelTecnico.php");
     exit();
 }
 
@@ -41,7 +45,7 @@ if (isset($_GET['titulo'])) {
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        $jaExecutando = ($row['executante'] === $docente_nif);
+        $jaExecutando = ($row['executante'] === $tecnico_id);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -74,7 +78,7 @@ if (isset($_GET['titulo'])) {
             ?>
 
             <footer class="btn-group">
-                <a href="pagina_dos_profissionais_manutencao.php" class="btn-voltar">Voltar</a>
+                <a href="panelTecnico.php" class="btn-voltar">Voltar</a>
 
                 <?php if ($row['executante'] === null): ?>
                     <!-- Exibir botão "Candidatar" se não há executante -->
@@ -93,9 +97,9 @@ if (isset($_GET['titulo'])) {
                 <?php endif; ?>
 
                 <form action="rejeitar.php" method="post">
-    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-    <button type="submit" class="btn-rejeitar">Rejeitar</button>
-</form>
+                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                    <button type="submit" class="btn-rejeitar">Rejeitar</button>
+                </form>
 
             </footer>
         </div>

@@ -13,20 +13,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $senha = password_hash($_POST["senha"], PASSWORD_DEFAULT);
 
-    $sql =  "INSERT INTO docentes (nome, nif, email, senha) VALUES (?, ?, ?, ?)";
+    $sql =  "INSERT INTO docentes (nome, nif, tipo, email, senha) VALUES (?, ? ,?, ?, ?)";
 
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("ssss", $nome, $nif, $email, $senha);
+        $stmt->bind_param("sssss", $nome, $nif, $tipo, $email, $senha);
         $stmt->execute();
         $stmt->close();
     }
 
     $conn->close();
 
-    header("Location: manutencao.php");
+    header("Location: panelTecnico.php");
     exit();
 } else {
-    header("Location: manutencao.php");
+    header("Location: panelTecnico.php");
     exit();
 }
 ?>

@@ -3,7 +3,7 @@ session_start();
 require_once 'conexao.php';
 
 if (!isset($_SESSION['nif']) || !isset($_POST['titulo'])) {
-    header("Location: pagina_dos_profissionais_manutencao.php");
+    header("Location: panelTecnico.php");
     exit;
 }
 
@@ -28,6 +28,6 @@ $stmt = $conn->prepare($sqlInsert);
 $stmt->bind_param("ss", $docente, $titulo);
 $stmt->execute();
 
-header("Location: pagina_dos_profissionais_manutencao.php?status=pendente");
+header("Location: panelTecnico.php?status=pendente");
 exit;
 ?>

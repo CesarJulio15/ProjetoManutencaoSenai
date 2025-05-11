@@ -176,7 +176,7 @@
    // Tickets por atendente (executante)
    // Paginação para atendentes
    $pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
-   $limite = 5;
+   $limite = 4;
    $offset = ($pagina - 1) * $limite;
    
    $totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
@@ -293,7 +293,7 @@
          </header>
          <div class="dashboard-container d-flex flex-wrap flex-column justify-content-between gap-4 mt-3">
             <div class="d-flex flex-row justify-content-between gap-4">
-               <div class="card p-3 m-auto shadow-sm w-25" style="flex:1; min-width:300px">
+               <div class="card p-3 m-auto shadow-sm w-25 h-75" style="flex:1; min-width:300px">
                   <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                   <div class="box">
                      <ul class="list-group">
@@ -305,9 +305,9 @@
                      </ul>
                   </div>
                </div>
-               <div class="card p-3 m-auto shadow-sm w-100 h-75" style="flex:2; min-width:400px">
+               <div class="card p-3 m-auto shadow-sm w-100 h-100" style="flex:2; min-width:400px; height:fit-content; max-height:max-content;" id="tecnicos">
                   <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
-                  <table>
+                  <table class="" style="border-radius:15px 15px 0 0; ">
                      <thead>
                         <tr>
                            <th>Nome</th>

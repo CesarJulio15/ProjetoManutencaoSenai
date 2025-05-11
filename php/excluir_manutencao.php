@@ -14,7 +14,7 @@ if (isset($_POST['titulo'])) {
     $stmt->bind_param("s", $titulo);
 
     if ($stmt->execute()) {
-        header("Location: manutencao.php"); // Redireciona para a página principal
+        header("Location: panelTecnico.php"); // Redireciona para a página principal
         exit;
     } else {
         echo "<p>Erro ao excluir a manutenção.</p>";

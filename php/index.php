@@ -31,10 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header("Location: solicita.php");
                     break;
                 case 'técnico':
-                    header("Location: pagina_dos_profissionais_manutencao.php");
+                    header("Location: panelTecnico.php");
                     break;
                 case 'coordenador':
-                    header("Location: manutencao.php");
+                    header("Location: panelTecnico.php");
                     break;
                 default:
                     echo "<script>alert('Tipo de usuário inválido.');</script>";
