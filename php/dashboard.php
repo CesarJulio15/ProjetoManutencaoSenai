@@ -35,17 +35,28 @@
        $totais[] = $r['total'];
    }
    
-   $mediaDias = 0;
-   $sqlMedia = "
-       SELECT AVG(DATEDIFF(data_encerramento, data_abertura)) as media_dias
-       FROM manutencao
-       WHERE status = 'Concluído'
+// --- cálculo seguro para média de dias de conclusão ---
+$sqlMedia = "
+    SELECT AVG(
+             GREATEST(
+               DATEDIFF(data_encerramento, data_abertura),
+               0
+             )
+           ) AS media_dias
+      FROM manutencao
+     WHERE status = 'Concluído'
        AND data_encerramento IS NOT NULL
-   ";
-   $resultMedia = $conn->query($sqlMedia);
-   if ($row = $resultMedia->fetch_assoc()) {
-       $mediaDias = round($row['media_dias'], 1); // arredondado para 1 casa decimal
-   }
+";
+$resultMedia = $conn->query($sqlMedia);
+
+$mediaDias = 0;
+if ($row = $resultMedia->fetch_assoc()) {
+    // se vier NULL (nenhum registro), define 0
+    $mediaBruta = $row['media_dias'];
+    $mediaDias = $mediaBruta !== null
+       ? round($mediaBruta, 1)
+       : 0;
+}
    // =====================
    // ENDPOINTS AJAX PARA DRILL-DOWN/UP
    // =====================
@@ -175,7 +186,7 @@
    $stmt->close();
 
    $totalHoje = array_sum($totaisHoje);
-   
+
    // SLA exemplo: % concluído em menos de 3 dias
    $sqlSLA = "
    SELECT COUNT(*) as total,
@@ -293,9 +304,7 @@
          <header class="top-bar">
             <a href="panelTecnico.php" class="btn btn-secondary botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
             <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
-            <a href="export_data.php" class="btn btn-success" title="Exportar dados">
-               <span class="material-symbols-outlined">file_export</span>
-            </a>
+
             <div class="welcome-msg me-3 text-dark fw-bold">
                <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
@@ -460,6 +469,9 @@
          </div>
          </div>
          </div>
+                     <a href="export_data.php" class="btn btn-success btn-export" title="Exportar dados">
+               <span class="material-symbols-outlined">file_export</span>
+            </a>
          <script>
             // captura as cores diretamente das info-box
             const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;

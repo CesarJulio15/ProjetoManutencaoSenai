@@ -1,5 +1,6 @@
 <?php
-if (!isset($_SESSION['id'])) {
+session_start();
+if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
     header("Location: index.php");
     exit();
 }
