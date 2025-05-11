@@ -264,7 +264,8 @@ form button {
   cursor: pointer;
 }
 .btn-candidatar,
-.btn-rejeitar {
+.btn-rejeitar,
+.botao-volta {
   min-width: 48px;
   min-height: 48px;
   padding: 12px 25px;
@@ -275,16 +276,27 @@ form button {
   text-align: center;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease-in-out;
 }
 
+.btn-confirma,
+.botao-voltar,
+.btn-rejeitar {
+  width: 48px;
+  height: 48px;
+  border-radius: 100%;
+  color: whitesmoke;
+}
 /* Botão Candidatar: verde */
-.btn-candidatar {
+.btn-candidatar,
+.btn-confirma {
   background-color: #5b7f2e;
 }
 
-.btn-candidatar:hover {
+.btn-candidatar:hover,
+.btn-confirma:hover {
   background-color: #005c24;
+  transform: scale(1.1);
 }
 
 /* Botão Rejeitar: cinza escuro */
@@ -294,6 +306,10 @@ form button {
 
 .btn-rejeitar:hover {
   background-color: #a0352b;
+  transform: scale(1.1);
+}
+.botao-volta:hover {
+  transform: scale(1.1);
 }
 /* Espaçamento uniforme para botões */
 footer .btn {

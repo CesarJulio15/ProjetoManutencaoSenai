@@ -193,12 +193,14 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                     <form method="post">
                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                         <input type="hidden" name="acao" value="concluir">
-                        <button type="submit" class="btn-concluir" title="Concluir"><span class="material-symbols-outlined">check</span></button>
+                        <button type="submit" class="btn-confirma" title="Concluir"><span class="material-symbols-outlined">check</span></button>
                     </form>
                <? elseif ($_SESSION['tipo'] == 'técnico'): ?>
                 <form action="rejeitar.php" method="post">
                     <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                    <button type="submit" class="btn-rejeitar">Rejeitar</button>
+                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                     <span class="material-symbols-outlined">person_cancel</span>
+                  </button>
                 </form>                     
                <?php endif; ?>
                <?php if ($_SESSION['tipo'] !== 'técnico') : ?>

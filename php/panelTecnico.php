@@ -162,7 +162,7 @@ $result = $stmt->get_result();
             };
 
             $link = ($_SESSION['tipo'] === 'técnico') 
-                ? 'candidatar.php?titulo=' . urlencode($row['titulo']) 
+                ? 'detalhe.php?titulo=' . urlencode($row['titulo']) 
                 : 'detalhe.php?titulo=' . urlencode($row['titulo']);
     ?>
         <a href="<?php echo $link; ?>" class="card-link">
@@ -197,15 +197,19 @@ $result = $stmt->get_result();
     }
     ?>
     </section>
-    <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-    <a href="solicita.php">
-        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
-    </a>
+        <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
     <a href="cadastro.php">
         <img src="../img/adicionar-usuario.png" alt="add-user" class="add-user-img">
     </a>
     <a href="dashboard.php">
         <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
+    </a>
+    <a href="solicita.php">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+    </a>
+    <?php else :?>
+            <a href="solicita.php">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
     </a>
 '   <?php endif; ?>
     <script>

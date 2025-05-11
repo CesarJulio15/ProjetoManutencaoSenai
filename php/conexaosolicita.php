@@ -27,8 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $titulo = $_POST["titulo"];
     $descricao = $_POST["descricao"];
     $data_abertura = date("Y-m-d");
-    $status = "Pendente";
-
+    
     // 2) Define o responsável:
     //    - se for coordenador ou técnico, usa o valor vindo de POST
     //    - caso contrário, é o próprio usuário logado
@@ -37,15 +36,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         $responsavel = intval($_SESSION['id']);
     }
-
+    // 5) Define o executante: se for técnico, é o próprio usuário; senão, null
+    if ($_SESSION['tipo'] === 'técnico') {
+        $executante = intval($_SESSION['id']);
+            $status = "Em Andamento";
+    } else {
+        $executante = null;
+        $status = "Pendente";
+    }
     // Tratamento da imagem (opcional)
     $foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
-
-    $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status, data_abertura) 
-            VALUES (?, ?, ?, ?, ?, ?)";
+    
+    $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status, data_abertura, executante) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -60,7 +65,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
-    $stmt->bind_param("ssisss", $titulo, $descricao, $responsavel, $foto, $status, $data_abertura);
+    $stmt->bind_param(
+        'ssisssi',
+        $titulo,
+        $descricao,
+        $responsavel,
+        $foto,
+        $status,
+        $data_abertura,
+        $executante
+    );
 
     if ($stmt->execute()) {
         echo "<script>
