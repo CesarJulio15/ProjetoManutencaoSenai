@@ -14,7 +14,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       if ($_POST['acao'] === 'candidatar') {
          $executante = $tecnico_id;
 
-         $sql = "UPDATE manutencao SET status = 'em andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
+         $sql = "UPDATE manutencao SET status = 'Em Andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
          $stmt = $conn->prepare($sql);
          $stmt->bind_param("ss", $executante, $titulo);
          $stmt->execute();
@@ -22,7 +22,12 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       }
       // Concluir
       if ($_POST['acao'] === 'concluir') {
-         $sql = "UPDATE manutencao SET status = 'concluido' WHERE titulo = ? AND executante = ?";
+         $sql = "
+            UPDATE manutencao
+               SET status = 'Concluído',           /* cuidado com o acento, deve bater com o ENUM */
+                     data_encerramento = CURDATE()  /* atribui a data atual (YYYY-MM-DD) */
+               WHERE titulo = ? 
+               AND executante = ?";
          $stmt = $conn->prepare($sql);
          $stmt->bind_param("ss", $titulo, $tecnico_id);
          $stmt->execute();

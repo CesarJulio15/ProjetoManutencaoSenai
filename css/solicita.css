@@ -74,11 +74,12 @@ fieldset {
   flex-grow: 1;
 }
 
-.logo-techfix {
+.logo-techfix,
+.logo-inferior {
   width: 100px;
   margin-bottom: 10px;
+  padding: 10px;
 }
-
 .container {
   flex: 1;
   display: flex;

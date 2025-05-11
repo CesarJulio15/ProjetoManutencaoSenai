@@ -5,24 +5,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'], $_POST['sta
     $titulo = $_POST['titulo'];
     $status = $_POST['status'];
 
-    $sql = "UPDATE manutencao SET status = ? WHERE titulo = ?";
-    $stmt = $conn->prepare($sql);
+    // Atualiza status e, se for "Concluído", grava data_encerramento = hoje; senão limpa o campo.
+    $sql = "
+        UPDATE manutencao
+           SET status            = ?,
+               data_encerramento = IF( ? = 'Concluído', CURDATE(), NULL)
+         WHERE titulo = ?
+    ";
 
+    $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        die("Erro ao preparar a consulta: " . $conn->error);
+        die('Erro ao preparar a consulta: ' . $conn->error);
     }
 
-    $stmt->bind_param("ss", $status, $titulo);
+    // bind_param(types, status_para_status, status_para_IF, titulo)
+    $stmt->bind_param('sss', $status, $status, $titulo);
 
     if ($stmt->execute()) {
         echo "Status atualizado com sucesso!";
     } else {
-        echo "Erro ao atualizar o status.";
+        echo "Erro ao atualizar o status: " . $stmt->error;
     }
 
     $stmt->close();
 } else {
     echo "Dados inválidos.";
 }
+
 $conn->close();
 ?>

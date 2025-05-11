@@ -284,6 +284,9 @@
          <header class="top-bar">
             <a href="panelTecnico.php" class="btn btn-secondary botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
             <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
+            <a href="export_data.php" class="btn btn-success" title="Exportar dados">
+               <span class="material-symbols-outlined">file_export</span>
+            </a>
             <div class="welcome-msg me-3 text-dark fw-bold">
                <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
