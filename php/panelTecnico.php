@@ -57,36 +57,57 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     <section class="cards-container">
     <?php
     require_once 'conexao.php';
+    $isTecnico = $_SESSION['tipo'] === 'técnico';
+    $filtroMeus = isset($_GET['meus']) && $isTecnico;
+    $filtroStatus = isset($_GET['status']) && !$filtroMeus;
+    $busca = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
 
-    $meus = isset($_GET['meus']) && $_SESSION['tipo']==='técnico';
-
-    $status = isset($_GET['status']) ? $_GET['status'] : '';
-    $busca = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
-    if ($meus) {
-        // só ordens atribuídas a este técnico
-        $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-                FROM manutencao m
-                JOIN docentes d1 ON m.responsavel = d1.id
-                LEFT JOIN docentes d2 ON m.executante = d2.id
-                WHERE m.executante = ? AND m.titulo LIKE ?";
+    if ($filtroMeus) {
+        // só as ordens cujo executante é este técnico
+        $sql = "
+          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+          FROM manutencao m
+          JOIN docentes d1 ON m.responsavel = d1.id
+          LEFT JOIN docentes d2 ON m.executante = d2.id
+          WHERE m.executante = ? AND m.titulo LIKE ?
+        ";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("is", $_SESSION['id'], $busca);
 
-    }
-    elseif ($status) {
-        $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-                FROM manutencao m
-                JOIN docentes d1 ON m.responsavel = d1.id
-                LEFT JOIN docentes d2 ON m.executante = d2.id
-                WHERE m.status = ? AND m.titulo LIKE ?";
+    } elseif ($filtroStatus) {
+        // filtro por status (coordenador e técnico)
+        $sql = "
+          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+          FROM manutencao m
+          JOIN docentes d1 ON m.responsavel = d1.id
+          LEFT JOIN docentes d2 ON m.executante = d2.id
+          WHERE m.status = ? AND m.titulo LIKE ?
+        ";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $status, $busca);
+        $stmt->bind_param("ss", $_GET['status'], $busca);
+
+    } elseif ($isTecnico) {
+        // técnico, sem filtro: só pendentes (sem executante) E os seus
+        $sql = "
+          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+          FROM manutencao m
+          JOIN docentes d1 ON m.responsavel = d1.id
+          LEFT JOIN docentes d2 ON m.executante = d2.id
+          WHERE (m.executante IS NULL OR m.executante = ?) 
+            AND m.titulo LIKE ?
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("is", $_SESSION['id'], $busca);
+
     } else {
-        $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-                FROM manutencao m
-                JOIN docentes d1 ON m.responsavel = d1.id
-                LEFT JOIN docentes d2 ON m.executante = d2.id
-                WHERE m.titulo LIKE ?";
+        // coordenador, sem filtro: vê tudo
+        $sql = "
+          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+          FROM manutencao m
+          JOIN docentes d1 ON m.responsavel = d1.id
+          LEFT JOIN docentes d2 ON m.executante = d2.id
+          WHERE m.titulo LIKE ?
+        ";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $busca);
     }
