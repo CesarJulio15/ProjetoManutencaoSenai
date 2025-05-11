@@ -47,7 +47,7 @@ include 'conexao.php';
     <!-- Formulário responsivo -->
     <div class="form-box bg-white shadow rounded p-4 mx-auto" style="max-width: 600px;">
 
-        <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data" style="width: 100%;">
+        <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data" style="width: 100%;" autocomplete="off">
             <div class="topo-cadastro mt-3">
     <div class="volta">
         <a href="manutencao.php" class="btn btn-danger btn-volta w-100"><span class="material-symbols-outlined">
@@ -65,9 +65,9 @@ include 'conexao.php';
 
             <div class="mb-3">
                 <select name="tipo" class="form-select" required>
-                    <option value="">Tipo</option>
-                    <option value="Docente">Funcionário</option>
-                    <option value="técnico">Equipe de manutenção</option>
+                    <option value="" disabled>Tipo</option>
+                    <option value="Docente" selected="selected">Funcionário</option>
+                    <option value="Técnico">Equipe de manutenção</option>
                     <option value="Coordenador">Administrador</option>
                 </select>
             </div>
@@ -75,7 +75,9 @@ include 'conexao.php';
             <div class="mb-3">
                 <input type="text" name="nif" class="form-control" placeholder="NIF" required>
             </div>
-
+            <div class="mb-3">
+                <input type="email" name="email" id="email" class="form-control" placeholder="email">
+            </div>
             <div class="mb-3">
                 <input type="password" name="senha" class="form-control" placeholder="Senha" required>
             </div>

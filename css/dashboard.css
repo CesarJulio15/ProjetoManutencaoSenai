@@ -387,6 +387,43 @@ table tr:nth-child(even) {
   margin-top: -4px;
   color: #555;
 }
+.info-box.hover-zoom-effect .icon {
+  overflow: hidden;
+}
+.info-box.hover-zoom-effect .icon i {
+  -moz-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.info-box.hover-zoom-effect:hover .icon i {
+  opacity: 0.4;
+  -moz-transform: rotate(-32deg) scale(1.4);
+  -ms-transform: rotate(-32deg) scale(1.4);
+  -o-transform: rotate(-32deg) scale(1.4);
+  -webkit-transform: rotate(-32deg) scale(1.4);
+  transform: rotate(-32deg) scale(1.4);
+}
+
+.info-box.hover-expand-effect:after {
+  background-color: rgba(0, 0, 0, 0.05);
+  content: ".";
+  position: absolute;
+  left: 80px;
+  top: 0;
+  width: 0;
+  height: 100%;
+  color: transparent;
+  -moz-transition: all 0.95s;
+  -o-transition: all 0.95s;
+  -webkit-transition: all 0.95s;
+  transition: all 0.95s;
+}
+
+.info-box.hover-expand-effect:hover:after {
+  width: 100%;
+}
 .bg-pink .content .text,
 .bg-pink .content .number {
   color: #fff !important;
@@ -428,7 +465,22 @@ table tr:nth-child(even) {
   width: 100% !important;
   height: 100% !important;
 }
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
 
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #a0352b;
+  border-radius: 10px;
+}
 @media (max-width: 1024px) {
   .top-bar {
     width: 100%;

@@ -516,7 +516,7 @@
                 { label: 'Pendente',      data: <?= json_encode($dadosMesStatus['Pendente']) ?>,      backgroundColor: infoPink },
                 { label: 'Em Andamento',  data: <?= json_encode($dadosMesStatus['Em Andamento']) ?>,  backgroundColor: infoOrange },
                 { label: 'Concluído',     data: <?= json_encode($dadosMesStatus['Concluído']) ?>,     backgroundColor: infoLightGreen },
-                { label: 'Rejeitado',     data: <?= json_encode($dadosMesStatus['Rejeitado']) ?>,     backgroundColor:'#e74c3c' }
+                { label: 'Rejeitado',     data: <?= json_encode($dadosMesStatus['Rejeitado']) ?>,     backgroundColor:'gray' }
               ]
             },
             options: {

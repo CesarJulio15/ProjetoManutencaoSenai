@@ -109,34 +109,13 @@ main {
   width: calc(100% - 163px);
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 10px;
-  }
-
-  .content {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .logo-senai,
-  .logo-techfix {
-    margin: 0;
-    width: 80px;
-  }
-}
-
 /* Cartão de detalhes */
 .detalhe-container {
   display: inline-flex;
   flex-flow: column;
   max-width: 720px;
   max-height: 700px;
+  position: relative;
   width: 100%;
   /* border: 2px solid #be4444; */
   border-radius: 10px;
@@ -150,6 +129,19 @@ main {
   align-items: flex-start;
   justify-content: space-evenly;
 }
+/* borda colorida conforme o status */
+.detalhe-container.status-pendente {
+  border-color: #a0352b;
+}
+.detalhe-container.status-em-andamento {
+  border-color: #e9963e;
+}
+.detalhe-container.status-concluido {
+  border-color: #5b7f2e;
+}
+.detalhe-container.status-rejeitado {
+  border-color: #6c757d;
+}
 .card-header {
   width: 100%;
   display: inline-flex;
@@ -159,6 +151,30 @@ main {
   padding: 10px;
   align-content: center;
 }
+
+/* 2) O quadradinho indicador de status */
+.status-indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 62px;
+  height: 48px;
+  border-radius: 0px 16px;
+}
+
+/* 3) Cores conforme status */
+.status-indicator.status-pendente {
+  background-color: #a0352b;
+} /* vermelho */
+.status-indicator.status-em-andamento {
+  background-color: #e9963e;
+} /* amarelo */
+.status-indicator.status-concluido {
+  background-color: #5b7f2e;
+} /* verde  */
+.status-indicator.status-rejeitado {
+  background-color: #6c757d;
+} /* cinza  */
 
 .card-footer {
   width: 100%;
@@ -205,20 +221,74 @@ form button {
   cursor: pointer;
 }
 
+/* Corrige o texto do botão amarelo */
+.btn-warning {
+  color: #fff !important;
+}
+.botao-voltar {
+  display: inline-flex;
+  width: fit-content;
+  height: fit-content;
+  /* margin: auto; */
+  padding: 10px;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  font-size: larger;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 100%;
+  background: #333;
+  cursor: pointer;
+}
+/* Espaçamento uniforme para botões */
+footer .btn {
+  min-width: 120px;
+  font-weight: 500;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #a0352b;
+  border-radius: 10px;
+}
 /* Centraliza o conteúdo no desktop */
 @media (min-width: 768px) {
   .detalhe-container {
     margin: 0 auto;
   }
 }
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px;
+  }
 
-/* Corrige o texto do botão amarelo */
-.btn-warning {
-  color: #fff !important;
-}
+  .content {
+    margin-left: 0;
+    width: 100%;
+  }
 
-/* Espaçamento uniforme para botões */
-footer .btn {
-  min-width: 120px;
-  font-weight: 500;
+  .logo-senai,
+  .logo-techfix {
+    margin: 0;
+    width: 80px;
+  }
 }
