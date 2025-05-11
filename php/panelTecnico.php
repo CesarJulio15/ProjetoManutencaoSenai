@@ -56,26 +56,70 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
 
     <section class="cards-container">
     <?php
-    require_once 'conexao.php';
-    $isTecnico = $_SESSION['tipo'] === 'técnico';
-    $filtroMeus = isset($_GET['meus']) && $isTecnico;
-    $filtroStatus = isset($_GET['status']) && !$filtroMeus;
-    $busca = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
+    // Inclui a conexão — __DIR__ garante que o require busque na mesma pasta deste arquivo
+    require_once __DIR__ . '/conexao.php';
 
-    if ($filtroMeus) {
-        // só as ordens cujo executante é este técnico
+    // Segurança extra: interrompe se a conexão falhou ou não existe
+    if (!isset($conn) || !($conn instanceof mysqli)) {
+        die('Erro na conexão com o banco de dados');
+    }
+$isTecnico    = ($_SESSION['tipo'] === 'técnico');
+$statusParam  = $_GET['status'] ?? '';
+$busca        = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
+
+// 1) “Seus Trabalhos”
+if (isset($_GET['meus']) && $isTecnico) {
+    $sql = "
+      SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+      FROM manutencao m
+      JOIN docentes d1 ON m.responsavel = d1.id
+      LEFT JOIN docentes d2 ON m.executante = d2.id
+      WHERE m.executante = ? AND m.titulo LIKE ?
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $_SESSION['id'], $busca);
+
+// 2) Técnico clicou em algum status
+} elseif ($isTecnico && $statusParam) {
+    if ($statusParam === 'Pendente') {
+        // só pendentes sem executante
         $sql = "
           SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
           FROM manutencao m
           JOIN docentes d1 ON m.responsavel = d1.id
           LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE m.executante = ? AND m.titulo LIKE ?
+          WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?
         ";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $_SESSION['id'], $busca);
+        $stmt->bind_param("ss", $statusParam, $busca);
+    } else {
+        // Em Andamento ou Concluído — só os atribuídos a este técnico
+        $sql = "
+          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+          FROM manutencao m
+          JOIN docentes d1 ON m.responsavel = d1.id
+          LEFT JOIN docentes d2 ON m.executante = d2.id
+          WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sis", $statusParam, $_SESSION['id'], $busca);
+    }
 
-    } elseif ($filtroStatus) {
-        // filtro por status (coordenador e técnico)
+// 3) Técnico sem filtro algum
+} elseif ($isTecnico) {
+    $sql = "
+      SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+      FROM manutencao m
+      JOIN docentes d1 ON m.responsavel = d1.id
+      LEFT JOIN docentes d2 ON m.executante = d2.id
+      WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?
+    ";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $_SESSION['id'], $busca);
+
+// 4) Coordenador — vê tudo ou filtra por status
+} else {
+    if ($statusParam) {
         $sql = "
           SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
           FROM manutencao m
@@ -84,23 +128,8 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
           WHERE m.status = ? AND m.titulo LIKE ?
         ";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $_GET['status'], $busca);
-
-    } elseif ($isTecnico) {
-        // técnico, sem filtro: só pendentes (sem executante) E os seus
-        $sql = "
-          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-          FROM manutencao m
-          JOIN docentes d1 ON m.responsavel = d1.id
-          LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE (m.executante IS NULL OR m.executante = ?) 
-            AND m.titulo LIKE ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $_SESSION['id'], $busca);
-
+        $stmt->bind_param("ss", $statusParam, $busca);
     } else {
-        // coordenador, sem filtro: vê tudo
         $sql = "
           SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
           FROM manutencao m
@@ -111,9 +140,10 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $busca);
     }
+}
 
-    $stmt->execute();
-    $result = $stmt->get_result();
+$stmt->execute();
+$result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
     ?>

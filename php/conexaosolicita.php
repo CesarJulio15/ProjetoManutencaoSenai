@@ -1,18 +1,23 @@
 <?php
 session_start();
 include 'conexao.php';
-
-echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-
+// 0) Se não estiver logado, redireciona
 if (!isset($_SESSION['id'])) {
+    header("Location: index.php");
+    exit();
+}
+// 1) Carrega SweetAlert2
+echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+
+// 2) Só processa se vier POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo "<script>
         Swal.fire({
-            icon: 'warning',
-            title: 'Usuário não autenticado!',
-            text: 'Faça login para continuar.',
-            confirmButtonText: 'OK'
+            icon: 'info',
+            title: 'Acesso inválido',
+            text: 'Envie o formulário corretamente.'
         }).then(() => {
-            window.location.href = 'index.php';
+            window.location.href = 'solicita.php';
         });
     </script>";
     exit();
@@ -21,9 +26,17 @@ if (!isset($_SESSION['id'])) {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $titulo = $_POST["titulo"];
     $descricao = $_POST["descricao"];
-    $responsavel = $_SESSION["id"];
     $data_abertura = date("Y-m-d");
     $status = "Pendente";
+
+    // 2) Define o responsável:
+    //    - se for coordenador ou técnico, usa o valor vindo de POST
+    //    - caso contrário, é o próprio usuário logado
+    if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+        $responsavel = intval($_POST['responsavel']);
+    } else {
+        $responsavel = intval($_SESSION['id']);
+    }
 
     // Tratamento da imagem (opcional)
     $foto = null;
@@ -72,27 +85,45 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $stmt->close();
-} else {
-    echo "<script>
-        Swal.fire({
-            icon: 'info',
-            title: 'Acesso inválido!',
-            text: 'Envie o formulário corretamente.',
-            confirmButtonText: 'OK'
-        });
-    </script>";
-}
+} 
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Confirmação</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <meta charset="UTF-8">
+  <title>Confirmação</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-<?php
-echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-?>
+<?php if (isset($executou) && $executou): ?>
+<script>
+  Swal.fire({
+    icon: 'success',
+    title: 'Solicitação registrada!',
+    showConfirmButton: false,
+    timer: 2000
+  }).then(() => {
+    window.location.href = 'panelTecnico.php';
+  });
+</script>
+<?php elseif (isset($executou)): ?>
+<script>
+  Swal.fire({
+    icon: 'error',
+    title: 'Erro ao registrar',
+    text: '<?= addslashes($stmt->error ?? '') ?>'
+  });
+</script>
+<?php else: ?>
+<script>
+  Swal.fire({
+    icon: 'info',
+    title: 'Acesso Inválido',
+    text: 'Envie o formulário corretamente.'
+  }).then(() => {
+    window.location.href = 'panelTecnico.php';
+  });
+</script>
+<?php endif; ?>
 </body>
 </html>

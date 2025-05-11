@@ -156,7 +156,7 @@
    
    // Totais por status hoje
    $hoje = date('Y-m-d');
-   $totaisHoje = ["Pendente" => 0, "Em Andamento" => 0, "Concluido" => 0];
+   $totaisHoje = ["Pendente" => 0, "Em Andamento" => 0, "Concluído" => 0];
    $sqlHoje = "SELECT status, COUNT(*) as total FROM manutencao WHERE data_abertura = ? GROUP BY status";
    $stmtHoje = $conn->prepare($sqlHoje);
    $stmtHoje->bind_param("s", $hoje);
@@ -168,7 +168,12 @@
    $totalHoje = array_sum($totaisHoje);
    
    // SLA exemplo: % concluído em menos de 3 dias
-   $sqlSLA = "SELECT COUNT(*) as total, SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo FROM manutencao WHERE status = 'Concluido' AND data_encerramento IS NOT NULL";
+   $sqlSLA = "
+   SELECT COUNT(*) as total,
+            SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
+   FROM manutencao
+   WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
+   ";
    $resSLA = $conn->query($sqlSLA);
    $rowSLA = $resSLA->fetch_assoc();
    $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
@@ -277,7 +282,7 @@
       </aside>
       <main class="main-content">
          <header class="top-bar">
-            <a href="index.php" class="btn btn-secondary botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="panelTecnico.php" class="btn btn-secondary botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
             <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
             <div class="welcome-msg me-3 text-dark fw-bold">
                <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
@@ -299,7 +304,7 @@
                      <ul class="list-group">
                         <li class="list-group-item"><b>Pendente:</b> <?= $totaisHoje['Pendente'] ?></li>
                         <li class="list-group-item"><b>Em Andamento:</b> <?= $totaisHoje['Em Andamento'] ?></li>
-                        <li class="list-group-item"><b>Concluído:</b> <?= $totaisHoje['Concluido'] ?></li>
+                        <li class="list-group-item"><b>Concluído:</b> <?= $totaisHoje['Concluído'] ?></li>
                         <li class="list-group-item fw-bold">Total: <?= $totalHoje ?></li>
                         <li class="list-group-item text-success">SLA (<= 3 dias): <?= $sla ?>%</li>
                      </ul>

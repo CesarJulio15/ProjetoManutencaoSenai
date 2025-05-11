@@ -1,12 +1,36 @@
 <?php
    session_start();
    include 'conexao.php';
-   if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
-       header("Location: index.php");
-       exit();
-   }
+if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+    header("Location: index.php");
+    exit();
+}
 
    $tecnico_id = $_SESSION['id'] ?? null;
+
+   // Candidatar
+   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_POST['acao'])) {
+      $titulo = $_POST['titulo'];
+      if ($_POST['acao'] === 'candidatar') {
+         $executante = $tecnico_id;
+
+         $sql = "UPDATE manutencao SET status = 'em andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
+         $stmt = $conn->prepare($sql);
+         $stmt->bind_param("ss", $executante, $titulo);
+         $stmt->execute();
+         $stmt->close();
+      }
+      // Concluir
+      if ($_POST['acao'] === 'concluir') {
+         $sql = "UPDATE manutencao SET status = 'concluido' WHERE titulo = ? AND executante = ?";
+         $stmt = $conn->prepare($sql);
+         $stmt->bind_param("ss", $titulo, $tecnico_id);
+         $stmt->execute();
+         $stmt->close();
+      }
+      header("Location: panelTecnico.php");
+      exit();
+   }
 
    if (isset($_GET['titulo'])) {
        $titulo = urldecode($_GET['titulo']);
@@ -94,9 +118,9 @@
          </header>
          <div class="detalhe-container <?= $statusClass ?> mx-auto">
               <!-- badge colorido -->
-  <?php if ($statusClass): ?>
-    <div class="status-indicator <?= $statusClass ?>" title="Status do pedido"></div>
-  <?php endif; ?>
+            <?php if ($statusClass): ?>
+               <div class="status-indicator <?= $statusClass ?>" title="Status do pedido"></div>
+            <?php endif; ?>
          <!-- Voltar -->
          <div class="card-header d-lg-flex text-start mb-4 d-flex justify-content-between ">
             <a href="paneltecnico.php" class="botao-voltar" title="Voltar">
@@ -104,8 +128,7 @@
             </a>
             <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
          </div>
-         <div class="info-detalhe mb-4 text-start">
-         <div class="mt-3">
+         <div class="info-detalhe mb-4 mt-4 w-100 h-100 text-start">
             <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
             <div class="d-flex flex-column flex-md-row gap-4 align-items-start">               
                 <div class="d-flex">
@@ -129,12 +152,14 @@
                   if (!empty($row['foto'])) {
                       $fotoBase64 = base64_encode($row['foto']);
                       echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
+                  }else{
+                     echo "<class='no-results'><img src='../img/no-results 1.svg' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'></div>";
                   }
                   ?>
             </div>
             <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
             <!-- Rodapé com botões -->
-            <div class="card-footer mt-2">
+            <div class="card-footer mt-2 mb-2">
                <?php if ($_SESSION['tipo'] == 'coordenador') : ?>
                <div class="d-flex gap-2 flex-wrap justify-content-center">
                   <button class="status-btn btn btn-danger" data-status="Pendente" title="Pendente" style="background: #e91e63;">
@@ -154,15 +179,27 @@
                     <form method="post">
                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                         <input type="hidden" name="acao" value="candidatar">
-                        <button type="submit" class="btn-candidatar">Candidatar</button>
+                        <button type="submit" class="btn-candidatar" title="Candidatar-se">
+                           <span class="material-symbols-outlined">how_to_reg</span></button>
                     </form>
+                    
+                <form action="rejeitar.php" method="post">
+                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                     <span class="material-symbols-outlined">person_cancel</span></button>
+                </form>
                 <?php elseif ($jaExecutando && $row['status'] !== 'concluido' && $_SESSION['tipo'] == 'técnico'): ?>
                     <!-- Se o usuário atual for o executante, exibir "Concluir" -->
                     <form method="post">
                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                         <input type="hidden" name="acao" value="concluir">
-                        <button type="submit" class="btn-concluir">Concluir</button>
-                    </form>                    
+                        <button type="submit" class="btn-concluir" title="Concluir"><span class="material-symbols-outlined">check</span></button>
+                    </form>
+               <? elseif ($_SESSION['tipo'] == 'técnico'): ?>
+                <form action="rejeitar.php" method="post">
+                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                    <button type="submit" class="btn-rejeitar">Rejeitar</button>
+                </form>                     
                <?php endif; ?>
                <?php if ($_SESSION['tipo'] !== 'técnico') : ?>
                      <!-- Excluir -->

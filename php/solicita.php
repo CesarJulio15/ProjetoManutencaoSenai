@@ -26,7 +26,6 @@ require __DIR__ . '/conexao.php';
 <body class="bg-body">
   <main class="container-fluid p-0">
     <div class="row g-0 min-vh-100 flex-column flex-md-row">
-
       <!-- Sidebar -->
       <div class="col-12 col-md-1 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
         <div class="logo-superior">
@@ -59,8 +58,38 @@ require __DIR__ . '/conexao.php';
           </div>
           <fieldset class="card-body">
           <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
+                <?php
+      // Se for coordenador ou técnico, exibe dropdown de "Responsável"
+      // caso contrário, define automaticamente o próprio usuário como responsável
+      if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])):
+          // Busca apenas os docentes (professores) para atribuição de responsável
+          $resps = $conn->query("
+              SELECT id, nome
+              FROM docentes
+              WHERE docente_status = 'Ativo'
+              ORDER BY nome
+          ");
+      ?>
+    <div class="mb-3">
+      <label for="responsavel" class="form-label">Responsável:</label>
+      <select name="responsavel" id="responsavel" class="form-select" required>
+        <option value="" disabled selected>Selecione o responsável</option>
+        <?php while ($r = $resps->fetch_assoc()): ?>
+          <option value="<?= $r['id'] ?>">
+            <?= htmlspecialchars($r['nome'], ENT_QUOTES) ?>
+          </option>
+        <?php endwhile; ?>
+      </select>
+    </div>
+<?php else: ?>
+    <!-- usuário comum vira automaticamente o responsável -->
+    <input type="hidden" name="responsavel" value="<?= intval($_SESSION['id']) ?>">
+<?php endif; ?>
+          <br>
             <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
           <br>
+
+<br>
             <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
 
           </fieldset>
