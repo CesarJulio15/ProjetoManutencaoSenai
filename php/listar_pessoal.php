@@ -16,10 +16,10 @@ $offset = ($pagina - 1) * $limite;
 
 // Query principal com filtro e paginação
 if (!empty($filtro_tipo)) {
-    $stmt = $conn->prepare("SELECT * FROM docentes WHERE tipo = ? LIMIT ? OFFSET ?");
+    $stmt = $conn->prepare("SELECT * FROM docentes WHERE tipo = ? AND docente_status = 'Ativo' LIMIT ? OFFSET ?");
     $stmt->bind_param("sii", $filtro_tipo, $limite, $offset);
 } else {
-    $stmt = $conn->prepare("SELECT * FROM docentes LIMIT ? OFFSET ?");
+    $stmt = $conn->prepare("SELECT * FROM docentes WHERE docente_status = 'Ativo' LIMIT ? OFFSET ?");
     $stmt->bind_param("ii", $limite, $offset);
 }
 $stmt->execute();
@@ -27,10 +27,10 @@ $result = $stmt->get_result();
 
 // Contagem total para paginação
 if (!empty($filtro_tipo)) {
-    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE tipo = ?");
+    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE tipo = ?  AND docente_status = 'Ativo'");
     $count_stmt->bind_param("s", $filtro_tipo);
 } else {
-    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes");
+    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE docente_status = 'Ativo'");
 }
 $count_stmt->execute();
 $count_result = $count_stmt->get_result();
@@ -65,6 +65,7 @@ $total_paginas = ceil($total_registros / $limite);
             <select name="tipo">
                 <option value="">Todos os tipos</option>
                 <option value="Coordenador" <?= $filtro_tipo == 'Coordenador' ? 'selected' : '' ?>>Coordenador</option>
+                <option value="Docente" <?= $filtro_tipo == 'Docente' ? 'selected' : '' ?>>Docente</option>
                 <option value="Técnico" <?= $filtro_tipo == 'Técnico' ? 'selected' : '' ?>>Técnico</option>
             </select>
             <button type="submit" title="Filtrar">
