@@ -9,6 +9,29 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
+
+  /* cor de respaldo, caso browser não suporte gradientes */
+  background-color: #e1e1e1;
+
+  /* a ordem importa: 
+     – primeiro vem o gradiente que ficará por cima,
+     – depois o próximo, e assim por diante,
+     – por último a cor sólida (background-color) */
+  background-image: linear-gradient(135deg, #f5f7fa, #c3cfe2),
+    /* camada 1 */
+      repeating-radial-gradient(
+        circle at 0 0,
+        /* camada 2 */ transparent 0,
+        #e1e1e1 10px
+      ),
+    repeating-linear-gradient(/* camada 3 */ #dbdbdb55, #dbdbdb);
+
+  /* controla blendagem entre camadas, opcional */
+  background-blend-mode: normal, normal, normal;
+
+  /* se não quiser afetar o conteúdo (textos, botões) com opacity,
+     é melhor usar um pseudo-elemento só para o background */
+  /* opacity: 0.8;  <-- evite usar no próprio elemento */
 }
 
 .container {

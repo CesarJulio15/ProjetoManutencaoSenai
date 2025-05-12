@@ -27,7 +27,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $titulo = $_POST["titulo"];
     $descricao = $_POST["descricao"];
     $data_abertura = date("Y-m-d");
-    
+
+        // força prioridade
+    if (!in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+        $prioridade = 'Média';
+    } else {
+        // validação extra
+        $prioridade = in_array($_POST['prioridade'], ['Baixa','Média','Alta','Urgente'])
+                    ? $_POST['prioridade']
+                    : 'Média';
+    }
+
     // 2) Define o responsável:
     //    - se for coordenador ou técnico, usa o valor vindo de POST
     //    - caso contrário, é o próprio usuário logado
@@ -49,8 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
-    
-    $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status, data_abertura, executante) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+    $sql = "INSERT INTO manutencao
+            (titulo, descricao, responsavel, foto, status, data_abertura, prioridade)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -66,14 +78,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $stmt->bind_param(
-        'ssisssi',
+        "ssbsss s", 
         $titulo,
         $descricao,
         $responsavel,
         $foto,
         $status,
         $data_abertura,
-        $executante
+        $prioridade
     );
 
     if ($stmt->execute()) {

@@ -1,9 +1,10 @@
 <?php
 session_start();
-if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+if (!isset($_SESSION['id'])) {
     header("Location: index.php");
     exit();
 }
+
 include 'conexao.php'; // Certifique que a conexão ($conn) está funcionando
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'], $_POST['status'])) {

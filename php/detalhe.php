@@ -140,6 +140,10 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                   <label class="info-label me-1">Responsável:</label>
                   <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
                </div>
+                 <div class="d-flex">
+    <label class="info-label me-1">Prioridade:</label>
+    <p class="info-text mb-0"><?= htmlspecialchars($row['prioridade']) ?></p>
+  </div>
                <?php if (!empty($row['executante'])): ?>
                <div class="d-flex">
                   <label class="info-label me-1">Técnico:</label>

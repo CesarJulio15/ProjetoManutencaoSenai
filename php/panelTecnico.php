@@ -179,16 +179,22 @@ $result = $stmt->get_result();
                         echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
                     }
                     ?>
-                </div>
-                <div class="card-footer">
-                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
+                </div>                    
+                <div class="d-flex conjunto">
+                                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
                     <p><?php echo htmlspecialchars($row['descricao']); ?></p>
                     <?php if (!empty($row['nome_executante'])): ?>
                         <p><strong>Executante:</strong> <?php echo htmlspecialchars($row['nome_executante']); ?></p>
-                    <?php endif; ?>
+                    <?php endif; ?>       
+                    </div>
+
+                <div class="d-flex card-footer">
                     <button class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
                         <?php echo htmlspecialchars($row['status']); ?>
                     </button>
+                        <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
+      <?= htmlspecialchars($row['prioridade']) ?>
+    </span>                 
                 </div>
             </div>
         </a>

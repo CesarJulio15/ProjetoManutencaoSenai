@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
-<body class="bg-light d-flex align-items-center justify-content-center min-vh-100 px-3"> <!-- min-vh + padding horizontal -->
+<body class="d-flex align-items-center justify-content-center min-vh-100 px-3"> <!-- min-vh + padding horizontal -->
 
     <div class="container text-center px-0">
         <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-3">

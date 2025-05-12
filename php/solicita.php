@@ -22,6 +22,11 @@ require __DIR__ . '/conexao.php';
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="sweetalert2.all.min.js"></script>
   <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+  <style>
+  .conjunto{
+    display:inline-flex;
+  }
+</style>
 </head>
 <body class="bg-body">
   <main class="container-fluid p-0">
@@ -58,20 +63,23 @@ require __DIR__ . '/conexao.php';
           </div>
           <fieldset class="card-body">
           <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
-                <?php
-      // Se for coordenador ou técnico, exibe dropdown de "Responsável"
-      // caso contrário, define automaticamente o próprio usuário como responsável
-      if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])):
-          // Busca apenas os docentes (professores) para atribuição de responsável
-          $resps = $conn->query("
-              SELECT id, nome
-              FROM docentes
-              WHERE docente_status = 'Ativo'
-              ORDER BY nome
-          ");
-      ?>
-    <div class="mb-3">
-      <label for="responsavel" class="form-label">Responsável:</label>
+          <?php
+          // Se for coordenador ou técnico, exibe dropdown de "Responsável"
+          // caso contrário, define automaticamente o próprio usuário como responsável
+          if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])):
+              // Busca apenas os docentes (professores) para atribuição de responsável
+              $resps = $conn->query("
+                  SELECT id, nome
+                  FROM docentes
+                  WHERE docente_status = 'Ativo'
+                  ORDER BY nome
+              ");
+          ?>
+    <div class="d-flex mb-3">
+      <label for="responsavel" class="form-label">
+        <span class="material-symbols-outlined">assignment_ind</span>
+        Responsável: </label>
+          <br>
       <select name="responsavel" id="responsavel" class="form-select" required>
         <option value="" disabled selected>Selecione o responsável</option>
         <?php while ($r = $resps->fetch_assoc()): ?>
@@ -81,15 +89,27 @@ require __DIR__ . '/conexao.php';
         <?php endwhile; ?>
       </select>
     </div>
-<?php else: ?>
-    <!-- usuário comum vira automaticamente o responsável -->
-    <input type="hidden" name="responsavel" value="<?= intval($_SESSION['id']) ?>">
-<?php endif; ?>
+    <div class="d-flex  mb-3">
+        <label for="prioridade">
+          <span class="material-symbols-outlined">priority_high</span> 
+          Prioridade: </label>
+          <br>
+  <select name="prioridade" id="prioridade" required>
+    <option value="Baixa">Baixa</option>
+    <option value="Média" selected>Média</option>
+    <option value="Alta">Alta</option>
+    <option value="Urgente">Urgente</option>
+  </select>
+    </div>
+    <?php else: ?>
+        <!-- usuário comum vira automaticamente o responsável -->
+        <input type="hidden" name="responsavel" value="<?= intval($_SESSION['id']) ?>">
+          <!-- usuários “normais” não veem select -->
+        <input type="hidden" name="prioridade" value="Média">
+    <?php endif; ?>
           <br>
             <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
           <br>
-
-<br>
             <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
 
           </fieldset>
@@ -204,4 +224,5 @@ require __DIR__ . '/conexao.php';
     }
 
 </script>
+
 </html>

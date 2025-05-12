@@ -478,6 +478,10 @@ table tr:nth-child(even) {
   width: 100% !important;
   height: 100% !important;
 }
+.chart-card:hover,
+.chart-container:hover {
+  transform: scale(1.1);
+}
 /* width */
 ::-webkit-scrollbar {
   width: 10px;
@@ -503,6 +507,10 @@ table tr:nth-child(even) {
   }
   .dashboard-container {
     width: 100%;
+    flex-wrap: wrap;
+  }
+  .dashboard-container + div {
+    display: inline-flex;
     flex-wrap: wrap;
   }
 }
