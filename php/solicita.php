@@ -173,7 +173,7 @@
                     </fieldset>
                     <div class="form-footer">
                     <button type="submit" class="btn-confirma" title="Salvar"><i class="fa-solid fa-check"></i></button>
-                    <a href="manutencao.php" class="btn-cancela" title="Cancelar"><i class="fa-solid fa-xmark"></i></a>  
+                    <a href="panelTecnico.php" class="btn-cancela" title="Cancelar"><i class="fa-solid fa-xmark"></i></a>  
                     </div>
                     </form>
         </main>

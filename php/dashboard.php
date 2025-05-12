@@ -1,6 +1,6 @@
 <?php
     session_start();
-    if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+    if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
         header("Location: index.php");
         exit();
     }
@@ -391,7 +391,7 @@
     <head>
         <meta charset="UTF-8">
         <title>Dashboard Gerencial</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
         <link rel="stylesheet" href="../css/padrao.css">
         <link rel="stylesheet" href="../css/dashboard.css">
@@ -522,8 +522,8 @@
                         </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
+                    <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto">
-                        <!-- Gráfico de Pizza (à esquerda) -->
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-pie"></i> Distribuição por Status</h5>
                             <canvas id="statusChart"></canvas>
@@ -546,12 +546,13 @@
                     </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
+                    <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto">
-                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
-                            <div class="chart-wrapper">
-                                <canvas id="rankingChart"></canvas>
-                            </div>
+                        <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
+                            <h5 class="title text-center">
+                              <span class="material-symbols-outlined">pie_chart</span> 
+                              Pedidos por bloco</h5>
+                            <canvas id="graficoSetor"></canvas>
                         </div>
                     </div>
                     <div class="p-2 m-auto">
@@ -562,6 +563,14 @@
                     </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
+                <div class="p-2 m-auto">
+                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
+                            <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
+                            <div class="chart-wrapper">
+                                <canvas id="rankingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                     <div class="p-2  m-auto">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
@@ -805,11 +814,10 @@
                 maintainAspectRatio: true,  
                 scales: { y: { beginAtZero: true, precision: 0 } }
                 }
-                });            
-            </script>
-            <script>
-                // 1) SLA Compliance por Prioridade
-                new Chart(
+                });  
+                
+                                // 1) SLA Compliance por Prioridade
+                                new Chart(
                   document.getElementById('chartSLA').getContext('2d'),
                   {
                     type: 'bar',
@@ -920,6 +928,73 @@
                   }
                 );
             </script>
+<script>
+fetch('dados_por_setor.php')
+  .then(res => res.json())
+  .then(data => {
+    const labels = data.map(item => item.bloco);
+    const valores = data.map(item => item.total);
+    const total = valores.reduce((a, b) => a + b, 0);
+
+    const cores = [
+      '#000000', // Preto
+  '#c0c0c0', // Cinza claro
+  '#ffffff', // Branco
+  '#8c4a28', // Marrom escuro
+  '#d98c74', // Marrom claro
+  '#e6b5aa', // Rosa claro
+  '#004080', // Azul escuro
+  '#007080', // Ciano escuro
+  '#30a0a0', // Ciano médio
+  '#38a850', // Verde claro
+  '#70b080', // Verde médio
+  '#a0b870', // Verde oliva
+  '#f0e850', // Amarelo claro
+  '#f8a800', // Laranja
+  '#b01030', // Vermelho escuro
+  '#8c003c'  // Magenta escuro
+];
+
+    new Chart(document.getElementById('graficoSetor'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: valores,
+          backgroundColor: cores.slice(0, valores.length),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        rotation: -90,
+        circumference: 180,
+        cutout: '55%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: false
+          },
+          datalabels: {
+            color: '#fff',
+            font: {
+              weight: 'bold',
+              size: 14
+            },
+            formatter: function(value, ctx) {
+              const label = ctx.chart.data.labels[ctx.dataIndex];
+              const percent = ((value / total) * 100).toFixed(1) + '%';
+              return `${label}\n${percent}`;
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  });
+</script>
         </main>
     </body>
 </html>

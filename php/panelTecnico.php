@@ -218,12 +218,12 @@ $result = $stmt->get_result();
                     </div>
 
                 <div class="d-flex card-footer">
-                    <button class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
+                    <span class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
                         <?php echo htmlspecialchars($row['status']); ?>
-                    </button>
-                        <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
-      <?= htmlspecialchars($row['prioridade']) ?>
-    </span>                 
+                    </span>
+                    <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
+                    <?= htmlspecialchars($row['prioridade']) ?>
+                    </span>                 
                 </div>
             </div>
         </a>
