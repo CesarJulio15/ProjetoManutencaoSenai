@@ -128,7 +128,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
             <?php endif; ?>
          <!-- Voltar -->
          <div class="card-header d-lg-flex text-start mb-4 d-flex justify-content-between ">
-            <a href="paneltecnico.php" class="botao-voltar" title="Voltar">
+            <a href="panelTecnico.php" class="botao-voltar" title="Voltar">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
             </a>
             <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>

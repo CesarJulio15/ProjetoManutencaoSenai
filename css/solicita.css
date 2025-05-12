@@ -126,7 +126,11 @@ fieldset {
   font-size: 14px;
   color: #333;
 }
-
+form {
+  padding: 10px;
+  margin: auto;
+  gap: 4px;
+}
 .form-footer {
   display: inline-flex;
   width: 100%;
@@ -181,6 +185,44 @@ input:is(:focus, :valid) + .placeholder {
   border-radius: 4px;
   background-color: #ddd;
   resize: none;
+}
+
+#titulo {
+  margin: auto;
+  padding: 8px 4px;
+  font-size: 16px;
+  outline: none;
+  border: 1px solid transparent;
+  border-bottom: 2px solid #007bff;
+  background-color: #f5f5f5;
+  transition: border-color 0.2s ease;
+}
+
+#descDetalhada::placeholder,
+#titulo::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+#descDetalhada {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  font-size: 15px;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  border: 1px solid transparent;
+  border-bottom: 2px solid #007bff;
+  border-radius: 6px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+#descDetalhada:focus,
+#titulo:focus {
+  border-color: #007bff;
+  border-bottom: 2px solid #0056b3;
+  background-color: #fff;
 }
 .card-body button,
 .btn-confirma,
@@ -242,43 +284,36 @@ input:is(:focus, :valid) + .placeholder {
 .botao-voltar {
   box-sizing: border-box;
 }
-
-#titulo {
-  margin: auto;
-  padding: 8px 4px;
-  font-size: 16px;
-  outline: none;
-  border: 1px solid transparent;
-  border-bottom: 2px solid #007bff;
-  background-color: #f5f5f5;
-  transition: border-color 0.2s ease;
-}
-
-#descDetalhada::placeholder,
-#titulo::placeholder {
-  color: #aaa;
-  font-style: italic;
-}
-#descDetalhada {
+.card-body select {
+  appearance: none; /* Remove o estilo padrão do navegador */
   width: 100%;
-  min-height: 120px;
-  padding: 12px;
-  font-size: 15px;
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+  padding: 10px 40px 10px 15px;
   border: 1px solid transparent;
   border-bottom: 2px solid #007bff;
-  border-radius: 6px;
-  color: #333;
+  border-radius: 22px;
+  background-color: #f5f5f5;
+  font-size: 16px;
+  color: #444;
   outline: none;
-  transition: border-color 0.2s ease;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%23007bff'><polyline points='6,9 12,15 18,9' style='fill:none;stroke:%23007bff;stroke-width:2'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 15px top 50%;
+  background-size: 20px;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
 }
 
-#descDetalhada:focus,
-#titulo:focus {
-  border-color: #007bff;
-  border-bottom: 2px solid #0056b3;
-  background-color: #fff;
+.card-body select:hover {
+  background-color: #ebebeb;
+}
+
+.card-body select:focus {
+  border-color: #0056b3;
+  background-color: #ffffff;
+}
+
+.card-body select option {
+  padding: 8px;
 }
 
 .drag-area {
@@ -370,6 +405,36 @@ input:is(:focus, :valid) + .placeholder {
   border-radius: 5px;
 }
 
+.conjunto {
+  display: inline-flex;
+}
+
+.map-wrapper {
+  display: inline-flex;
+}
+map {
+  width: 518px;
+  height: 334px;
+  position: absolute;
+}
+fieldset {
+  width: 100%;
+  padding: 16px;
+}
+legend {
+  margin-bottom: 0px;
+  margin-left: 16px;
+  padding: 5px 10px;
+}
+.esquerda,
+.direta {
+  margin: auto;
+}
+@media (max-width: 1024px) {
+  .sidebar {
+    display: none;
+  }
+}
 @media (max-width: 768px) {
   body {
     flex-direction: column;

@@ -27,7 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $titulo = $_POST["titulo"];
     $descricao = $_POST["descricao"];
     $data_abertura = date("Y-m-d");
-
+    $bloco = $_POST['bloco'];
+    
         // força prioridade
     if (!in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
         $prioridade = 'Média';
