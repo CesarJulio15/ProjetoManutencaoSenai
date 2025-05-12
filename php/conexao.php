@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "db_manutencao";
+$dbname = "db_plano";
 $charset = 'utf8mb4';
 
 // Cria a conexão

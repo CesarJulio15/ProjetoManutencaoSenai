@@ -27,18 +27,7 @@ require __DIR__ . '/conexao.php';
 </style>
 </head>
 <body class="bg-body">
-  <main class="container-fluid p-0">
-    <div class="row g-0 min-vh-100 flex-column flex-md-row">
-      <!-- Sidebar -->
-      <div class="col-12 col-md-1 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
-        <div class="logo-superior">
-          <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="img-fluid" />
-        </div>
-        <div class="logo-inferior">
-          <img src="../img/TechFix.svg" alt="TechFix Facilities" class="img-fluid" />
-        </div>
-      </div>
-          <header class="top-bar">
+<header class="top-bar">
                 <div class="welcome-msg me-3 text-dark fw-bold">
                     <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
                     <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
@@ -51,6 +40,18 @@ require __DIR__ . '/conexao.php';
                     </a>
                 </div>
     </header>
+  <main class="container-fluid p-0">
+    <div class="row g-0 min-vh-100 flex-column flex-md-row">
+      <!-- Sidebar -->
+      <div class="col-12 col-md-1 sidebar d-flex flex-md-column justify-content-between align-items-center py-3">
+        <div class="logo-superior">
+          <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="img-fluid" />
+        </div>
+        <div class="logo-inferior">
+          <img src="../img/TechFix.svg" alt="TechFix Facilities" class="img-fluid" />
+        </div>
+      </div>
+
       <!-- Conteúdo -->
       <div class="col container d-flex justify-content-center align-items-center py-5">
         <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap justify-content-between align-items-center card w-100" style="max-width: 1200px;">

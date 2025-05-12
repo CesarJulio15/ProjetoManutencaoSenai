@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $descricao = $_POST["descricao"];
     $data_abertura = date("Y-m-d");
     $bloco = $_POST['bloco'];
-    
+
         // força prioridade
     if (!in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
         $prioridade = 'Média';
@@ -61,8 +61,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
         
-    $sql = "INSERT INTO manutencao
-            (titulo, descricao, responsavel, foto, status, data_abertura, prioridade)
+
+    $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status, data_abertura, bloco) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
@@ -78,16 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
-    $stmt->bind_param(
-        "ssbsss s", 
-        $titulo,
-        $descricao,
-        $responsavel,
-        $foto,
-        $status,
-        $data_abertura,
-        $prioridade
-    );
+    $stmt->bind_param("ssissss", $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $bloco);
 
     if ($stmt->execute()) {
         echo "<script>

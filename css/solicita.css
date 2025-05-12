@@ -441,14 +441,8 @@ legend {
   }
 
   .sidebar {
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #969494; /* mantém a cor original */
+    display: none;
   }
-
   .logo-superior,
   .logo-inferior {
     margin: 0;

@@ -74,6 +74,8 @@ CREATE TABLE `manutencao` (
   `data_abertura` DATE NOT NULL,
   `data_encerramento` DATE,
   `executante` INT DEFAULT NULL,
+  `prioridade` enum('Baixa','Média','Alta','Urgente') NOT NULL DEFAULT 'Média',
+  `bloco` enum('G0','D0 - Secretaria','D0 - Auditório','A0','A1','B0 - Quadra','B0','B1','C0','C1','E0','F0') NOT NULL,
   FOREIGN KEY (responsavel) REFERENCES docentes(id) ON DELETE CASCADE,
   FOREIGN KEY (executante) REFERENCES docentes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
