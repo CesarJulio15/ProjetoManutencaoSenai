@@ -233,13 +233,13 @@ $result = $stmt->get_result();
     ?>
     </section>
         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-    <a href="cadastro.php">
+    <a href="listar_funcionarios.php" title="Visualizar funcionários">
         <img src="../img/adicionar-usuario.png" alt="add-user" class="add-user-img">
     </a>
-    <a href="dashboard.php">
+    <a href="dashboard.php" title="Visualizar Dashboard">
         <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
     </a>
-    <a href="solicita.php">
+    <a href="solicita.php" title="Abrir ordem de serviço">
         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
     </a>
     <?php else :?>

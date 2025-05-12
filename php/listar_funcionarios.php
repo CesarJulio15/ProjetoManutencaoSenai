@@ -132,6 +132,21 @@ $total_paginas = ceil($total_registros / $limite);
 
 </div>
 </main>
+<?php if ($_SESSION['tipo'] == 'coordenador'): ?>
+    <a href="cadastro.php" title="Cadastrar funcionário">
+        <img src="../img/adicionar-usuario.png" alt="add-user" class="add-user-img">
+    </a>
+    <a href="dashboard.php" title="Visualizar Dashboard">
+        <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
+    </a>
+    <a href="solicita.php" title="Abrir ordem de serviço">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+    </a>
+    <?php else :?>
+            <a href="solicita.php" title="Abrir ordem de serviço">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+    </a>
+  <?php endif; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 </body>
 </html>

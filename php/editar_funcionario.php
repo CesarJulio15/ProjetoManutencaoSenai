@@ -84,6 +84,13 @@ if (!$docente) {
             <label><b>NIF:</b></label>
             <input type="text" name="nif" value="<?= htmlspecialchars($docente['nif']) ?>" required>
         </div>
+        <div class="d-flex flex-wrap" style="gap:10px;">        
+            <label><b>Status:</b></label>
+            <select name="status" <?= $tipoUsuario !== 'coordenador' ? 'disabled' : '' ?> required>
+            <option value="Ativo" <?= $docente['docente_status'] === 'Ativo' ? 'selected' : '' ?>>Ativo</option>
+            <option value="Inativo" <?= $docente['docente_status'] === 'Inativo' ? 'selected' : '' ?>>Inativo</option>
+        </select>
+        </div>
         </div>
         <div class="d-flex flex-row flex-wrap w-100" style="gap:10px;">
             <div class="d-flex flex-wrap" style="gap:10px;">        
