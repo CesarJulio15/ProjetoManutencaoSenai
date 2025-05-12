@@ -60,14 +60,14 @@
     // =====================
     // ENDPOINTS AJAX PARA DRILL-DOWN/UP
     // =====================
-   if (isset($_GET['action'])) {
+    if (isset($_GET['action'])) {
       header('Content-Type: application/json');
       $action      = $_GET['action'];
       // define o ano a partir do parâmetro ou do ano corrente
       $yearSelected = isset($_GET['year'])
                      ? (int) $_GET['year']
                      : (int) date('Y');
-
+    
       if ($action === 'ranking_por_status') {
          $status = $_GET['status'];
          $stmt = $conn->prepare("
@@ -83,18 +83,18 @@
          $stmt->bind_param('si', $status, $yearSelected);
          $stmt->execute();
          $res = $stmt->get_result();
-
+    
          $labels = [];
          $data   = [];
          while ($r = $res->fetch_assoc()) {
                $labels[] = $r['label'];
                $data[]   = (int) $r['value'];
          }
-
+    
          echo json_encode(['labels' => $labels, 'data' => $data]);
          exit;
       }
-
+    
       if ($action === 'mes_por_responsavel') {
          $resp = $_GET['responsavel'];
          $stmt = $conn->prepare("
@@ -108,17 +108,17 @@
          $stmt->bind_param('si', $resp, $yearSelected);
          $stmt->execute();
          $res = $stmt->get_result();
-
+    
          // preenche zeros para todos os 12 meses
          $arr = array_fill(0, 12, 0);
          while ($r = $res->fetch_assoc()) {
                $arr[(int) $r['idx']] = (int) $r['total'];
          }
-
+    
          echo json_encode(['data' => $arr]);
          exit;
       }
-
+    
       if ($action === 'drill_mes') {
          $year  = isset($_GET['year'])  ? (int) $_GET['year']  : (int) date('Y');
          $month = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
@@ -133,29 +133,29 @@
          $stmt->bind_param('ii', $year, $month);
          $stmt->execute();
          $res = $stmt->get_result();
-
+    
          $statusList  = ['Pendente','Em Andamento','Concluído','Rejeitado'];
          $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
          $labels      = range(1, $daysInMonth);
          $datasets    = [];
-
+    
          // inicializa todos os status com zeros
          foreach ($statusList as $s) {
                $datasets[$s] = array_fill(0, $daysInMonth, 0);
          }
-
+    
          while ($row = $res->fetch_assoc()) {
                $idx = (int) $row['period'] - 1;
                $datasets[$row['status']][$idx] = (int) $row['total'];
          }
-
+    
          echo json_encode(['labels' => $labels, 'datasets' => $datasets]);
          exit;
       }
-
+    
       echo json_encode(['error' => 'Ação inválida']);
       exit;
-   }
+    }
     
     // Dados por mês e status (visão mensal)
     $labelsMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -244,15 +244,14 @@
     }
     
     // --- Tendência mensal de aberturas vs. fechamentos ---
-   // --- Tendência mensal de aberturas vs. fechamentos ---
-$labelsTrend  = [];
-$abertosMes   = [];
-$fechadosMes  = [];
-
-for ($m = 1; $m <= 12; $m++) {
+    $labelsTrend  = [];
+    $abertosMes   = [];
+    $fechadosMes  = [];
+    
+    for ($m = 1; $m <= 12; $m++) {
     // Label no formato “01”, “02”, ..., “12”
     $labelsTrend[] = sprintf('%02d', $m);
-
+    
     // Quantos foram abertos no mês $m
     $stmtA = $conn->prepare("
         SELECT COUNT(*) AS cnt
@@ -265,7 +264,7 @@ for ($m = 1; $m <= 12; $m++) {
     $cntA = $stmtA->get_result()->fetch_assoc()['cnt'];
     $abertosMes[] = (int) $cntA;
     $stmtA->close();
-
+    
     // Quantos foram concluídos no mês $m (usa data_encerramento)
     $stmtF = $conn->prepare("
         SELECT COUNT(*) AS cnt
@@ -280,7 +279,7 @@ for ($m = 1; $m <= 12; $m++) {
     $cntF = $stmtF->get_result()->fetch_assoc()['cnt'];
     $fechadosMes[] = (int) $cntF;
     $stmtF->close();
-}
+    }
     // --- Backlog e envelhecimento ---
     $labelsAge = [];
     $dataAge   = [];
@@ -329,12 +328,12 @@ for ($m = 1; $m <= 12; $m++) {
     $atual[]     = (int)$r1['cnt'];
     $anterior[]  = (int)$r2['cnt'];
     }
-
+    
     // array de prioridades
-$prioridades = ['Alta','Média','Baixa'];
-// SLA por prioridade (% concluído em ≤3 dias)
-$slaPorPrioridade = [];
-foreach($prioridades as $p) {
+    $prioridades = ['Alta','Média','Baixa'];
+    // SLA por prioridade (% concluído em ≤3 dias)
+    $slaPorPrioridade = [];
+    foreach($prioridades as $p) {
     $r = $conn->query("
         SELECT
           SUM(CASE WHEN DATEDIFF(data_encerramento,data_abertura) <= 3 THEN 1 ELSE 0 END) AS dentro_prazo,
@@ -346,15 +345,15 @@ foreach($prioridades as $p) {
     $slaPorPrioridade[] = $r['total'] > 0
         ? round(($r['dentro_prazo']/$r['total'])*100, 2)
         : 0;
-}
-
-// para o comparativo ano a ano
-$meses = range(1,12);
-$anoAtual   = (int) date('Y');
-$anoAnterior = $anoAtual - 1;
-$abertosMes   = [];
-$fechadosMes  = [];
-foreach ($meses as $m) {
+    }
+    
+    // para o comparativo ano a ano
+    $meses = range(1,12);
+    $anoAtual   = (int) date('Y');
+    $anoAnterior = $anoAtual - 1;
+    $abertosMes   = [];
+    $fechadosMes  = [];
+    foreach ($meses as $m) {
     $ra = $conn->query("
       SELECT COUNT(*) AS cnt
       FROM manutencao
@@ -369,12 +368,12 @@ foreach ($meses as $m) {
     ")->fetch_assoc();
     $abertosMes[]  = (int)$ra['cnt'];
     $fechadosMes[] = (int)$rf['cnt'];
-}
-
-// para o Cross-Trend (média horas × volume)
-$mediaHoras = [];
-$totais     = [];
-foreach ($prioridades as $p) {
+    }
+    
+    // para o Cross-Trend (média horas × volume)
+    $mediaHoras = [];
+    $totais     = [];
+    foreach ($prioridades as $p) {
     $r = $conn->query("
       SELECT
         AVG(TIMESTAMPDIFF(HOUR, data_abertura, data_encerramento)) AS media_h,
@@ -385,7 +384,7 @@ foreach ($prioridades as $p) {
     ")->fetch_assoc();
     $mediaHoras[] = round((float)$r['media_h'], 1);
     $totais[]     = (int)$r['tot'];
-}
+    }
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -394,37 +393,40 @@ foreach ($prioridades as $p) {
         <title>Dashboard Gerencial</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+        <link rel="stylesheet" href="../css/padrao.css">
         <link rel="stylesheet" href="../css/dashboard.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <style>
         </style>
     </head>
-    <body class="">
+    <body class="d-flex flex-md-row w-100 h-100">
         <aside class="sidebar">
             <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
             <div class="spacer"></div>
             <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
         </aside>
-        <main class="main-content">
+        <main class="main-content d-flex flex-md-column w-100 h-100">
             <header class="top-bar">
-                <a href="panelTecnico.php" class="btn btn-secondary botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
+                <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
                 <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
-                    <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
-                    <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
-                    <?php echo htmlspecialchars($_SESSION['tipo']); ?>
-                    </span>
-                </div>
+                  <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+                      <?= htmlspecialchars($_SESSION['nome']) ?>
+                  </a><br>
+                      <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                          <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                      </span>
+                  </div>
                 <div class="logout-btn">
                     <a href="logout.php" title="Sair">
                     <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
                     </a>
                 </div>
             </header>
-            <div class="dashboard-container d-flex flex-wrap flex-column justify-content-evenly gap-4 mt-3 w-100">
-                <div class="d-flex flex-row justify-content-evenly gap-4  w-100">
+            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100">
                     <div class="card p-3 m-auto shadow-sm w-25 h-75" style="flex:1; min-width:300px">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box">
@@ -437,86 +439,89 @@ foreach ($prioridades as $p) {
                             </ul>
                         </div>
                     </div>
-                    <div class="card p-3 m-auto shadow-sm w-100 h-100" style="flex:2; min-width:400px; height:fit-content; max-height:max-content;" id="tecnicos">
+                    <div class="card p-3 m-auto shadow-sm w-100 h-100 d-flex flex-column" style="" id="tecnicos">
                         <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
-                        <table class="" style="border-radius:15px 15px 0 0; ">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Pendente</th>
-                                    <th>Andamento</th>
-                                    <th>Concluído</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($atendentes as $a): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($a['nome']) ?></td>
-                                    <td><?= $a['pendente'] ?></td>
-                                    <td><?= $a['andamento'] ?></td>
-                                    <td><?= $a['concluido'] ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                        <nav class="mt-2">
-                            <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-                                <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
-                                    <a class="page-link" href="?pagina_atendentes=<?= $i ?>#tickets-atendentes"><?= $i ?></a>
-                                </li>
-                                <?php endfor; ?>
-                            </ul>
-                        </nav>
+                        <div class="table-wrapper" style="overflow-x:auto;">
+                                <table class="" style="border-radius:15px 15px 0 0; ">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Pendente</th>
+                                            <th>Andamento</th>
+                                            <th>Concluído</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($atendentes as $a): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($a['nome']) ?></td>
+                                            <td><?= $a['pendente'] ?></td>
+                                            <td><?= $a['andamento'] ?></td>
+                                            <td><?= $a['concluido'] ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                                <nav class="mt-2">
+                                    <ul class="pagination justify-content-center">
+                                        <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                                        <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
+                                            <a class="page-link" href="?pagina_atendentes=<?= $i ?>#tickets-atendentes"><?= $i ?></a>
+                                        </li>
+                                        <?php endfor; ?>
+                                    </ul>
+                                </nav>
+                          </div>
                     </div>
-                    <div class="p-3 m-auto w-25">
-                        <div class="info-box bg-pink hover-expand-effect">
-                            <div class="icon">
-                                <span class="material-symbols-outlined">
-                                pending_actions
-                                </span>
+                    <div class="dashboard-cards p-3 m-auto w-25">
+                            <div class="info-box bg-pink hover-expand-effect">
+                                <div class="icon">
+                                    <span class="material-symbols-outlined">
+                                    pending_actions
+                                    </span>
+                                </div>
+                                <div class="content">
+                                    <div class="text">Pendentes</div>
+                                    <div class="number count-to" data-from="0" data-to="125" data-speed="15" data-fresh-interval="20"><?= $pendentes ?></div>
+                                </div>
                             </div>
-                            <div class="content">
-                                <div class="text">Pendentes</div>
-                                <div class="number count-to" data-from="0" data-to="125" data-speed="15" data-fresh-interval="20"><?= $pendentes ?></div>
+                            <div class="info-box bg-orange hover-expand-effect">
+                                <div class="icon">
+                                    <span class="material-symbols-outlined">
+                                    content_paste
+                                    </span>
+                                </div>
+                                <div class="content">
+                                    <div class="text">Em Andamento</div>
+                                    <div class="number count-to" data-from="0" data-to="1225" data-speed="1000" data-fresh-interval="20"><?= $emAndamento ?></div>
+                                </div>
                             </div>
+                            <div class="info-box bg-light-green hover-expand-effect">
+                                <div class="icon">
+                                    <span class="material-symbols-outlined">
+                                    assignment_turned_in
+                                    </span>
+                                </div>
+                                <div class="content">
+                                    <div class="text">Finalizados</div>
+                                    <div class="number count-to" data-from="0" data-to="243" data-speed="1000" data-fresh-interval="20"><?= $finalizados ?></div>
+                                </div>
+                            </div>
+                            <div class="info-box bg-cyan hover-expand-effect">
+                                <div class="icon">
+                                    <span class="material-symbols-outlined">
+                                    hourglass_bottom
+                                    </span>
+                                </div>
+                                <div class="content">
+                                    <div class="text">Tempo Médio de Conclusão</div>
+                                    <div class="number count-to" data-from="0" data-to="257" data-speed="1000" data-fresh-interval="20"><?= $mediaDias ?> dias</div>
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="info-box bg-orange hover-expand-effect">
-                            <div class="icon">
-                                <span class="material-symbols-outlined">
-                                content_paste
-                                </span>
-                            </div>
-                            <div class="content">
-                                <div class="text">Em Andamento</div>
-                                <div class="number count-to" data-from="0" data-to="1225" data-speed="1000" data-fresh-interval="20"><?= $emAndamento ?></div>
-                            </div>
-                        </div>
-                        <div class="info-box bg-light-green hover-expand-effect">
-                            <div class="icon">
-                                <span class="material-symbols-outlined">
-                                assignment_turned_in
-                                </span>
-                            </div>
-                            <div class="content">
-                                <div class="text">Finalizados</div>
-                                <div class="number count-to" data-from="0" data-to="243" data-speed="1000" data-fresh-interval="20"><?= $finalizados ?></div>
-                            </div>
-                        </div>
-                        <div class="info-box bg-cyan hover-expand-effect">
-                            <div class="icon">
-                                <span class="material-symbols-outlined">
-                                hourglass_bottom
-                                </span>
-                            </div>
-                            <div class="content">
-                                <div class="text">Tempo Médio de Conclusão</div>
-                                <div class="number count-to" data-from="0" data-to="257" data-speed="1000" data-fresh-interval="20"><?= $mediaDias ?> dias</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-                <div class="d-flex flex-row justify-content-evenly gap-4 w-100">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2 m-auto">
                         <!-- Gráfico de Pizza (à esquerda) -->
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
@@ -539,9 +544,8 @@ foreach ($prioridades as $p) {
                             </div>
                         </div>
                     </div>
-
                 </div>
-                <div class="d-flex flex-row justify-content-evenly gap-4 w-100">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2 m-auto">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
@@ -556,9 +560,8 @@ foreach ($prioridades as $p) {
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
-
-                </div>                
-                <div class="d-flex flex-row justify-content-evenly gap-4 w-100 ">
+                </div>
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2  m-auto">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
@@ -567,23 +570,25 @@ foreach ($prioridades as $p) {
                             </div>
                         </div>
                     </div>
-                                        <div class="p-2  m-auto">
+                    <div class="p-2  m-auto">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title">
-                              <span class="material-symbols-outlined">release_alert</span> 
-                              Compliance por Prioridade</h5>
+                                <span class="material-symbols-outlined">release_alert</span> 
+                                Compliance por Prioridade
+                            </h5>
                             <div class="chart-wrapper w-100">
                                 <canvas id="chartSLA"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="d-flex flex-row justify-content-evenly gap-4 w-100">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2  m-auto">
                         <div class="chart-container card p-3 shadow-sm">
                             <h5 class="title">
-                              <span class="material-symbols-outlined">date_range</span> 
-                              Comparação anual</h5>
+                                <span class="material-symbols-outlined">date_range</span> 
+                                Comparação anual
+                            </h5>
                             <div class="chart-wrapper">
                                 <canvas id="chartYoY"></canvas>
                             </div>
@@ -598,7 +603,6 @@ foreach ($prioridades as $p) {
                         </div>
                     </div>
                 </div>
-
             </div>
             </div>
             </div>
@@ -803,121 +807,119 @@ foreach ($prioridades as $p) {
                 }
                 });            
             </script>
-            
-<script>
-  // 1) SLA Compliance por Prioridade
-  new Chart(
-    document.getElementById('chartSLA').getContext('2d'),
-    {
-      type: 'bar',
-      data: {
-        labels: <?= json_encode($prioridades) ?>,
-        datasets: [{
-          label: '% Compliance SLA',
-          data: <?= json_encode($slaPorPrioridade) ?>,
-        }]
-      },
-      options: {
-        plugins: {
-          title: {
-            display: true,
-            text: 'SLA Compliance por Prioridade'
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: {
-              callback: v => v + '%'
-            }
-          }
-        }
-      }
-    }
-  );
-
-  // 2) Comparativo Ano a Ano (Aberturas)
-  new Chart(
-    document.getElementById('chartYoY').getContext('2d'),
-    {
-      type: 'line',
-      data: {
-        labels: <?= json_encode(array_map(fn($m)=>sprintf('%02d',$m), $meses)) ?>,
-        datasets: [
-          {
-            label: '<?= $anoAtual ?>',
-            data: <?= json_encode($abertosMes) ?>,
-            fill: false
-          },
-          {
-            label: '<?= $anoAnterior ?>',
-            data: <?= json_encode($fechadosMes) ?>,
-            fill: false
-          }
-        ]
-      },
-      options: {
-        plugins: {
-          title: {
-            display: true,
-            text: 'Comparativo Ano a Ano (aberturas)'
-          }
-        },
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
-    }
-  );
-
-  // 3) Cross-Trend: Tempo Médio × Volume de Chamados
-  new Chart(
-    document.getElementById('chartCross').getContext('2d'),
-    {
-      type: 'bar',
-      data: {
-        labels: <?= json_encode($prioridades) ?>,
-        datasets: [
-          {
-            type: 'line',
-            label: 'Tempo Médio (h)',
-            yAxisID: 'A',
-            data: <?= json_encode($mediaHoras) ?>,
-          },
-          {
-            type: 'bar',
-            label: 'Total de Chamados',
-            yAxisID: 'B',
-            data: <?= json_encode($totais) ?>,
-          }
-        ]
-      },
-      options: {
-        plugins: {
-          title: {
-            display: true,
-            text: 'Resolução (h) × Volume de Chamados'
-          }
-        },
-        scales: {
-          A: {
-            type: 'linear',
-            position: 'left',
-            title: { display: true, text: 'Horas' }
-          },
-          B: {
-            type: 'linear',
-            position: 'right',
-            title: { display: true, text: 'Chamados' },
-            grid: { drawOnChartArea: false }
-          }
-        }
-      }
-    }
-  );
-</script>
-
+            <script>
+                // 1) SLA Compliance por Prioridade
+                new Chart(
+                  document.getElementById('chartSLA').getContext('2d'),
+                  {
+                    type: 'bar',
+                    data: {
+                      labels: <?= json_encode($prioridades) ?>,
+                      datasets: [{
+                        label: '% Compliance SLA',
+                        data: <?= json_encode($slaPorPrioridade) ?>,
+                      }]
+                    },
+                    options: {
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'SLA Compliance por Prioridade'
+                        }
+                      },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          max: 100,
+                          ticks: {
+                            callback: v => v + '%'
+                          }
+                        }
+                      }
+                    }
+                  }
+                );
+                
+                // 2) Comparativo Ano a Ano (Aberturas)
+                new Chart(
+                  document.getElementById('chartYoY').getContext('2d'),
+                  {
+                    type: 'line',
+                    data: {
+                      labels: <?= json_encode(array_map(fn($m)=>sprintf('%02d',$m), $meses)) ?>,
+                      datasets: [
+                        {
+                          label: '<?= $anoAtual ?>',
+                          data: <?= json_encode($abertosMes) ?>,
+                          fill: false
+                        },
+                        {
+                          label: '<?= $anoAnterior ?>',
+                          data: <?= json_encode($fechadosMes) ?>,
+                          fill: false
+                        }
+                      ]
+                    },
+                    options: {
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Comparativo Ano a Ano (aberturas)'
+                        }
+                      },
+                      scales: {
+                        y: { beginAtZero: true }
+                      }
+                    }
+                  }
+                );
+                
+                // 3) Cross-Trend: Tempo Médio × Volume de Chamados
+                new Chart(
+                  document.getElementById('chartCross').getContext('2d'),
+                  {
+                    type: 'bar',
+                    data: {
+                      labels: <?= json_encode($prioridades) ?>,
+                      datasets: [
+                        {
+                          type: 'line',
+                          label: 'Tempo Médio (h)',
+                          yAxisID: 'A',
+                          data: <?= json_encode($mediaHoras) ?>,
+                        },
+                        {
+                          type: 'bar',
+                          label: 'Total de Chamados',
+                          yAxisID: 'B',
+                          data: <?= json_encode($totais) ?>,
+                        }
+                      ]
+                    },
+                    options: {
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Resolução (h) × Volume de Chamados'
+                        }
+                      },
+                      scales: {
+                        A: {
+                          type: 'linear',
+                          position: 'left',
+                          title: { display: true, text: 'Horas' }
+                        },
+                        B: {
+                          type: 'linear',
+                          position: 'right',
+                          title: { display: true, text: 'Chamados' },
+                          grid: { drawOnChartArea: false }
+                        }
+                      }
+                    }
+                  }
+                );
+            </script>
         </main>
     </body>
 </html>

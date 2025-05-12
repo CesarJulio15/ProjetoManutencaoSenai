@@ -11,6 +11,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
+    <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
@@ -21,7 +22,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
 </aside>
 
-<main class="main-content">
+<main class="main-content d-flex flex-md-column w-100 h-100">
     <header class="top-bar">
         <form method="GET" class="search-box">
             <input type="text" name="busca" placeholder="Buscar...">
@@ -42,7 +43,9 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
         </div>
 
             <div class="welcome-msg me-3 text-dark fw-bold">
-                <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
+            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+                <?= htmlspecialchars($_SESSION['nome']) ?>
+            </a><br>
                 <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
                     <?php echo htmlspecialchars($_SESSION['tipo']); ?>
                 </span>
@@ -117,28 +120,54 @@ if (isset($_GET['meus']) && $isTecnico) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("is", $_SESSION['id'], $busca);
 
-// 4) Coordenador — vê tudo ou filtra por status
 } else {
-    if ($statusParam) {
-        $sql = "
-          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-          FROM manutencao m
-          JOIN docentes d1 ON m.responsavel = d1.id
-          LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE m.status = ? AND m.titulo LIKE ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $statusParam, $busca);
+    $tipo = $_SESSION['tipo'];
+// 4) Coordenador — vê tudo ou filtra por status
+    if ($tipo === 'coordenador') {
+        if ($statusParam) {
+            $sql = "
+              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+              FROM manutencao m
+              JOIN docentes d1 ON m.responsavel = d1.id
+              LEFT JOIN docentes d2 ON m.executante = d2.id
+              WHERE m.status = ? AND m.titulo LIKE ?
+            ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ss", $statusParam, $busca);
+        } else {
+            $sql = "
+              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+              FROM manutencao m
+              JOIN docentes d1 ON m.responsavel = d1.id
+              LEFT JOIN docentes d2 ON m.executante = d2.id
+              WHERE m.titulo LIKE ?
+            ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $busca);
+        }
     } else {
-        $sql = "
-          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-          FROM manutencao m
-          JOIN docentes d1 ON m.responsavel = d1.id
-          LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE m.titulo LIKE ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $busca);
+        // DOCENTE ou OUTRO: mostra apenas os pedidos em que ele é o responsável
+        if ($statusParam) {
+            $sql = "
+              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+              FROM manutencao m
+              JOIN docentes d1 ON m.responsavel = d1.id
+              LEFT JOIN docentes d2 ON m.executante = d2.id
+              WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?
+            ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sis", $statusParam, $_SESSION['id'], $busca);
+        } else {
+            $sql = "
+              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+              FROM manutencao m
+              JOIN docentes d1 ON m.responsavel = d1.id
+              LEFT JOIN docentes d2 ON m.executante = d2.id
+              WHERE m.responsavel = ? AND m.titulo LIKE ?
+            ";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("is", $_SESSION['id'], $busca);
+        }
     }
 }
 
@@ -217,7 +246,7 @@ $result = $stmt->get_result();
             <a href="solicita.php">
         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
     </a>
-'   <?php endif; ?>
+  <?php endif; ?>
     <script>
     document.querySelectorAll('.status-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
