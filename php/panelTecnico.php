@@ -208,16 +208,20 @@ $result = $stmt->get_result();
                         echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
                     }
                     ?>
+                </div>
+                <div class="d-flex conjunto">
+                <p><strong>Nº OS:</strong> <?php echo htmlspecialchars($row['numero_os']); ?></p>
                 </div>                    
                 <div class="d-flex conjunto">
                                     <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
-                    <p><?php echo htmlspecialchars($row['descricao']); ?></p>
+                                    <p><strong>Localização:</strong> <?php echo htmlspecialchars($row['localizacao_ambiente']); ?></p>
                     <?php if (!empty($row['nome_executante'])): ?>
                         <p><strong>Executante:</strong> <?php echo htmlspecialchars($row['nome_executante']); ?></p>
                     <?php endif; ?>       
                     </div>
-
-                <div class="d-flex card-footer">
+                   
+                <div class="d-flex w-100 h-100 card-footer">
+                    <span class="tag"><?php echo htmlspecialchars($row['bloco']); ?></span>
                     <span class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
                         <?php echo htmlspecialchars($row['status']); ?>
                     </span>

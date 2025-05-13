@@ -66,13 +66,16 @@ INSERT INTO `docentes` (
 --
 
 CREATE TABLE `manutencao` (
+  `id` INT NOT NULL PRIMARY KEY,
+  `numero_os` VARCHAR(20) UNIQUE,
   `titulo` varchar(50) NOT NULL,
   `descricao` varchar(255) DEFAULT NULL,
+  `localizacao_ambiente` VARCHAR(255),
   `responsavel` INT NOT NULL,
   `foto` blob DEFAULT NULL,
   `status` ENUM('Pendente', 'Em Andamento', 'Rejeitados','Concluído') NOT NULL default 'Pendente',
   `data_abertura` DATE NOT NULL,
-  `data_encerramento` DATE,
+  `data_encerramento` DATE DEFAULT NULL,
   `executante` INT DEFAULT NULL,
   `prioridade` enum('Baixa','Média','Alta','Urgente') NOT NULL DEFAULT 'Média',
   `bloco` enum('G0','D0 - Secretaria','D0 - Auditório','A0','A1','B0 - Quadra','B0','B1','C0','C1','E0','F0') NOT NULL,

@@ -53,16 +53,14 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
    
        if ($row = $result->fetch_assoc()) {
           $jaExecutando = ($row['executante'] === $tecnico_id);
-   ?>
-   <?php
-     $status = $row['status'];
-    switch ($status) {
-        case 'Pendente':     $statusClass = 'status-pendente';     break;
-        case 'Em Andamento': $statusClass = 'status-em-andamento'; break;
-        case 'Concluído':    $statusClass = 'status-concluido';    break;
-        case 'Rejeitado':    $statusClass = 'status-rejeitado';    break;
-        default:             $statusClass = '';
-    }
+          $status = $row['status'];
+          switch ($status) {
+              case 'Pendente':     $statusClass = 'status-pendente';     break;
+              case 'Em Andamento': $statusClass = 'status-em-andamento'; break;
+              case 'Concluído':    $statusClass = 'status-concluido';    break;
+              case 'Rejeitado':    $statusClass = 'status-rejeitado';    break;
+              default:             $statusClass = '';
+          }
    ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -70,16 +68,19 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       <meta charset="UTF-8">
       <title>Detalhe da Manutenção</title>
       <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link rel="stylesheet" href="../css/detalhes.css">
+      <link rel="stylesheet" href="../css/padrao.css">
+      <link rel="stylesheet" href="../css/detalhes.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+      <style>
+
+      </style>
    </head>
-   <body class="d-flex flex-column flex-md-row">
-      <?php if (!empty($alerta)) echo $alerta; ?>
-      <?php
+   <body class="">
+   <?php
          $alerta = '';
          if (isset($_SESSION['executante_sucesso'])) {
              $alerta = "<script>
@@ -102,86 +103,107 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
              unset($_SESSION['executante_erro']);
          }
          ?>
+         <?php if (!empty($alerta)) echo $alerta; ?>
+
       <!-- Sidebar -->
       <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
          <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
          <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
       </aside>
-      <main class="content d-flex justify-content-center align-items-center min-vh-100 py-5">
-         <header class="top-bar position-fixed top-0 end-0 p-3 d-flex align-items-center" style="z-index: 1050;">
+  <main class="">
+      <header class="top-bar">
+
             <div class="welcome-msg me-3 text-dark fw-bold">
-               <?php echo htmlspecialchars($_SESSION['nome']); ?><br>
+            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+               <?= htmlspecialchars($_SESSION['nome']) ?>
+            </a><br>
                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
-               <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                  <?php echo htmlspecialchars($_SESSION['tipo']); ?>
                </span>
             </div>
             <div class="logout-btn">
                <a href="logout.php" title="Sair">
-               <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                  <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
                </a>
             </div>
-         </header>
-         <div class="detalhe-container <?= $statusClass ?> mx-auto">
-              <!-- badge colorido -->
+      </header>
+      <div class="detalhe-container <?= $statusClass ?> d-flex flex-column mb-5">
+      <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
+            <!-- badge colorido -->
             <?php if ($statusClass): ?>
                <div class="status-indicator <?= $statusClass ?>" title="Status do pedido"></div>
             <?php endif; ?>
          <!-- Voltar -->
-         <div class="card-header d-lg-flex text-start mb-4 d-flex justify-content-between ">
+         <div class="card-header d-lg-flex text-start mb-4 d-flex align-start justify-content-evenly w-100 ">
             <a href="panelTecnico.php" class="botao-voltar" title="Voltar">
-                <span class="material-symbols-outlined">arrow_back_ios</span>
+               <span class="material-symbols-outlined">arrow_back_ios</span>
             </a>
-            <h1 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h1>
+            <h1 class="numero_os" id="numero_os"><?php echo htmlspecialchars($row['numero_os']); ?></h1>
          </div>
          <div class="info-detalhe mb-4 mt-4 w-100 h-100 text-start">
-            <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-            <div class="d-flex flex-column flex-md-row gap-4 align-items-start">               
-                <div class="d-flex">
-                  <label class="info-label me-1">Responsável:</label>
-                  <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+            <h2 class="title titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h2>
+            <div class="info d-flex flex-column align-items-start align-center w-100">
+               <div class="d-flex flex-md-row gap-4 align-items-start align-center  w-100">               
+                  <div class="info-item mt-3">
+                     <label class="info-label me-1"><b>Aberto por</b>:</label>
+                     <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_responsavel']); ?></p>
+                  </div>
+                  <div class="info-item mt-3">
+                     <label class="info-label me-1"><b>Prioridade</b>:</label>
+                     <p class="info-text mb-0"><?= htmlspecialchars($row['prioridade']) ?></p>
+                  </div>
+                  <?php if (!empty($row['executante'])): ?>
+                  <div class="info-item mt-3">
+                     <label class="info-label me-1"><b>Técnico</b>:</label>
+                     <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_executante']); ?></p>
+                  </div>
+                  <?php endif; ?>
                </div>
-                 <div class="d-flex">
-    <label class="info-label me-1">Prioridade:</label>
-    <p class="info-text mb-0"><?= htmlspecialchars($row['prioridade']) ?></p>
-  </div>
-               <?php if (!empty($row['executante'])): ?>
-               <div class="d-flex">
-                  <label class="info-label me-1">Técnico:</label>
-                  <p class="info-text mb-0"><?php echo htmlspecialchars($row['nome_executante']); ?></p>
+               <div class="d-flex flex-md-row gap-4 align-center w-100">
+                        <div class="info-item mt-3">
+                           <label class="info-label"><b>Bloco</b>:</label>
+                           <p class="info-text"><?php echo nl2br(htmlspecialchars($row['bloco'])); ?></p>
+                        </div>
+                        <div class="info-item mt-3">
+                           <label class="info-label"><b>Localização (ambiente)</b>:</label>
+                           <p class="info-text"><?php echo nl2br(htmlspecialchars($row['localizacao_ambiente'])); ?></p>
+                        </div>
                </div>
-               <?php endif; ?>
+               <div class="d-flex flex-md-row gap-4 align-center w-100">
+                     <div class="info-item mt-3">
+                        <label class="info-label"><b>Descrição</b>:</label>
+                        <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
+                     </div>
+               </div>
 
+               
             </div>
-            <div class="info-item mt-3">
-               <label class="info-label">Descrição:</label>
-               <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
-            </div>
+
             <div class="container-img mt-2">
                <?php
                   if (!empty($row['foto'])) {
-                      $fotoBase64 = base64_encode($row['foto']);
-                      echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
+                     $fotoBase64 = base64_encode($row['foto']);
+                     echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
                   }else{
                      echo "<class='no-results'><img src='../img/no-results 1.svg' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'></div>";
                   }
                   ?>
             </div>
-            <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
             <!-- Rodapé com botões -->
             <div class="card-footer mt-2 mb-2 form-footer">
                <?php if ($_SESSION['tipo'] == 'coordenador') : ?>
                <div class="d-flex gap-2 flex-wrap justify-content-center">
                   <button class="status-btn btn btn-danger" data-status="Pendente" title="Pendente" style="background: #e91e63;">
-                    <span class="material-symbols-outlined">pending_actions</span> Pendente</button>
+                  <span class="material-symbols-outlined">pending_actions</span></button>
                   <button class="status-btn btn btn-warning text-white" data-status="Em Andamento" title="Em Andamento" style="background: #ff9800;">
-                    <span class="material-symbols-outlined">assignment</span> Em Andamento</button>
+                  <span class="material-symbols-outlined">assignment</span></button>
                   <button class="status-btn btn btn-success" data-status="Concluído" title="Concluído" style="background: #5b7f2e;"><span class="material-symbols-outlined">
                         assignment_turned_in
-                        </span> Concluído</button>
+                        </span></button>
                   <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designarModal">
-                    <span class="material-symbols-outlined">engineering</span> Designar
-                </button>
-                                     <!-- Excluir -->
+                  <span class="material-symbols-outlined">engineering</span> Designar
+               </button>
+                                    <!-- Excluir -->
                      <div class="flex-shrink-0">
                         <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
                            <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
@@ -191,31 +213,31 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                         </form>
                      </div>
                </div>
-                <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
+               <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
                      <!-- Exibir botão "Candidatar" se não há executante -->
-                    <form method="post">
+                  <form method="post">
                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                         <input type="hidden" name="acao" value="candidatar">
                         <button type="submit" class="btn-candidatar" title="Candidatar-se">
                            <span class="material-symbols-outlined">how_to_reg</span></button>
-                    </form>
+                  </form>
                                     <form action="rejeitar.php" method="post">
-                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                  <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                  <button type="submit" class="btn-rejeitar" title="Rejeitar">
                      <span class="material-symbols-outlined">person_cancel</span></button>
-                </form>
-                <?php elseif ($jaExecutando && $row['status'] == 'Em Andamento' && $_SESSION['tipo'] == 'técnico'): ?>
-                    <!-- Se o usuário atual for o executante, exibir "Concluir" -->
-                    <form method="post">
+               </form>
+               <?php elseif ($jaExecutando && $row['status'] == 'Em Andamento' && $_SESSION['tipo'] == 'técnico'): ?>
+                  <!-- Se o usuário atual for o executante, exibir "Concluir" -->
+                  <form method="post">
                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                         <input type="hidden" name="acao" value="concluir">
                         <button type="submit" class="btn-confirma" title="Concluir"><span class="material-symbols-outlined">check</span></button>
-                    </form>
+                  </form>
                      <form action="rejeitar.php" method="post">
-                    <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                    <button type="submit" class="btn-rejeitar" title="Rejeitar">
+                  <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                  <button type="submit" class="btn-rejeitar" title="Rejeitar">
                      <span class="material-symbols-outlined">person_cancel</span></button>
-                </form>
+               </form>
                <?php endif; ?>
             </div>
          </div>
@@ -296,7 +318,9 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
          });
       </script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-   </body>
+   
+</main>
+</body>
 </html>
 <?php
    } else {

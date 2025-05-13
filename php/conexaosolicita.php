@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'conexao.php';
-// 0) Se não estiver logado, redireciona
+
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
     exit();
@@ -23,14 +23,48 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+function gerarNumeroOS($conn) {
+    do {
+        $numero_os = 'OS-' . date('Ymd') . '-' . rand(1000, 9999);
+        $check = $conn->prepare("SELECT id FROM manutencao WHERE numero_os = ?");
+        $check->bind_param("s", $numero_os);
+        $check->execute();
+        $result = $check->get_result();
+    } while ($result->num_rows > 0);
+    return $numero_os;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $numero_os = gerarNumeroOS($conn);  
     $titulo = $_POST["titulo"];
     $descricao = $_POST["descricao"];
     $data_abertura = date("Y-m-d");
     $bloco = $_POST['bloco'];
+    $localizacao = $_POST["localizacao"];
+    $tipoUsuario = $_SESSION['tipo'] ?? null;
+    
+    // Antes de prosseguir, verifique se $_SESSION['id'] está no banco:
+    $responsavel_id = $_SESSION['id'];
+    $checkResp = $conn->prepare("SELECT id FROM docentes WHERE id = ?");
+    $checkResp->bind_param("i", $responsavel_id);
+    $checkResp->execute();
+    $resultResp = $checkResp->get_result();
+    
+    if ($resultResp->num_rows === 0) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Responsável inválido!',
+                text: 'O responsável não está cadastrado no sistema.'
+            }).then(() => {
+                window.location.href = 'solicita.php';
+            });
+        </script>";
+        exit();
+    }
 
         // força prioridade
-    if (!in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+    if (!in_array( $tipoUsuario, ['coordenador', 'técnico'])) {
         $prioridade = 'Média';
     } else {
         // validação extra
@@ -42,13 +76,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 2) Define o responsável:
     //    - se for coordenador ou técnico, usa o valor vindo de POST
     //    - caso contrário, é o próprio usuário logado
-    if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+    if (in_array($tipoUsuario, ['coordenador', 'técnico'])) {
         $responsavel = intval($_POST['responsavel']);
     } else {
         $responsavel = intval($_SESSION['id']);
     }
+
+    // Confirma que o responsável existe
+    $verificaResponsavel = $conn->prepare("SELECT id FROM docentes WHERE id = ?");
+    $verificaResponsavel->bind_param("i", $responsavel);
+    $verificaResponsavel->execute();
+    if ($verificaResponsavel->get_result()->num_rows === 0) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'O responsável informado não existe.'
+            }).then(() => {
+                window.location.href = 'solicita.php';
+            });
+        </script>";
+        exit();
+    }
+
+
     // 5) Define o executante: se for técnico, é o próprio usuário; senão, null
-    if ($_SESSION['tipo'] === 'técnico') {
+    if ($tipoUsuario === 'técnico') {
         $executante = intval($_SESSION['id']);
             $status = "Em Andamento";
     } else {
@@ -62,9 +115,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
         
 
-    $sql = "INSERT INTO manutencao (titulo, descricao, responsavel, foto, status, data_abertura, bloco) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
-
+    $sql = "INSERT INTO manutencao (numero_os, titulo, descricao, localizacao_ambiente, responsavel, foto, status, data_abertura, bloco)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo "<script>
@@ -77,9 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </script>";
         exit();
     }
-
-    $stmt->bind_param("ssissss", $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $bloco);
-
+    $stmt->bind_param("sssssssss", $numero_os, $titulo, $descricao, $localizacao, $responsavel, $foto, $status, $data_abertura, $bloco);
     if ($stmt->execute()) {
         echo "<script>
             Swal.fire({

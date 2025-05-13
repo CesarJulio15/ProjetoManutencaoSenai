@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (isset($_SESSION['id'])) {
+    header("Location: panelTecnico.php");
+    exit();
+}
 include 'conexao.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -71,7 +71,7 @@
                                     <div class="d-flex flex-row mb-3">
                                         <label for="responsavel" class="form-label">
                                         <span class="material-symbols-outlined">assignment_ind</span>
-                                        Responsável: </label>
+                                        Solicitado por: </label>
                                         <br>
                                         <select name="responsavel" id="responsavel" class="form-select" required>
                                             <option value="" disabled selected>Selecione o responsável</option>
@@ -141,30 +141,35 @@
                         </map>                    
                         </div>
                         <div class="d-flex flex-md-row">
-                        <label><strong><i class="fa-solid fa-location-dot"></i> Selecione o setor/bloco:</strong></label><br>
-                        <select name="bloco" id="bloco" class="form-select" required>
-                            <option value="" disabled selected>Escolha um setor</option>
-                            <option value="G0">G0 – Portaria</option>
-                            <optgroup label="D0">
-                            <option value="D0 - Secretaria">Secretaria</option>
-                            <option value="D0 - Auditório">Auditório</option>
-                            </optgroup>
-                            <optgroup label="A0/A1">                      
-                            <option value="A0">A0</option>
-                            <option value="A1">A1</option> 
-                            </optgroup>
-                            <optgroup label="B0/B1">
-                            <option value="B0 - Quadra">B0 – Quadra</option>
-                            <option value="B0">B0</option>
-                            <option value="B1">B1</option>
-                            </optgroup>
-                            <optgroup label="C0/C1">
-                            <option value="C0">C0</option>
-                            <option value="C1">C1</option>
-                            </optgroup>
-                            <option value="E0">E0 – Zeladoria / Empilhadeira</option>
-                            <option value="F0">F0 – Cabine Primária</option>
-                        </select>
+                            <label><strong><i class="fa-solid fa-location-dot"></i> Selecione o setor/bloco:</strong></label><br>
+                            <select name="bloco" id="bloco" class="form-select" required>
+                                <option value="" disabled selected>Escolha um setor</option>
+                                <option value="G0">G0 – Portaria</option>
+                                <optgroup label="D0">
+                                <option value="D0 - Secretaria">Secretaria</option>
+                                <option value="D0 - Auditório">Auditório</option>
+                                </optgroup>
+                                <optgroup label="A0/A1">                      
+                                <option value="A0">A0</option>
+                                <option value="A1">A1</option> 
+                                </optgroup>
+                                <optgroup label="B0/B1">
+                                <option value="B0 - Quadra">B0 – Quadra</option>
+                                <option value="B0">B0</option>
+                                <option value="B1">B1</option>
+                                </optgroup>
+                                <optgroup label="C0/C1">
+                                <option value="C0">C0</option>
+                                <option value="C1">C1</option>
+                                </optgroup>
+                                <option value="E0">E0 – Zeladoria / Empilhadeira</option>
+                                <option value="F0">F0 – Cabine Primária</option>
+                            </select>
+                        </div>
+                        <br>
+                        <div class="form-group d-flex flex-md-row">
+                          <label for="localizacao"><b>Localização do Ambiente:</b> </label>
+                          <input type="text" class="form-control" name="localizacao" id="localizacao" placeholder="Insira o ambiente com problema (Ex: Sala 32)" required>
                         </div>
 
                         </div>
