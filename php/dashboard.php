@@ -617,9 +617,21 @@
             </div>
             </div>
             </div>
-            <a href="export_data.php" class="btn btn-success btn-export" title="Exportar dados">
-            <span class="material-symbols-outlined">file_export</span>
+            <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
+            <a href="listar_funcionarios.php" title="Visualizar funcionários">
+        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
+    </a>
+            <a href="export_data.php" class="" title="Exportar dados">
+            <img src="../img/exportar-arquivo.png" alt="add-user" class="add-dash-img">
             </a>
+            <a href="solicita.php" title="Abrir ordem de serviço">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+    </a>
+    <?php else :?>
+            <a href="solicita.php">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+    </a>
+  <?php endif; ?>            
             <script>
                 // captura as cores diretamente das info-box
                 const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;
