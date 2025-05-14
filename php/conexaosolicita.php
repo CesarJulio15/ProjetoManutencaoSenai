@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'conexao.php';
+require_once 'enviar_email.php';
 
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
@@ -11,15 +12,8 @@ echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
 
 // 2) Só processa se vier POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo "<script>
-        Swal.fire({
-            icon: 'info',
-            title: 'Acesso inválido',
-            text: 'Envie o formulário corretamente.'
-        }).then(() => {
-            window.location.href = 'solicita.php';
-        });
-    </script>";
+    $_SESSION['erro'] = "Envie o formulário corretamente.";
+    header("Location: solicita.php");
     exit();
 }
 
@@ -43,24 +37,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $localizacao = $_POST["localizacao"];
     $tipoUsuario = $_SESSION['tipo'] ?? null;
     
-    // Antes de prosseguir, verifique se $_SESSION['id'] está no banco:
-    $responsavel_id = $_SESSION['id'];
-    $checkResp = $conn->prepare("SELECT id FROM docentes WHERE id = ?");
-    $checkResp->bind_param("i", $responsavel_id);
-    $checkResp->execute();
-    $resultResp = $checkResp->get_result();
-    
-    if ($resultResp->num_rows === 0) {
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Responsável inválido!',
-                text: 'O responsável não está cadastrado no sistema.'
-            }).then(() => {
-                window.location.href = 'solicita.php';
-            });
-        </script>";
-        exit();
+        // Define o responsável: se for coordenador ou técnico, vem do POST; senão, do próprio login
+    $responsavel = (in_array($tipoUsuario, ['coordenador', 'técnico']) && !empty($_POST['responsavel']))
+    ? intval($_POST['responsavel'])
+    : intval($_SESSION['id']);
+
+    // Verifica uma única vez se o responsável existe
+    $verificaResp = $conn->prepare("SELECT id FROM docentes WHERE id = ?");
+    $verificaResp->bind_param("i", $responsavel);
+    $verificaResp->execute();
+    if ($verificaResp->get_result()->num_rows === 0) {
+    $_SESSION['erro'] = "O responsável informado não existe.";
+    header("Location: solicita.php");
+    exit();
     }
 
         // força prioridade
@@ -73,41 +62,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     : 'Média';
     }
 
-    // 2) Define o responsável:
-    //    - se for coordenador ou técnico, usa o valor vindo de POST
-    //    - caso contrário, é o próprio usuário logado
-    if (in_array($tipoUsuario, ['coordenador', 'técnico'])) {
-        $responsavel = intval($_POST['responsavel']);
-    } else {
-        $responsavel = intval($_SESSION['id']);
-    }
-
-    // Confirma que o responsável existe
-    $verificaResponsavel = $conn->prepare("SELECT id FROM docentes WHERE id = ?");
-    $verificaResponsavel->bind_param("i", $responsavel);
-    $verificaResponsavel->execute();
-    if ($verificaResponsavel->get_result()->num_rows === 0) {
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro!',
-                text: 'O responsável informado não existe.'
-            }).then(() => {
-                window.location.href = 'solicita.php';
-            });
-        </script>";
-        exit();
-    }
-
-
     // 5) Define o executante: se for técnico, é o próprio usuário; senão, null
-    if ($tipoUsuario === 'técnico') {
+    $executante = null;
+    if (in_array($tipoUsuario, ['coordenador', 'técnico']) && !empty($_POST['executante'])) {
+        $executante = intval($_POST['executante']);
+        $status = "Em Andamento";
+    } elseif ($tipoUsuario === 'técnico') {
         $executante = intval($_SESSION['id']);
-            $status = "Em Andamento";
+        $status = "Em Andamento";
     } else {
-        $executante = null;
         $status = "Pendente";
     }
+
     // Tratamento da imagem (opcional)
     $foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
@@ -115,83 +81,59 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
         
 
-    $sql = "INSERT INTO manutencao (numero_os, titulo, descricao, localizacao_ambiente, responsavel, foto, status, data_abertura, bloco)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO manutencao (
+                numero_os, titulo, descricao, localizacao_ambiente,
+                responsavel, foto, status, data_abertura, bloco, executante
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro na preparação da query!',
-                text: '" . addslashes($conn->error) . "',
-                confirmButtonText: 'Fechar'
-            });
-        </script>";
+        $_SESSION['erro'] = "Erro na preparação da query: " . $conn->error;
+        header("Location: solicita.php");
         exit();
     }
-    $stmt->bind_param("sssssssss", $numero_os, $titulo, $descricao, $localizacao, $responsavel, $foto, $status, $data_abertura, $bloco);
+        $stmt->bind_param(
+            "ssssissssi",
+            $numero_os, $titulo, $descricao, $localizacao,
+            $responsavel, $foto, $status, $data_abertura, $bloco, $executante
+        );
+    
     if ($stmt->execute()) {
-        echo "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Solicitação registrada com sucesso!',
-                showConfirmButton: false,
-                timer: 2000
-            }).then(() => {
-                window.location.href = 'dashboard.php';
-            });
-        </script>";
+            // Buscar e-mail e nome do responsável
+            $query = $conn->prepare("SELECT nome, email FROM docentes WHERE id = ?");
+            $query->bind_param("i", $responsavel);
+            $query->execute();
+            $result = $query->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                $nome = $row['nome'];
+                $email = $row['email'];
+
+                // ✉️ Enviar e-mail usando PHPMailer
+                $assunto = "Confirmação de abertura de Ordem de Serviço";
+                $mensagem = "
+                    <p>Olá <strong>$nome</strong>,</p>
+                    <p>Sua ordem de serviço com o título <strong>\"$titulo\"</strong> foi registrada com sucesso no sistema.</p>
+                    <p><strong>Status atual:</strong> $status<br>
+                    <strong>Data de abertura:</strong> $data_abertura</p>
+                    <p>Atenciosamente,<br>Sistema de Manutenção</p>
+                ";
+
+                $resultado = enviarEmailUsuario($email, $assunto, $mensagem);
+                if ($resultado !== true) {
+                    $_SESSION['erro'] = "Erro ao enviar e-mail: $resultado.";
+                    header("Location: solicita.php");
+                    exit();
+                }
+            }
+            $_SESSION['sucesso'] = "Solicitação registrada com sucesso!";
+            header("Location: solicita.php");
+            exit();
     } else {
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro ao registrar solicitação!',
-                text: '" . addslashes($stmt->error) . "',
-                confirmButtonText: 'Voltar'
-            });
-        </script>";
+        $_SESSION['erro'] = "Erro ao registrar solicitação!.";
+        header("Location: solicita.php");
+        exit();
     }
 
     $stmt->close();
 } 
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Confirmação</title>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-<?php if (isset($executou) && $executou): ?>
-<script>
-  Swal.fire({
-    icon: 'success',
-    title: 'Solicitação registrada!',
-    showConfirmButton: false,
-    timer: 2000
-  }).then(() => {
-    window.location.href = 'panelTecnico.php';
-  });
-</script>
-<?php elseif (isset($executou)): ?>
-<script>
-  Swal.fire({
-    icon: 'error',
-    title: 'Erro ao registrar',
-    text: '<?= addslashes($stmt->error ?? '') ?>'
-  });
-</script>
-<?php else: ?>
-<script>
-  Swal.fire({
-    icon: 'info',
-    title: 'Acesso Inválido',
-    text: 'Envie o formulário corretamente.'
-  }).then(() => {
-    window.location.href = 'panelTecnico.php';
-  });
-</script>
-<?php endif; ?>
-</body>
-</html>

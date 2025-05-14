@@ -8,6 +8,7 @@
     // Inclui conexão (sem saída de texto)
     require __DIR__ . '/conexao.php';
     ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
@@ -82,6 +83,21 @@
                                             <?php endwhile; ?>
                                         </select>
                                     </div>
+                                    <br>
+                                    <?php
+                                            $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
+                                            echo '<div class="d-flex flex-row mb-3">';
+                                            echo '<label for="executante">Técnico responsável:</label>';
+                                            echo '<select name="executante" id="executante" class="form-select">';
+                                            echo '<option value="" disabled selected>Selecione</option>';
+                                                    while ($tec = $tecnicos->fetch_assoc()) {
+                                                        $selected = ($row['executante'] == $tec['id']) ? 'selected' : '';
+                                                        echo "<option value='{$tec['id']}' $selected>{$tec['nome']}</option>";
+                                                    }
+                                            echo '</select>';
+                                            echo '</div>';
+                                            ?>
+                                            <br>
                                     <div class="d-flex mb-3">
                                         <label for="prioridade">
                                         <span class="material-symbols-outlined">priority_high</span> 
@@ -283,5 +299,28 @@
             document.getElementById("blocoSelecionado").innerText = "Bloco selecionado: " + cod;
             }
         </script>
+<script>
+window.onload = function () {
+    <?php if (isset($_SESSION['sucesso'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: <?= json_encode($_SESSION['sucesso']) ?>,
+            showConfirmButton: false,
+            timer: 2000
+        });
+        <?php unset($_SESSION['sucesso']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['erro'])): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro!',
+            text: <?= json_encode($_SESSION['erro']) ?>
+        });
+        <?php unset($_SESSION['erro']); ?>
+    <?php endif; ?>
+}
+</script>
     </body>
+
 </html>

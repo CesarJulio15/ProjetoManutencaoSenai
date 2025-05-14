@@ -66,7 +66,7 @@ INSERT INTO `docentes` (
 --
 
 CREATE TABLE `manutencao` (
-  `id` INT NOT NULL PRIMARY KEY,
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `numero_os` VARCHAR(20) UNIQUE,
   `titulo` varchar(50) NOT NULL,
   `descricao` varchar(255) DEFAULT NULL,
