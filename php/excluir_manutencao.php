@@ -15,9 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['titulo'])) {
     $stmt->bind_param("s", $titulo);
 
     if ($stmt->execute()) {
-        // Você pode definir uma mensagem de sucesso em $_SESSION para exibir no painel
+        $_SESSION['sucesso'] = 'Manutenção excluída com sucesso.';
         header("Location: panelTecnico.php");
-        exit;                                           // 4) Para o script após o redirect
+        exit();
     } else {
         echo "<p>Erro ao excluir a manutenção: " . $conn->error . "</p>";
     }

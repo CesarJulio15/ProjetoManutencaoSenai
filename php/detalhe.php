@@ -205,12 +205,12 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                </button>
                                     <!-- Excluir -->
                      <div class="flex-shrink-0">
-                        <form method="POST" action="excluir_manutencao.php" onsubmit="return confirm('Tem certeza que deseja excluir esta manutenção?');">
-                           <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-                           <button type="submit" class="btn p-0 btn-excluir">
+                     <form method="POST" action="excluir_manutencao.php" id="form-excluir">
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                        <button type="button" class="btn p-0 btn-excluir" onclick="confirmarExclusao()">
                            <img src="../img/trash.png" alt="Excluir" width="24" height="24">
-                           </button>
-                        </form>
+                        </button>
+                     </form>
                      </div>
                </div>
                <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
@@ -317,6 +317,25 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
              });
          });
       </script>
+      <script>
+function confirmarExclusao() {
+    Swal.fire({
+        title: 'Tem certeza?',
+        text: "Esta ação é irreversível!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('form-excluir').submit();
+        }
+    });
+}
+</script>
+
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
    
 </main>

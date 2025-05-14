@@ -66,9 +66,9 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     if (!isset($conn) || !($conn instanceof mysqli)) {
         die('Erro na conexão com o banco de dados');
     }
-$isTecnico    = ($_SESSION['tipo'] === 'técnico');
-$statusParam  = $_GET['status'] ?? '';
-$busca        = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
+    $isTecnico    = ($_SESSION['tipo'] === 'técnico');
+    $statusParam  = $_GET['status'] ?? '';
+    $busca        = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
 
 // 1) “Seus Trabalhos”
 if (isset($_GET['meus']) && $isTecnico) {
@@ -300,6 +300,22 @@ document.querySelectorAll('.status-btn').forEach(btn => {
   });
 });
 </script>
+<?php
+if (isset($_SESSION['sucesso'])) {
+    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+    echo "<script>
+        window.onload = function() {
+            Swal.fire({
+                icon: 'success',
+                title: '" . addslashes($_SESSION['sucesso']) . "',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        };
+    </script>";
+    unset($_SESSION['sucesso']);
+}
+?>
 </main>
 
 </body>
