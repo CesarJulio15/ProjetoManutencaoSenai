@@ -135,7 +135,28 @@ button:hover {
   max-width: 160px;
   object-fit: contain;
 }
+    
+    /* Rodapé de formulário padrão */
+    .form-footer {
+      display: inline-flex;
+      width: 100%;
+      gap: 10px;
+      margin-top: 25px;
+      padding: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
 
+    .forgot{
+      text-decoration: none;
+      text-align: right;
+    }
+    .forgot:hover{
+      color: crimson;
+      font-weight: bolder;
+      border-bottom: 1px solid currentColor;
+    }
 /* Responsivo para telas menores (smartphones) */
 @media (max-width: 480px) {
   .container {

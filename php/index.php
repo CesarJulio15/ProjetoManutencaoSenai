@@ -88,31 +88,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="d-flex align-items-center justify-content-center min-vh-100 px-3"> <!-- min-vh + padding horizontal -->
 
     <div class="container text-center px-0">
-        <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-3">
+        <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-2">
 
         <h1>
             <span class="portal">Portal Senai</span><br>
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4">
-
-                        <form method="POST" autocomplete="off">
-                <div class="mb-3">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50" style="height:max-content;">
+            <form method="POST" autocomplete="off">
+                <div class="mb-2">
                     <input type="text" name="login" class="form-control" placeholder="E-mail ou NIF" required>
                 </div>
                 <div class="mb-3">
                     <input type="password" name="senha" class="form-control" placeholder="Senha" required>
                 </div>
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
+                <div class="form-footer mt-1">
+                    <p><a href="#" onclick="abrirModalRecuperacaoSenha()" class="forgot text-muted">Esqueceu a senha?</a></p>
+
+                </div>
             </form>
         </div>
 
-        <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-4">
-            <img src="../img/Clip path group.svg" alt="Techfix" class="img-fluid mx-2" style="height: 70px;">
-            <img src="../img/senai-logo 5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px;">
+        <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-3" style="user-select:none;">
+            <img src="../img/Clip path group.svg" alt="Techfix" class="img-fluid mx-2" style="height: 70px; user-select:none;">
+            <img src="../img/senai-logo 5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px; user-select:none;">
         </div>
     </div> 
+    <script>
+function abrirModalRecuperacaoSenha() {
+    Swal.fire({
+        title: 'Recuperar Senha',
+        html: `
+            <input type="email" id="emailRecuperacao" class="swal2-input" placeholder="Digite seu e-mail">
+        `,
+        confirmButtonText: 'Enviar',
+        focusConfirm: false,
+        preConfirm: () => {
+            const email = document.getElementById('emailRecuperacao').value;
+            if (!email) {
+                Swal.showValidationMessage('Informe um e-mail válido');
+                return false;
+            }
 
+            return fetch('enviar_token_recuperacao.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(response => response.text())
+            .then(res => {
+                Swal.fire('Sucesso', res, 'success');
+            })
+            .catch(() => {
+                Swal.fire('Erro', 'Erro ao enviar e-mail. Tente novamente mais tarde.', 'error');
+            });
+
+        }
+    });
+}
+</script>
 </body>
 </html>
