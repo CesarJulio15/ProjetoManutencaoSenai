@@ -88,14 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="d-flex align-items-center justify-content-center min-vh-100 px-3"> <!-- min-vh + padding horizontal -->
 
     <div class="container text-center px-0">
-        <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-2">
-
-        <h1>
+        <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-2" style="user-select: none;">
+        <h1 style="user-select: none;">
             <span class="portal">Portal Senai</span><br>
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50" style="height:max-content;">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50" style="height:max-content;user-select: none;">
             <form method="POST" autocomplete="off">
                 <div class="mb-2">
                     <input type="text" name="login" class="form-control" placeholder="E-mail ou NIF" required>

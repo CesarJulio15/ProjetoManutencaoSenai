@@ -151,6 +151,7 @@ button:hover {
     .forgot{
       text-decoration: none;
       text-align: right;
+      user-select: none;
     }
     .forgot:hover{
       color: crimson;
