@@ -125,6 +125,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     exit();
                 }
             }
+            // ✉️ Se houver técnico designado, enviar também para ele
+            if (!empty($executante)) {
+                $qExec = $conn->prepare("SELECT nome, email FROM docentes WHERE id = ?");
+                $qExec->bind_param("i", $executante);
+                $qExec->execute();
+                $resExec = $qExec->get_result();
+
+                if ($rowExec = $resExec->fetch_assoc()) {
+                    $nomeExec = $rowExec['nome'];
+                    $emailExec = $rowExec['email'];
+
+                    $assuntoExec = "Nova OS atribuída: $titulo";
+                    $mensagemExec = "
+                        <p>Olá <strong>$nomeExec</strong>,</p>
+                        <p>Você foi designado como técnico responsável pela OS <strong>\"$titulo\"</strong>.</p>
+                        <p>Status: <strong>Em Andamento</strong><br>Data: <strong>$data_abertura</strong></p>
+                        <p>Atenciosamente,<br>Sistema de Manutenção</p>
+                    ";
+
+                    enviarEmailUsuario($emailExec, $assuntoExec, $mensagemExec);
+                }
+            }
+
             $_SESSION['sucesso'] = "Solicitação registrada com sucesso!";
             header("Location: solicita.php");
             exit();
