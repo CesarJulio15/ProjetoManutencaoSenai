@@ -1,15 +1,12 @@
 <?php
 session_start();
-include 'conexao.php';
+require 'conexao.php';
 require_once 'enviar_email.php';
 
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
     exit();
 }
-// 1) Carrega SweetAlert2
-echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
-
 // 2) Só processa se vier POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['erro'] = "Envie o formulário corretamente.";
@@ -82,16 +79,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
         
 
-    $sql = "INSERT INTO manutencao (numero_os, titulo, descricao, responsavel, foto, status, data_abertura, prioridade, bloco, origem, tipo_manutencao)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO manutencao (
+        numero_os, titulo, descricao, responsavel, foto, status, data_abertura, prioridade, bloco, localizacao_ambiente, origem, tipo_manutencao
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         $_SESSION['erro'] = "Erro na preparação da query: " . $conn->error;
         header("Location: solicita.php");
         exit();
     }
-    stmt->bind_param("sssisssssss", $numero_os, $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $prioridade, $bloco, $origem, $tipo_manutencao);
-    
+    $stmt->bind_param("sssissssssss", $numero_os, $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $prioridade, $bloco, $localizacao, $origem, $tipo_manutencao);
     if ($stmt->execute()) {
             // Buscar e-mail e nome do responsável
             $query = $conn->prepare("SELECT nome, email FROM docentes WHERE id = ?");
