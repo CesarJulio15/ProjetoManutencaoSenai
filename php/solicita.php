@@ -85,18 +85,17 @@
                                     </div>
                                     <br>
                                     <?php
-                                            $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
-                                            echo '<div class="d-flex flex-row mb-3 gap-2">';
-                                            echo '<label for="executante">Técnico responsável:</label>';
-                                            echo '<select name="executante" id="executante" class="form-select">';
-                                            echo '<option value="" disabled selected>Selecione</option>';
-                                                    while ($tec = $tecnicos->fetch_assoc()) {
-                                                        $selected = ($row['executante'] == $tec['id']) ? 'selected' : '';
-                                                        echo "<option value='{$tec['id']}' $selected>{$tec['nome']}</option>";
-                                                    }
-                                            echo '</select>';
-                                            echo '</div>';
-                                            ?>
+                                        $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
+                                        echo '<div class="d-flex flex-row mb-3 gap-2">';
+                                        echo '<label for="executante">Técnico responsável:</label>';
+                                        echo '<select name="executante" id="executante" class="form-select">';
+                                        echo '<option value="" disabled selected>Selecione</option>';
+                                        while ($tec = $tecnicos->fetch_assoc()) {
+                                            echo "<option value='{$tec['id']}'>{$tec['nome']}</option>";
+                                        }
+                                        echo '</select>';
+                                        echo '</div>';
+                                    ?>
                                             <br>
                                             <div class="d-flex mb-3">
                                                 <label for="prioridade">
