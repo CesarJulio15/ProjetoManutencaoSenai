@@ -176,7 +176,18 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                      </div>
                </div>
 
-               
+               <div class="d-flex flex-md-row gap-4 align-center w-100">
+               <div class="info-item mt-3">
+                     <label class="info-label"><b>Origem</b>:</label>
+                     <p class="info-text"><?php echo nl2br(htmlspecialchars($row['origem'])); ?></p>
+                     </div>
+                     <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
+                     <div class="info-item mt-3">
+                     <label class="info-label"><b>Tipo da manutenção</b>:</label>
+                     <p class="info-text"><?php echo nl2br(htmlspecialchars($row['tipo_manutencao'])); ?></p>
+                     </div>
+                     <?php endif; ?>
+               </div>
             </div>
 
             <div class="container-img mt-2">

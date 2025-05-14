@@ -5,7 +5,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-include 'conexao.php'; // Certifique que a conexão ($conn) está funcionando
+require 'conexao.php'; // Certifique que a conexão ($conn) está funcionando
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'], $_POST['status'])) {
     $titulo = $_POST['titulo'];

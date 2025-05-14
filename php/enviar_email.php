@@ -33,3 +33,40 @@ function enviarEmailUsuario($destinatario, $assunto, $mensagemHtml) {
         return "Erro ao enviar e-mail: {$mail->ErrorInfo}";
     }
 }
+
+function enviarEmailCadastro($destinatario, $nome, $senha, $linkLogin) {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.seudominio.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'seuemail@seudominio.com';
+        $mail->Password   = 'suasenhaemail';
+        $mail->SMTPSecure = 'tls';
+        $mail->Port       = 587;
+
+        $mail->setFrom('no-reply@seudominio.com', 'Equipe Senai Manutenções');
+        $mail->addAddress($destinatario, $nome);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Bem-vindo! Acesso ao Portal Senai Manutenções';
+        $mail->Body    = "
+            <h2>Olá, {$nome}!</h2>
+            <p>Seu acesso ao sistema foi criado com sucesso.</p>
+            <p><strong>Login:</strong> {$destinatario}</p>
+            <p><strong>Senha:</strong> {$senha}</p>
+            <p>Você pode acessar o sistema pelo seguinte link:</p>
+            <p><a href='{$linkLogin}'>{$linkLogin}</a></p>
+            <p>Recomendamos alterar sua senha após o primeiro acesso.</p>
+            <br>
+            <p>Atenciosamente,<br>Equipe de Suporte</p>
+        ";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Erro ao enviar e-mail: {$mail->ErrorInfo}");
+        return false;
+    }
+}

@@ -1,6 +1,4 @@
-
 <?php
-// === editar_docente.php (com layout e restrição de acesso) ===
 session_start();
 include 'conexao.php';
 

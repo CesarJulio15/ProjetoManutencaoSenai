@@ -36,7 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $bloco = $_POST['bloco'];
     $localizacao = $_POST["localizacao"];
     $tipoUsuario = $_SESSION['tipo'] ?? null;
-    
+    $origem = $_POST['origem'] ?? 'Não especificado';
+    $tipo_manutencao = $_POST['tipo_manutencao'] ?? 'Corretiva';
+
         // Define o responsável: se for coordenador ou técnico, vem do POST; senão, do próprio login
     $responsavel = (in_array($tipoUsuario, ['coordenador', 'técnico']) && !empty($_POST['responsavel']))
     ? intval($_POST['responsavel'])
@@ -73,7 +75,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         $status = "Pendente";
     }
-
     // Tratamento da imagem (opcional)
     $foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
@@ -81,21 +82,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
         
 
-    $sql = "INSERT INTO manutencao (
-                numero_os, titulo, descricao, localizacao_ambiente,
-                responsavel, foto, status, data_abertura, bloco, executante
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO manutencao (numero_os, titulo, descricao, responsavel, foto, status, data_abertura, prioridade, bloco, origem, tipo_manutencao)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         $_SESSION['erro'] = "Erro na preparação da query: " . $conn->error;
         header("Location: solicita.php");
         exit();
     }
-        $stmt->bind_param(
-            "ssssissssi",
-            $numero_os, $titulo, $descricao, $localizacao,
-            $responsavel, $foto, $status, $data_abertura, $bloco, $executante
-        );
+    stmt->bind_param("sssisssssss", $numero_os, $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $prioridade, $bloco, $origem, $tipo_manutencao);
     
     if ($stmt->execute()) {
             // Buscar e-mail e nome do responsável

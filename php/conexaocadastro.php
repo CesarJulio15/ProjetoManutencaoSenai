@@ -5,6 +5,7 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
     exit();
 }
 include 'conexao.php'; 
+require_once 'enviar_email.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome = htmlspecialchars($_POST["nome"]);
@@ -17,7 +18,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param("sssss", $nome, $nif, $tipo, $email, $senha);
-        $stmt->execute();
+        // Após cadastrar no banco com sucesso:
+        if ($stmt->execute()) {
+            // Dados do novo usuário
+            $nomeUsuario = $_POST['nome'];
+            $emailUsuario = $_POST['email'];
+            $senhaUsuario = $_POST['senha']; // Cuidado: nunca envie a senha real em produção!
+            $paginaLogin = "https://devgomes.com/projetos/SENAImanutencao/php/";
+            // Envia e-mail com os dados
+            enviarEmailCadastro($emailUsuario, $nomeUsuario, $senhaUsuario, $paginaLogin);
+            // Redireciona ou exibe mensagem de sucesso
+            header("Location: panelTecnico.php");
+            exit();
+        }
         $stmt->close();
     }
 

@@ -74,6 +74,8 @@ CREATE TABLE `manutencao` (
   `responsavel` INT NOT NULL,
   `foto` blob DEFAULT NULL,
   `status` ENUM('Pendente', 'Em Andamento', 'Rejeitados','Concluído') NOT NULL default 'Pendente',
+  `tipo_manutencao` ENUM('Preventiva', 'Corretiva', 'Preditiva') NOT NULL DEFAULT 'Corretiva',
+  `origem` VARCHAR(50) NOT NULL DEFAULT 'Não especificado',
   `data_abertura` DATE NOT NULL,
   `data_encerramento` DATE DEFAULT NULL,
   `executante` INT DEFAULT NULL,

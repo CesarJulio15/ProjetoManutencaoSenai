@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'conexao.php';
+require 'enviar_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = $_POST['titulo'] ?? '';
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Por favor, acesse o sistema para iniciá-la.</p>
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
-                enviarEmailUsuario($row['email_exec'], $assunto, $mensagemExec);
+                enviarEmailUsuario($destinatario, $assunto, $mensagem);
             }
 
             // E-mail para o responsável pela OS

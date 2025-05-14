@@ -16,15 +16,15 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
 </head>
 <body>
-<aside class="sidebar">
+<aside class="sidebar" role="complementary" aria-label="Menu lateral">
     <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
     <div class="spacer"></div>
     <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
 </aside>
 
-<main class="main-content d-flex flex-md-column w-100 h-100">
+<main class="main-content d-flex flex-md-column w-100 h-100" role="main">
     <header class="top-bar">
-        <form method="GET" class="search-box">
+        <form method="GET" class="search-box" autocomplete="off">
             <input type="text" name="busca" placeholder="Buscar...">
             <button type="submit"><img src="../img/IconSearch.svg" alt="Buscar"></button>
         </form>
@@ -59,120 +59,69 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
 
     <section class="cards-container">
     <?php
-    // Inclui a conexão — __DIR__ garante que o require busque na mesma pasta deste arquivo
-    require_once __DIR__ . '/conexao.php';
+require_once __DIR__ . '/conexao.php';
 
-    // Segurança extra: interrompe se a conexão falhou ou não existe
-    if (!isset($conn) || !($conn instanceof mysqli)) {
-        die('Erro na conexão com o banco de dados');
-    }
-    $isTecnico    = ($_SESSION['tipo'] === 'técnico');
-    $statusParam  = $_GET['status'] ?? '';
-    $busca        = isset($_GET['busca']) ? '%'.$_GET['busca'].'%' : '%';
+if (!isset($conn) || !($conn instanceof mysqli)) {
+    die('Erro na conexão com o banco de dados');
+}
 
-// 1) “Seus Trabalhos”
-if (isset($_GET['meus']) && $isTecnico) {
-    $sql = "
-      SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-      FROM manutencao m
-      JOIN docentes d1 ON m.responsavel = d1.id
-      LEFT JOIN docentes d2 ON m.executante = d2.id
-      WHERE m.executante = ? AND m.titulo LIKE ?
-    ";
+$isTecnico   = ($_SESSION['tipo'] === 'técnico');
+$statusParam = $_GET['status'] ?? '';
+$busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
+
+function prepararConsulta($conn, $sql, $tipos, ...$params) {
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $_SESSION['id'], $busca);
+    $stmt->bind_param($tipos, ...$params);
+    return $stmt;
+}
 
-// 2) Técnico clicou em algum status
-} elseif ($isTecnico && $statusParam) {
-    if ($statusParam === 'Pendente') {
-        // só pendentes sem executante
-        $sql = "
-          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-          FROM manutencao m
-          JOIN docentes d1 ON m.responsavel = d1.id
-          LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $statusParam, $busca);
+$tipoUsuario = $_SESSION['tipo'];
+$usuarioId = $_SESSION['id'];
+
+$sqlBase = "
+    SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+    FROM manutencao m
+    JOIN docentes d1 ON m.responsavel = d1.id
+    LEFT JOIN docentes d2 ON m.executante = d2.id
+";
+
+if ($isTecnico) {
+    if (isset($_GET['meus'])) {
+        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
+    } elseif ($statusParam) {
+        if ($statusParam === 'Pendente') {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
+        } else {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
+        }
     } else {
-        // Em Andamento ou Concluído — só os atribuídos a este técnico
-        $sql = "
-          SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-          FROM manutencao m
-          JOIN docentes d1 ON m.responsavel = d1.id
-          LEFT JOIN docentes d2 ON m.executante = d2.id
-          WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sis", $statusParam, $_SESSION['id'], $busca);
+        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
     }
-
-// 3) Técnico sem filtro algum
-} elseif ($isTecnico) {
-    $sql = "
-      SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-      FROM manutencao m
-      JOIN docentes d1 ON m.responsavel = d1.id
-      LEFT JOIN docentes d2 ON m.executante = d2.id
-      WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $_SESSION['id'], $busca);
-
+} elseif ($tipoUsuario === 'coordenador') {
+    if ($statusParam) {
+        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
+    } else {
+        $sql = $sqlBase . "WHERE m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "s", $busca);
+    }
 } else {
-    $tipo = $_SESSION['tipo'];
-// 4) Coordenador — vê tudo ou filtra por status
-    if ($tipo === 'coordenador') {
-        if ($statusParam) {
-            $sql = "
-              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-              FROM manutencao m
-              JOIN docentes d1 ON m.responsavel = d1.id
-              LEFT JOIN docentes d2 ON m.executante = d2.id
-              WHERE m.status = ? AND m.titulo LIKE ?
-            ";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ss", $statusParam, $busca);
-        } else {
-            $sql = "
-              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-              FROM manutencao m
-              JOIN docentes d1 ON m.responsavel = d1.id
-              LEFT JOIN docentes d2 ON m.executante = d2.id
-              WHERE m.titulo LIKE ?
-            ";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("s", $busca);
-        }
+    if ($statusParam) {
+        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
     } else {
-        // DOCENTE ou OUTRO: mostra apenas os pedidos em que ele é o responsável
-        if ($statusParam) {
-            $sql = "
-              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-              FROM manutencao m
-              JOIN docentes d1 ON m.responsavel = d1.id
-              LEFT JOIN docentes d2 ON m.executante = d2.id
-              WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?
-            ";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sis", $statusParam, $_SESSION['id'], $busca);
-        } else {
-            $sql = "
-              SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-              FROM manutencao m
-              JOIN docentes d1 ON m.responsavel = d1.id
-              LEFT JOIN docentes d2 ON m.executante = d2.id
-              WHERE m.responsavel = ? AND m.titulo LIKE ?
-            ";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("is", $_SESSION['id'], $busca);
-        }
+        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
     }
 }
 
 $stmt->execute();
 $result = $stmt->get_result();
+
 
     if ($result->num_rows == 0) {
     ?>
@@ -300,22 +249,6 @@ document.querySelectorAll('.status-btn').forEach(btn => {
   });
 });
 </script>
-<?php
-if (isset($_SESSION['sucesso'])) {
-    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-    echo "<script>
-        window.onload = function() {
-            Swal.fire({
-                icon: 'success',
-                title: '" . addslashes($_SESSION['sucesso']) . "',
-                showConfirmButton: false,
-                timer: 2000
-            });
-        };
-    </script>";
-    unset($_SESSION['sucesso']);
-}
-?>
 </main>
 
 </body>

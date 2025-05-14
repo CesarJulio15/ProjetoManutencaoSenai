@@ -55,8 +55,8 @@
                     </div>
                     <fieldset class="card-body d-flex flex-column flex-wrap w-100 h-100">
                         <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
-                        <div class="esquerda d-flex flex-column w-100 justify-content-between mt-3 ">
-                        <div class="d-flex flex-md-row justify-content-evenly w-100 mb-3">
+                        <div class="esquerda d-flex flex-column w-100 justify-content-between mt-3 gap-4">
+                        <div class="d-flex flex-md-row justify-content-evenly w-100 mb-3 gap-2">
                                 <?php
                                     // Se for coordenador ou técnico, exibe dropdown de "Responsável"
                                     // caso contrário, define automaticamente o próprio usuário como responsável
@@ -69,7 +69,7 @@
                                             ORDER BY nome
                                         ");
                                     ?>
-                                    <div class="d-flex flex-row mb-3">
+                                    <div class="d-flex flex-row mb-3 gap-2">
                                         <label for="responsavel" class="form-label">
                                         <span class="material-symbols-outlined">assignment_ind</span>
                                         Solicitado por: </label>
@@ -86,7 +86,7 @@
                                     <br>
                                     <?php
                                             $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
-                                            echo '<div class="d-flex flex-row mb-3">';
+                                            echo '<div class="d-flex flex-row mb-3 gap-2">';
                                             echo '<label for="executante">Técnico responsável:</label>';
                                             echo '<select name="executante" id="executante" class="form-select">';
                                             echo '<option value="" disabled selected>Selecione</option>';
@@ -98,36 +98,59 @@
                                             echo '</div>';
                                             ?>
                                             <br>
-                                    <div class="d-flex mb-3">
-                                        <label for="prioridade">
-                                        <span class="material-symbols-outlined">priority_high</span> 
-                                        Prioridade: </label>
-                                        <br>
-                                        <select name="prioridade" id="prioridade" required>
-                                            <option value="Baixa">Baixa</option>
-                                            <option value="Média" selected>Média</option>
-                                            <option value="Alta">Alta</option>
-                                            <option value="Urgente">Urgente</option>
-                                        </select>
-                                    </div>
+                                            <div class="d-flex mb-3">
+                                                <label for="prioridade">
+                                                <span class="material-symbols-outlined">priority_high</span> 
+                                                Prioridade: </label>
+                                                <br>
+                                                <select name="prioridade" id="prioridade" required>
+                                                    <option value="Baixa">Baixa</option>
+                                                    <option value="Média" selected>Média</option>
+                                                    <option value="Alta">Alta</option>
+                                                    <option value="Urgente">Urgente</option>
+                                                </select>
+                                            </div>
                                 <?php else: ?>                  
-                                  </div>
-                                  </div>
-                                  <!-- usuário comum vira automaticamente o responsável -->
-                                  <input type="hidden" name="responsavel" value="<?= intval($_SESSION['id']) ?>">
-                                  <!-- usuários “normais” não veem select -->
-                                  <input type="hidden" name="prioridade" value="Média">
+                                        </div>
+                                        </div>
+                                        <!-- usuário comum vira automaticamente o responsável -->
+                                        <input type="hidden" name="responsavel" value="<?= intval($_SESSION['id']) ?>">
+                                        <!-- usuários “normais” não veem select -->
+                                        <input type="hidden" name="prioridade" value="Média">
                               <?php endif; ?>
                         <br>
                         </div>
-                        <div class="conjunto d-flex flex-column">
-                        <div class="d-flex-mb-3">
+                        <div class="conjunto d-flex flex-column gap-4">
+                        <div class="d-flex mb-3 gap-2">
                         <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
                         </div>
                         <br>                      
-                        <div class="text-center mb-3">
+                        <div class="text-center mb-3 gap-2">
                         <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
-                        </div>                
+                        </div>
+                        <div class="d-flex mb-3 gap-4">
+                            <div class="d-flex flex-md-row gap-2">
+                                    <label for="origem">Origem:</label>
+                                    <select name="origem" id="origem" class="form-control" required>
+                                        <option value="" disabled selected>Selecione</option>
+                                        <option value="Elétrica">Elétrica</option>
+                                        <option value="Hidráulica">Hidráulica</option>
+                                        <option value="Mecânica">Mecânica</option>
+                                        <option value="Infraestrutura">Infraestrutura</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                            </div> 
+                            <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
+                                <div class="d-flex mb-3 gap-2">
+                                    <label for="tipo_manutencao">Tipo de Manutenção:</label>
+                                    <select name="tipo_manutencao" id="tipo_manutencao" class="form-control" required>
+                                        <option value="" disabled selected>Selecione</option>
+                                        <option value="Corretiva">Corretiva</option>
+                                        <option value="Preventiva">Preventiva</option>
+                                        <option value="Preditiva">Preditiva</option>
+                                    </select>
+                                </div>
+                            <?php endif; ?>           
                         </div>
                         <br>
                         <div class="direita d-flex flex-column mt-3 w-100 justify-content-between align-items-center ">
