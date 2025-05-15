@@ -29,7 +29,7 @@ $tipo = $_SESSION['tipo'];
         ORDER BY total DESC
         LIMIT 5
     ");
-    
+
     $responsaveis = [];
     $totais = [];
     
@@ -747,7 +747,7 @@ $tipo = $_SESSION['tipo'];
                 document.getElementById('backMes').style.display = 'none';
                 });
                 
-                const rankingChart = new Chart(rankingCtx, {
+              const rankingChart = new Chart(rankingCtx, {
                 type: 'bar',
                 data: {
                   labels: <?= json_encode($responsaveis) ?>,
@@ -755,7 +755,8 @@ $tipo = $_SESSION['tipo'];
                     label: 'Problemas Reportados',
                     data: <?= json_encode($totais) ?>,
                     backgroundColor: infoCyan,
-                    borderColor: infoCyan, borderWidth:1
+                    borderColor: infoCyan,
+                    borderWidth: 1
                   }]
                 },
                 options: {
