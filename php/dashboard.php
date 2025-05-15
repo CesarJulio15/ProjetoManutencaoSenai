@@ -1,9 +1,12 @@
 <?php
-    session_start();
-    if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
-        header("Location: index.php");
-        exit();
-    }
+session_start();
+if (!isset($_SESSION['tipo'])) {
+    // redirecione ou trate o erro
+    header("Location: index.php");
+    exit();
+}
+$tipo = $_SESSION['tipo'];
+    
     include 'conexao.php';
     // Totais por status
     $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");

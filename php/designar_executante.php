@@ -40,7 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Por favor, acesse o sistema para iniciá-la.</p>
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
-                enviarEmailUsuario($destinatario, $assunto, $mensagem);
+                if (!empty($row['email_resp']) && isset($mensagem)) {
+                    enviarEmailUsuario($row['email_resp'], 'Assunto', $mensagem);
+                }
             }
 
             // E-mail para o responsável pela OS
@@ -50,7 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Sua ordem de serviço <strong>\"{$row['titulo']}\"</strong> foi atribuída ao técnico <strong>{$row['nome_exec']}</strong>.</p>
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
-                enviarEmailUsuario($row['email_resp'], $assunto, $mensagemResp);
+                if (isset($destinatario) && isset($mensagem)) {
+                    enviarEmailUsuario($row['email_resp'],$assunto, $mensagemResp);
+                }
             }
         }
 

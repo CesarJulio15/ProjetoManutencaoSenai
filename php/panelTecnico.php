@@ -139,9 +139,7 @@ $result = $stmt->get_result();
                 default => 'gray',
             };
 
-            $link = ($_SESSION['tipo'] === 'técnico') 
-                ? 'detalhe.php?titulo=' . urlencode($row['titulo']) 
-                : 'detalhe.php?titulo=' . urlencode($row['titulo']);
+            $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
     ?>
         <a href="<?php echo $link; ?>" class="card-link">
             <div class="card">

@@ -5,7 +5,8 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-require 'conexao.php'; // Certifique que a conexão ($conn) está funcionando
+require 'conexao.php';
+require_once 'enviar_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'], $_POST['status'])) {
     $titulo = $_POST['titulo'];

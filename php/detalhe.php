@@ -37,17 +37,18 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       exit();
    }
 
-   if (isset($_GET['titulo'])) {
-       $titulo = urldecode($_GET['titulo']);
-   
+   if (isset($_GET['numero_os'])) {
+       //$titulo = urldecode($_GET['titulo']);
+       $numero_os = $_GET['numero_os'] ?? '';
+
        // JOIN para trazer o nome do responsável
        $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-               FROM manutencao m
-               JOIN docentes d1 ON m.responsavel = d1.id
-               LEFT JOIN docentes d2 ON m.executante = d2.id
-               WHERE m.titulo = ?";
+       FROM manutencao m
+       JOIN docentes d1 ON m.responsavel = d1.id
+       LEFT JOIN docentes d2 ON m.executante = d2.id
+       WHERE m.numero_os = ?";
        $stmt = $conn->prepare($sql);
-       $stmt->bind_param("s", $titulo);
+       $stmt->bind_param("s", $numero_os);
        $stmt->execute();
        $result = $stmt->get_result();
    
@@ -191,10 +192,10 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
             </div>
 
             <div class="container-img mt-2">
-               <?php
+            <?php
                   if (!empty($row['foto'])) {
-                     $fotoBase64 = base64_encode($row['foto']);
-                     echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
+                      $fotoBase64 = base64_encode($row['foto']);
+                      echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
                   }else{
                      echo "<class='no-results'><img src='../img/no-results 1.svg' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'></div>";
                   }
