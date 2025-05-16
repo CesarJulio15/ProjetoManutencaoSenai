@@ -4,6 +4,70 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
     header("Location: index.php");
     exit();
 }
+
+require_once __DIR__ . '/conexao.php';
+
+if (!isset($conn) || !($conn instanceof mysqli)) {
+    die('Erro na conexão com o banco de dados');
+    exit();
+}
+
+$isTecnico   = ($_SESSION['tipo'] === 'técnico');
+$statusParam = $_GET['status'] ?? '';
+$busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
+
+function prepararConsulta($conn, $sql, $tipos, ...$params) {
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($tipos, ...$params);
+    return $stmt;
+}
+
+$tipoUsuario = $_SESSION['tipo'];
+$usuarioId = $_SESSION['id'];
+
+$sqlBase = "
+    SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+    FROM manutencao m
+    JOIN docentes d1 ON m.responsavel = d1.id
+    LEFT JOIN docentes d2 ON m.executante = d2.id
+";
+
+if ($isTecnico) {
+    if (isset($_GET['meus'])) {
+        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
+    } elseif ($statusParam) {
+        if ($statusParam === 'Pendente') {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
+        } else {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
+        }
+    } else {
+        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?";
+        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
+        }
+    } elseif ($tipoUsuario === 'coordenador') {
+        if ($statusParam) {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ?";
+             $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
+        } else {
+            $sql = $sqlBase . "WHERE m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "s", $busca);
+        }
+    } else {
+        if ($statusParam) {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
+        } else {
+            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ?";
+            $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
+        }
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -59,164 +123,82 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
 
     <section class="cards-container">
     <?php
-require_once __DIR__ . '/conexao.php';
-
-if (!isset($conn) || !($conn instanceof mysqli)) {
-    die('Erro na conexão com o banco de dados');
-}
-
-$isTecnico   = ($_SESSION['tipo'] === 'técnico');
-$statusParam = $_GET['status'] ?? '';
-$busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
-
-function prepararConsulta($conn, $sql, $tipos, ...$params) {
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param($tipos, ...$params);
-    return $stmt;
-}
-
-$tipoUsuario = $_SESSION['tipo'];
-$usuarioId = $_SESSION['id'];
-
-$sqlBase = "
-    SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-    FROM manutencao m
-    JOIN docentes d1 ON m.responsavel = d1.id
-    LEFT JOIN docentes d2 ON m.executante = d2.id
-";
-
-if ($isTecnico) {
-    if (isset($_GET['meus'])) {
-        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
-    } elseif ($statusParam) {
-        if ($statusParam === 'Pendente') {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
-        } else {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
-        }
-    } else {
-        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
-    }
-} elseif ($tipoUsuario === 'coordenador') {
-    if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
-    } else {
-        $sql = $sqlBase . "WHERE m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "s", $busca);
-    }
-} else {
-    if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
-    } else {
-        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
-    }
-}
-
-$stmt->execute();
-$result = $stmt->get_result();
-
-
-    if ($result->num_rows == 0) {
-    ?>
-        <div class="no-results">
-            <img src="../img/no-results 1.svg" alt="Sem pedidos" style="width: 200px; height: 300px;">
-            <p>Nenhum pedido de manutenção foi encontrado.</p>
-        </div>
-    <?php
-    } else {
-        while ($row = $result->fetch_assoc()) {
-            $flagColor = match ($row['status']) {
-                'Pendente' => '#a0352b',
-                'Em Andamento' => ' #e9963e',
-                'Concluído' => '#5b7f2e',
-                default => 'gray',
-            };
-
-            $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
-    ?>
-        <a href="<?php echo $link; ?>" class="card-link">
-            <div class="card">
-                <div class="card-header">
-                    <div class="avatar"><?php echo strtoupper(substr($row['nome_responsavel'], 0, 1)); ?></div>
-                    <span><?php echo htmlspecialchars($row['nome_responsavel']); ?></span>
-                    <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
+        if ($result->num_rows == 0) {
+            ?>
+                <div class="no-results">
+                    <img src="../img/no-results 1.svg" alt="Sem pedidos" style="width: 200px; height: 300px;">
+                    <p>Nenhum pedido de manutenção foi encontrado.</p>
                 </div>
-                <div class="card-body card-image">
+            <?php
+                } else {
+                    while ($row = $result->fetch_assoc()) {
+                        $flagColor = match ($row['status']) {
+                            'Pendente' => '#a0352b',
+                            'Em Andamento' => ' #e9963e',
+                            'Concluído' => '#5b7f2e',
+                            default => 'gray',
+                        };
+
+                        $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
+            ?>
+                <a href="<?php echo $link; ?>" class="card-link">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="avatar"><?php echo strtoupper(substr($row['nome_responsavel'], 0, 1)); ?></div>
+                            <span><?php echo htmlspecialchars($row['nome_responsavel']); ?></span>
+                            <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
+                        </div>
+                        <div class="card-body card-image">
+                            <?php
+                                if (!empty($row['foto'])) {
+                                    $fotoBase64 = base64_encode($row['foto']);
+                                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
+                                }
+                            ?>
+                        </div>
+                                <div class="d-flex conjunto">
+                                <p><strong>Nº OS:</strong> <?php echo htmlspecialchars($row['numero_os']); ?></p>
+                                </div>                    
+                                <div class="d-flex conjunto">
+                                                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
+                                                    <p><strong>Localização:</strong> <?php echo htmlspecialchars($row['localizacao_ambiente']); ?></p>
+                                    <?php if (!empty($row['nome_executante'])): ?>
+                                        <p><strong>Executante:</strong> <?php echo htmlspecialchars($row['nome_executante']); ?></p>
+                                    <?php endif; ?>       
+                                    </div>
+                                
+                                <div class="d-flex w-100 h-100 card-footer">
+                                    <span class="tag"><?php echo htmlspecialchars($row['bloco']); ?></span>
+                                    <span class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
+                                        <?php echo htmlspecialchars($row['status']); ?>
+                                    </span>
+                                    <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
+                                    <?= htmlspecialchars($row['prioridade']) ?>
+                                    </span>                 
+                                </div>
+                            </div>
+                        </a>
                     <?php
-                    if (!empty($row['foto'])) {
-                        $fotoBase64 = base64_encode($row['foto']);
-                        echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
+                        }
                     }
                     ?>
-                </div>
-                <div class="d-flex conjunto">
-                <p><strong>Nº OS:</strong> <?php echo htmlspecialchars($row['numero_os']); ?></p>
-                </div>                    
-                <div class="d-flex conjunto">
-                                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
-                                    <p><strong>Localização:</strong> <?php echo htmlspecialchars($row['localizacao_ambiente']); ?></p>
-                    <?php if (!empty($row['nome_executante'])): ?>
-                        <p><strong>Executante:</strong> <?php echo htmlspecialchars($row['nome_executante']); ?></p>
-                    <?php endif; ?>       
-                    </div>
-                   
-                <div class="d-flex w-100 h-100 card-footer">
-                    <span class="tag"><?php echo htmlspecialchars($row['bloco']); ?></span>
-                    <span class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
-                        <?php echo htmlspecialchars($row['status']); ?>
-                    </span>
-                    <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
-                    <?= htmlspecialchars($row['prioridade']) ?>
-                    </span>                 
-                </div>
-            </div>
-        </a>
-    <?php
-        }
-    }
-    ?>
-    </section>
-        <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-    <a href="listar_funcionarios.php" title="Visualizar funcionários">
-        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
-    </a>
-    <a href="dashboard.php" title="Visualizar Dashboard">
-        <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
-    </a>
-    <a href="solicita.php" title="Abrir ordem de serviço">
-        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
-    </a>
-    <?php else :?>
-            <a href="solicita.php">
-        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
-    </a>
-  <?php endif; ?>
-    <script>
-    document.querySelectorAll('.status-btn').forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const clickedStatus = this.dataset.status;
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentStatus = urlParams.get('status');
+                    </section>
+                        <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
+                    <a href="listar_funcionarios.php" title="Visualizar funcionários">
+                        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
+                    </a>
+                    <a href="dashboard.php" title="Visualizar Dashboard">
+                        <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
+                    </a>
+                    <a href="solicita.php" title="Abrir ordem de serviço">
+                        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+                    </a>
+                    <?php else :?>
+                            <a href="solicita.php">
+                        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+                    </a>
+                <?php endif; ?>
 
-            if (currentStatus === clickedStatus) {
-                urlParams.delete('status'); // Remove filtro
-            } else {
-                urlParams.set('status', clickedStatus); // Aplica novo filtro
-            }
-
-            // Mantém outros filtros, como busca
-            window.location.search = urlParams.toString();
-        });
-    });
-</script>
 <script>
 document.querySelectorAll('.status-btn').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -241,11 +223,16 @@ document.querySelectorAll('.status-btn').forEach(btn => {
         urlParams.set('status', status);
       }
     }
-
     // mantém o termo de busca
     window.location.search = urlParams.toString();
   });
 });
+document.querySelectorAll('.avatar').forEach(function(avatar) {
+    const letra = avatar.textContent.trim().charAt(0).toLowerCase();
+    if (letra.match(/[a-z]/i)) {
+      avatar.classList.add(letra);
+    }
+  });
 </script>
 </main>
 

@@ -80,9 +80,13 @@
   margin-top: 15px;
   overflow: auto;
 }
-
+a:has(.card),
+.card-link{
+  height: fit-content;
+  width: fit-content;
+}
 .card {
-  height: 300px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -95,6 +99,8 @@
   transition: transform 0.3s ease;
   animation: fadeInUp 0.4s ease both;
   user-select: none;
+  grid-row-start: 1;
+  grid-row-end: 3;
 }
 
 .card:hover {
@@ -108,19 +114,6 @@
   align-items: center;
   padding: 10px;
   position: relative;
-}
-
-.avatar {
-  width: 30px;
-  height: 30px;
-  background: #d7c4ff;
-  color: #6c00ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  font-weight: bold;
 }
 
 .flag {
@@ -251,6 +244,54 @@
   font-size: 12px;
   font-weight: bolder;
   align-self: flex-start;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  background: #d7c4ff;
+  color: #6c00ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-weight: bold;
+}
+.avatar.a { background-color: #FFCDD2; color: #B71C1C; } /* Vermelho claro */
+.avatar.b { background-color: #F8BBD0; color: #880E4F; } /* Rosa */
+.avatar.c { background-color: #E1BEE7; color: #4A148C; } /* Roxo claro */
+.avatar.d { background-color: #D1C4E9; color: #311B92; } /* Roxo escuro */
+.avatar.e { background-color: #C5CAE9; color: #1A237E; } /* Azul índigo */
+.avatar.f { background-color: #BBDEFB; color: #0D47A1; } /* Azul claro */
+.avatar.g { background-color: #B3E5FC; color: #01579B; } /* Azul céu */
+.avatar.h { background-color: #B2EBF2; color: #006064; } /* Ciano */
+.avatar.i { background-color: #B2DFDB; color: #004D40; } /* Verde água */
+.avatar.j { background-color: #C8E6C9; color: #1B5E20; } /* Verde claro */
+.avatar.k { background-color: #DCEDC8; color: #33691E; } /* Verde musgo */
+.avatar.l { background-color: #F0F4C3; color: #827717; } /* Verde limão */
+.avatar.m { background-color: #FFF9C4; color: #F57F17; } /* Amarelo */
+.avatar.n { background-color: #FFECB3; color: #FF6F00; } /* Laranja claro */
+.avatar.o { background-color: #FFE0B2; color: #E65100; } /* Laranja médio */
+.avatar.p { background-color: #FFCCBC; color: #BF360C; } /* Laranja escuro */
+.avatar.q { background-color: #D7CCC8; color: #3E2723; } /* Marrom claro */
+.avatar.r { background-color: #F5F5F5; color: #212121; } /* Cinza claro */
+.avatar.s { background-color: #CFD8DC; color: #263238; } /* Azul acinzentado */
+.avatar.t { background-color: #E0F7FA; color: #006064; } /* Ciano leve */
+.avatar.u { background-color: #F1F8E9; color: #33691E; } /* Verde leve */
+.avatar.v { background-color: #FFF3E0; color: #E65100; } /* Laranja pastel */
+.avatar.w { background-color: #FBE9E7; color: #BF360C; } /* Coral */
+.avatar.x { background-color: #EFEBE9; color: #3E2723; } /* Café com leite */
+.avatar.y { background-color: #ECEFF1; color: #263238; } /* Azul gelo */
+.avatar.z { background-color: #EDE7F6; color: #4527A0; } /* Lavanda escura */
+
+.avatar span {
+  max-width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .no-results {
