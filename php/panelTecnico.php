@@ -1,14 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
-    header("Location: index.php");
-    exit();
-}
-
 require_once __DIR__ . '/conexao.php';
 
-if (!isset($conn) || !($conn instanceof mysqli)) {
-    die('Erro na conexão com o banco de dados');
+if (!isset($_SESSION['id']) || !in_array($_SESSION['tipo'], ['coordenador', 'técnico']) || !isset($conn) || !($conn instanceof mysqli)) {
+    header("Location: index.php");
     exit();
 }
 
@@ -16,17 +11,22 @@ $isTecnico   = ($_SESSION['tipo'] === 'técnico');
 $statusParam = $_GET['status'] ?? '';
 $busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
 
+$tipoUsuario = $_SESSION['tipo'];
+$usuarioId   = $_SESSION['id'];
+
+// Paginação
+$resultadosPorPagina = 10;
+$paginaAtual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$offset = ($paginaAtual - 1) * $resultadosPorPagina;
+
 function prepararConsulta($conn, $sql, $tipos, ...$params) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($tipos, ...$params);
     return $stmt;
 }
 
-$tipoUsuario = $_SESSION['tipo'];
-$usuarioId = $_SESSION['id'];
-
 $sqlBase = "
-    SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+    SELECT SQL_CALC_FOUND_ROWS m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
     FROM manutencao m
     JOIN docentes d1 ON m.responsavel = d1.id
     LEFT JOIN docentes d2 ON m.executante = d2.id
@@ -34,40 +34,43 @@ $sqlBase = "
 
 if ($isTecnico) {
     if (isset($_GET['meus'])) {
-        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
+        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
     } elseif ($statusParam) {
         if ($statusParam === 'Pendente') {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
         } else {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
         }
     } else {
-        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?";
-        $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
-        }
-    } elseif ($tipoUsuario === 'coordenador') {
-        if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ?";
-             $stmt = prepararConsulta($conn, $sql, "ss", $statusParam, $busca);
-        } else {
-            $sql = $sqlBase . "WHERE m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "s", $busca);
-        }
-    } else {
-        if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "sis", $statusParam, $usuarioId, $busca);
-        } else {
-            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ?";
-            $stmt = prepararConsulta($conn, $sql, "is", $usuarioId, $busca);
-        }
+        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
     }
+} elseif ($tipoUsuario === 'coordenador') {
+    if ($statusParam) {
+        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
+    } else {
+        $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "sii", $busca, $resultadosPorPagina, $offset);
+    }
+} else {
+    if ($statusParam) {
+        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
+    } else {
+        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
+    }
+}
 
-    $stmt->execute();
-    $result = $stmt->get_result();
+$stmt->execute();
+$result = $stmt->get_result();
+
+$total = $conn->query("SELECT FOUND_ROWS()")->fetch_row()[0];
+$totalPaginas = ceil($total / $resultadosPorPagina);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -198,43 +201,57 @@ if ($isTecnico) {
                         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
                     </a>
                 <?php endif; ?>
+                <?php if ($totalPaginas > 1): ?>
+                    <div class="paginacao">
+                        <?php if ($paginaAtual > 1): ?>
+                            <a href="?pagina=<?= $paginaAtual - 1 ?>">Anterior</a>
+                        <?php endif; ?>
+                
+                        <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                            <a href="?pagina=<?= $i ?>" <?= ($i == $paginaAtual) ? 'class="ativa"' : '' ?>><?= $i ?></a>
+                        <?php endfor; ?>
+                
+                        <?php if ($paginaAtual < $totalPaginas): ?>
+                            <a href="?pagina=<?= $paginaAtual + 1 ?>">Próxima</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
-<script>
-document.querySelectorAll('.status-btn').forEach(btn => {
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Se for “Seus Trabalhos”
-    if (btn.dataset.meus !== undefined) {
-      if (urlParams.has('meus')) {
-        urlParams.delete('meus');
-      } else {
-        urlParams.delete('status');
-        urlParams.set('meus', '1');
-      }
-    } else {
-      // um botão de status normal
-      urlParams.delete('meus');
-      const status = btn.dataset.status;
-      if (urlParams.get('status') === status) {
-        urlParams.delete('status');
-      } else {
-        urlParams.set('status', status);
-      }
-    }
-    // mantém o termo de busca
-    window.location.search = urlParams.toString();
-  });
-});
-document.querySelectorAll('.avatar').forEach(function(avatar) {
-    const letra = avatar.textContent.trim().charAt(0).toLowerCase();
-    if (letra.match(/[a-z]/i)) {
-      avatar.classList.add(letra);
-    }
-  });
-</script>
 </main>
+<script>
+        document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            const urlParams = new URLSearchParams(window.location.search);
 
+            // Se for “Seus Trabalhos”
+            if (btn.dataset.meus !== undefined) {
+            if (urlParams.has('meus')) {
+                urlParams.delete('meus');
+            } else {
+                urlParams.delete('status');
+                urlParams.set('meus', '1');
+            }
+            } else {
+            // um botão de status normal
+            urlParams.delete('meus');
+            const status = btn.dataset.status;
+            if (urlParams.get('status') === status) {
+                urlParams.delete('status');
+            } else {
+                urlParams.set('status', status);
+            }
+            }
+            // mantém o termo de busca
+            window.location.search = urlParams.toString();
+        });
+        });
+        document.querySelectorAll('.avatar').forEach(function(avatar) {
+            const letra = avatar.textContent.trim().charAt(0).toLowerCase();
+            if (letra.match(/[a-z]/i)) {
+            avatar.classList.add(letra);
+            }
+        });
+</script>
 </body>
 </html>

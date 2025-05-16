@@ -6,7 +6,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 require 'conexao.php';
-require_once 'enviar_email.php';
+require 'enviar_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'], $_POST['status'])) {
     $titulo = $_POST['titulo'];

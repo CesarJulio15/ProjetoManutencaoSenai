@@ -50,7 +50,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     header("Location: solicita.php");
     exit();
     }
-
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die('Token CSRF inválido.');
+    }
         // força prioridade
     if (!in_array( $tipoUsuario, ['coordenador', 'técnico'])) {
         $prioridade = 'Média';
@@ -77,8 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
     }
-        
-
+    
     $sql = "INSERT INTO manutencao (
         numero_os, titulo, descricao, responsavel, foto, status, data_abertura, prioridade, bloco, localizacao_ambiente, origem, tipo_manutencao
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -99,7 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($row = $result->fetch_assoc()) {
                 $nome = $row['nome'];
                 $email = $row['email'];
-
+                $linkOS = "https://devgomes.com/projetos/SENAImanutencao/php/detalhe.php?numero_os=" . urlencode($numero_os);
+                $qrcodeURL = "https://chart.googleapis.com/chart?cht=qr&chs=180x180&chl=" . urlencode($linkOS);
                 // ✉️ Enviar e-mail usando PHPMailer
                 $assunto = "Confirmação de abertura de Ordem de Serviço";
                 $mensagem = "
@@ -107,6 +109,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p>Sua ordem de serviço com o título <strong>\"$titulo\"</strong> foi registrada com sucesso no sistema.</p>
                     <p><strong>Status atual:</strong> $status<br>
                     <strong>Data de abertura:</strong> $data_abertura</p>
+                    <p>Acesse diretamente a OS pelo link abaixo:</p>
+                    <p><a href='$linkOS'>$linkOS</a></p>
+                    <p>Ou escaneie o QR Code:</p>
+                    <img src='$qrcodeURL' alt='QR Code da OS' />
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
 

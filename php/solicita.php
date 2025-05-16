@@ -4,10 +4,12 @@
         header("Location: index.php");
         exit();
     }
-    
-    // Inclui conexão (sem saída de texto)
     require __DIR__ . '/conexao.php';
-    ?>
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -48,6 +50,7 @@
         <main class="main-content d-flex flex-md-row w-100 h-100">
         <!-- Conteúdo -->
         <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-wrap justify-content-between align-items-center card w-75" style="max-width: 1200px; overflow:auto;" >
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="drag-area text-center p-4">
                         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
                         <button type="button">Insira uma foto</button>
