@@ -1,76 +1,76 @@
 <?php
-session_start();
-require_once __DIR__ . '/conexao.php';
+    session_start();
+    require_once __DIR__ . '/conexao.php';
 
-if (!isset($_SESSION['id']) || !in_array($_SESSION['tipo'], ['coordenador', 'técnico']) || !isset($conn) || !($conn instanceof mysqli)) {
-    header("Location: index.php");
-    exit();
-}
+    if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
+        header("Location: index.php");
+        exit();
+    }
 
-$isTecnico   = ($_SESSION['tipo'] === 'técnico');
-$statusParam = $_GET['status'] ?? '';
-$busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
+    $isTecnico   = ($_SESSION['tipo'] === 'técnico');
+    $statusParam = $_GET['status'] ?? '';
+    $busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
 
-$tipoUsuario = $_SESSION['tipo'];
-$usuarioId   = $_SESSION['id'];
+    $tipoUsuario = $_SESSION['tipo'];
+    $usuarioId   = $_SESSION['id'];
 
-// Paginação
-$resultadosPorPagina = 10;
-$paginaAtual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-$offset = ($paginaAtual - 1) * $resultadosPorPagina;
+    // Paginação
+    $resultadosPorPagina = 10;
+    $paginaAtual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+    $offset = ($paginaAtual - 1) * $resultadosPorPagina;
 
-function prepararConsulta($conn, $sql, $tipos, ...$params) {
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param($tipos, ...$params);
-    return $stmt;
-}
+    function prepararConsulta($conn, $sql, $tipos, ...$params) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($tipos, ...$params);
+        return $stmt;
+    }
 
-$sqlBase = "
-    SELECT SQL_CALC_FOUND_ROWS m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-    FROM manutencao m
-    JOIN docentes d1 ON m.responsavel = d1.id
-    LEFT JOIN docentes d2 ON m.executante = d2.id
-";
+    $sqlBase = "
+        SELECT SQL_CALC_FOUND_ROWS m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
+        FROM manutencao m
+        JOIN docentes d1 ON m.responsavel = d1.id
+        LEFT JOIN docentes d2 ON m.executante = d2.id
+    ";
 
-if ($isTecnico) {
-    if (isset($_GET['meus'])) {
-        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
-    } elseif ($statusParam) {
-        if ($statusParam === 'Pendente') {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+    if ($isTecnico) {
+        if (isset($_GET['meus'])) {
+            $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
+        } elseif ($statusParam) {
+            if ($statusParam === 'Pendente') {
+                $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+                $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
+            } else {
+                $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+                $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
+            }
+        } else {
+            $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
+        }
+    } elseif ($tipoUsuario === 'coordenador') {
+        if ($statusParam) {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
             $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
         } else {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-            $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
+            $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "sii", $busca, $resultadosPorPagina, $offset);
         }
     } else {
-        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
+        if ($statusParam) {
+            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
+        } else {
+            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
+        }
     }
-} elseif ($tipoUsuario === 'coordenador') {
-    if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
-    } else {
-        $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "sii", $busca, $resultadosPorPagina, $offset);
-    }
-} else {
-    if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
-    } else {
-        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-        $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
-    }
-}
 
-$stmt->execute();
-$result = $stmt->get_result();
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$total = $conn->query("SELECT FOUND_ROWS()")->fetch_row()[0];
-$totalPaginas = ceil($total / $resultadosPorPagina);
+    $total = $conn->query("SELECT FOUND_ROWS()")->fetch_row()[0];
+    $totalPaginas = ceil($total / $resultadosPorPagina);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -81,6 +81,9 @@ $totalPaginas = ceil($total / $resultadosPorPagina);
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+    <style>
+
+    </style>
 </head>
 <body>
 <aside class="sidebar" role="complementary" aria-label="Menu lateral">
@@ -92,8 +95,10 @@ $totalPaginas = ceil($total / $resultadosPorPagina);
 <main class="main-content d-flex flex-md-column w-100 h-100" role="main">
     <header class="top-bar">
         <form method="GET" class="search-box" autocomplete="off">
-            <input type="text" name="busca" placeholder="Buscar...">
-            <button type="submit"><img src="../img/IconSearch.svg" alt="Buscar"></button>
+            <input type="text" name="busca" placeholder="Buscar..." class="search__input oval-xlg">
+            <button type="submit"><svg class="search__icon icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+        <path d="M18 3C26.3 3 33.1 9.7 33.1 18 33.1 21.5 31.9 24.7 29.9 27.3L37 34.4 34.4 37 27.3 29.9C24.7 31.9 21.5 33.1 18 33.1 9.7 33.1 3 26.3 3 18 3 9.7 9.7 3 18 3ZM18.1 6.9C11.9 6.9 6.9 11.9 6.9 18.1 6.9 24.2 11.9 29.2 18.1 29.2 24.2 29.2 29.2 24.2 29.2 18.1 29.2 11.9 24.2 6.9 18.1 6.9Z"></path>
+      </svg></button>
         </form>
 
         <div class="status-buttons">
