@@ -51,7 +51,6 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
        $stmt->bind_param("s", $numero_os);
        $stmt->execute();
        $result = $stmt->get_result();
-   
        if ($row = $result->fetch_assoc()) {
           $jaExecutando = ($row['executante'] === $tecnico_id);
           $status = $row['status'];
@@ -114,20 +113,19 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       </aside>
   <main class="">
       <header class="top-bar">
-
-      <div class="welcome-msg me-3 text-dark fw-bold">
-            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
-                <?= htmlspecialchars($_SESSION['nome']) ?>
-            </a><br>
-                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
-                    <?php echo htmlspecialchars($_SESSION['tipo']); ?>
-                </span>
-            </div>
-            <div class="logout-btn">
-                <a href="logout.php" title="Sair">
-                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
-                </a>
-            </div>
+         <div class="welcome-msg me-3 text-dark fw-bold">
+               <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
+                  <?= htmlspecialchars($_SESSION['nome']) ?>
+               </a><br>
+                  <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                     <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                  </span>
+               </div>
+               <div class="logout-btn">
+                  <a href="logout.php" title="Sair">
+                     <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                  </a>
+               </div>
       </header>
       <div class="detalhe-container <?= $statusClass ?> d-flex flex-column mb-5">
       <input type="hidden" id="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
@@ -140,7 +138,13 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
             <a href="panelTecnico.php" class="botao-voltar" title="Voltar">
                <span class="material-symbols-outlined">arrow_back_ios</span>
             </a>
+            <?php if (isset($row) && isset($row['numero_os'])): ?>
+               <a href="exportar_word.php?numero_os=<?= urlencode($row['numero_os']) ?>" class="btn btn-primary" title="Exportar documento Word">
+                  <span class="material-symbols-outlined">file_export</span>
+               </a>
+            <?php endif; ?>
             <h1 class="numero_os" id="numero_os"><?php echo htmlspecialchars($row['numero_os']); ?></h1>
+
          </div>
          <div class="info-detalhe mb-4 mt-4 w-100 h-100 text-start">
             <h2 class="title titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h2>
@@ -303,6 +307,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                      <?php endif; ?>
                   </div>
                   <div class="modal-footer">
+                     
                      <button type="submit" class="btn btn-sm btn-success ms-2">Salvar</button>
                   </div>
                </form>
