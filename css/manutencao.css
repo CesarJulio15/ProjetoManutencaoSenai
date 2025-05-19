@@ -70,6 +70,7 @@ button, .status-btn {
   margin: auto;
   text-wrap: pretty;
   text-overflow: ellipsis;
+  user-select: none;
 }
 button:active,
 .status-btn:active {
@@ -251,7 +252,7 @@ a:has(.card),
   justify-content: flex-start;
   align-items: flex-start;
   align-content: center;
-  background: #f7f7f7;
+  /*background: #f7f7f7;*/
 }
 
 .card-footer {
@@ -292,7 +293,7 @@ a:has(.card),
 .prioridade-baixa {
   background-color: #6c757d;
 } /* cinza */
-.prioridade-média {
+.prioridade-média, .prioridade-media {
   background-color: #007bff;
 } /* azul */
 .prioridade-alta {

@@ -7,6 +7,7 @@
         exit();
     }
 
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     $isTecnico   = ($_SESSION['tipo'] === 'técnico');
     $statusParam = $_GET['status'] ?? '';
     $busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
@@ -15,7 +16,7 @@
     $usuarioId   = $_SESSION['id'];
 
     // Paginação
-    $resultadosPorPagina = 10;
+    $resultadosPorPagina = 8;
     $paginaAtual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
     $offset = ($paginaAtual - 1) * $resultadosPorPagina;
 
@@ -30,7 +31,7 @@
         FROM manutencao m
         JOIN docentes d1 ON m.responsavel = d1.id
         LEFT JOIN docentes d2 ON m.executante = d2.id
-    ";
+        ";
 
     if ($isTecnico) {
         if (isset($_GET['meus'])) {
@@ -38,19 +39,68 @@
             $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
         } elseif ($statusParam) {
             if ($statusParam === 'Pendente') {
-                $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+                $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? 
+                ORDER BY
+                    (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                    CASE m.prioridade
+                        WHEN 'Urgente' THEN 1
+                        WHEN 'Alta' THEN 2
+                        WHEN 'Média' THEN 3
+                        WHEN 'Baixa' THEN 4
+                        ELSE 5
+                    END,
+                    m.data_abertura DESC,
+                    m.id DESC
+                LIMIT ? OFFSET ?";
                 $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
             } else {
-                $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+                $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? 
+                ORDER BY
+                    (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                    CASE m.prioridade
+                        WHEN 'Urgente' THEN 1
+                        WHEN 'Alta' THEN 2
+                        WHEN 'Média' THEN 3
+                        WHEN 'Baixa' THEN 4
+                        ELSE 5
+                    END,
+                    m.data_abertura DESC,
+                    m.id DESC
+                LIMIT ? OFFSET ?";
                 $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
             }
         } else {
-            $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? 
+            ORDER BY
+                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                CASE m.prioridade
+                    WHEN 'Urgente' THEN 1
+                    WHEN 'Alta' THEN 2
+                    WHEN 'Média' THEN 3
+                    WHEN 'Baixa' THEN 4
+                    ELSE 5
+                END,
+                m.data_abertura DESC,
+                m.id DESC
+            LIMIT ? OFFSET ?";
             $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
         }
     } elseif ($tipoUsuario === 'coordenador') {
         if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? 
+            ORDER BY
+                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                CASE m.prioridade
+                    WHEN 'Urgente' THEN 1
+                    WHEN 'Alta' THEN 2
+                    WHEN 'Média' THEN 3
+                    WHEN 'Baixa' THEN 4
+                    ELSE 5
+                END,
+                m.data_abertura DESC,
+                m.id DESC
+            LIMIT ? OFFSET ?";
+                        
             $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
         } else {
             $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
@@ -58,10 +108,35 @@
         }
     } else {
         if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? 
+            ORDER BY
+                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                CASE m.prioridade
+                    WHEN 'Urgente' THEN 1
+                    WHEN 'Alta' THEN 2
+                    WHEN 'Média' THEN 3
+                    WHEN 'Baixa' THEN 4
+                    ELSE 5
+                END,
+                m.data_abertura DESC,
+                m.id DESC
+                LIMIT ? OFFSET ?";
+            
             $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
         } else {
-            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? 
+            ORDER BY
+                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
+                CASE m.prioridade
+                    WHEN 'Urgente' THEN 1
+                    WHEN 'Alta' THEN 2
+                    WHEN 'Média' THEN 3
+                    WHEN 'Baixa' THEN 4
+                    ELSE 5
+                END,
+                m.data_abertura DESC,
+                m.id DESC
+            LIMIT ? OFFSET ?";
             $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
         }
     }
@@ -82,6 +157,49 @@
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <style>
+        .status-btn:nth-child(2) {
+            width:170px;
+        }
+        .search-container {
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease-in-out;
+}
+
+.search-input {
+  width: 130px;
+  padding: 10px 40px 10px 20px;
+  border-radius: 30px;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+  background: #f0f0f0;
+  color: #333;
+  text-align:left;
+}
+
+.search-input:focus,
+.search-input:not(:placeholder-shown) {
+  width: 280px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: #6c7587;
+}
+    </style>
 </head>
 <body>
 <aside class="sidebar" role="complementary" aria-label="Menu lateral">
@@ -92,13 +210,14 @@
 
 <main class="main-content d-flex flex-md-column w-100 h-100" role="main">
     <header class="top-bar">
-        <form method="GET" class="search-box" autocomplete="off">
-            <input type="text" name="busca" placeholder="Buscar..." class="search__input oval-xlg">
-            <button type="submit"><svg class="search__icon icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-        <path d="M18 3C26.3 3 33.1 9.7 33.1 18 33.1 21.5 31.9 24.7 29.9 27.3L37 34.4 34.4 37 27.3 29.9C24.7 31.9 21.5 33.1 18 33.1 9.7 33.1 3 26.3 3 18 3 9.7 9.7 3 18 3ZM18.1 6.9C11.9 6.9 6.9 11.9 6.9 18.1 6.9 24.2 11.9 29.2 18.1 29.2 24.2 29.2 29.2 24.2 29.2 18.1 29.2 11.9 24.2 6.9 18.1 6.9Z"></path>
-      </svg></button>
-        </form>
-
+            <div class="search-container">
+        <input type="text" id="buscaInput" placeholder="Buscar..." class="search-input" />
+        <span class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+            <path d="M18 3C26.3 3 33.1 9.7 33.1 18 33.1 21.5 31.9 24.7 29.9 27.3L37 34.4 34.4 37 27.3 29.9C24.7 31.9 21.5 33.1 18 33.1 9.7 33.1 3 26.3 3 18 3 9.7 9.7 3 18 3ZM18.1 6.9C11.9 6.9 6.9 11.9 6.9 18.1 6.9 24.2 11.9 29.2 18.1 29.2 24.2 29.2 29.2 24.2 29.2 18.1 29.2 11.9 24.2 6.9 18.1 6.9Z" />
+            </svg>
+        </span>
+        </div>
         <div class="status-buttons">
             <?php if ($_SESSION['tipo'] == 'técnico'): ?>
                 <a href="#"
@@ -126,8 +245,7 @@
                 </a>
             </div>
     </header>
-
-    <section class="cards-container">
+    <section class="cards-container" id="resultado">
     <?php
         if ($result->num_rows == 0) {
             ?>
@@ -188,10 +306,9 @@
                         }
                     }
                     ?>
-
                     </section>
                     <?php if ($totalPaginas > 1): ?>
-                    <div class="paginacao">
+                    <div class="paginacao mt-3">
                         <?php
                             $queryString = $_GET;
 
@@ -230,43 +347,7 @@
                         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
                     </a>
                 <?php endif; ?>
-
-
 </main>
-<script>
-        document.querySelectorAll('.status-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.preventDefault();
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Se for “Seus Trabalhos”
-            if (btn.dataset.meus !== undefined) {
-            if (urlParams.has('meus')) {
-                urlParams.delete('meus');
-            } else {
-                urlParams.delete('status');
-                urlParams.set('meus', '1');
-            }
-            } else {
-            // um botão de status normal
-            urlParams.delete('meus');
-            const status = btn.dataset.status;
-            if (urlParams.get('status') === status) {
-                urlParams.delete('status');
-            } else {
-                urlParams.set('status', status);
-            }
-            }
-            // mantém o termo de busca
-            window.location.search = urlParams.toString();
-        });
-        });
-        document.querySelectorAll('.avatar').forEach(function(avatar) {
-            const letra = avatar.textContent.trim().charAt(0).toLowerCase();
-            if (letra.match(/[a-z]/i)) {
-            avatar.classList.add(letra);
-            }
-        });
-</script>
+<script src="../js/panelPedidos.js"></script>
 </body>
 </html>

@@ -115,7 +115,7 @@ $total_paginas = ceil($total_registros / $limite);
             </tbody>
         </table>
 
-        <div class="mt-3">
+        <div class="mt-3 paginacao">
             <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
                 <a href="?pagina=<?= $i ?>&tipo=<?= urlencode($filtro_tipo) ?>" class="status-btn <?= $pagina == $i ? 'active' : '' ?>">
                     <?= $i ?>

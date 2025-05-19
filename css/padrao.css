@@ -536,6 +536,7 @@ table tr:nth-child(even) {
   justify-content: center;
   align-items: center;
   user-select: none;
+  text-decoration: none;
 }
 
 .paginacao a:hover{
