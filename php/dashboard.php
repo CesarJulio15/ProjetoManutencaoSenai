@@ -414,18 +414,18 @@
                 <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
                 <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
-                  <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+                  <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                       <?= htmlspecialchars($_SESSION['nome']) ?>
                   </a><br>
-                      <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
-                          <?php echo htmlspecialchars($_SESSION['tipo']); ?>
-                      </span>
-                  </div>
-                <div class="logout-btn">
-                    <a href="logout.php" title="Sair">
-                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
-                    </a>
+                    <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                        <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                    </span>
                 </div>
+            <div class="logout-btn">
+                <a href="logout.php" title="Sair">
+                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                </a>
+            </div>
             </header>
             <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100">
@@ -465,7 +465,7 @@
                                     </tbody>
                                 </table>
                                 <nav class="mt-2">
-                                    <ul class="pagination justify-content-center">
+                                    <ul class="pagination paginacao justify-content-center">
                                         <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
                                         <li class="page-item <?= $i === $pagina ? 'active' : '' ?>">
                                             <a class="page-link" href="?pagina_atendentes=<?= $i ?>#tickets-atendentes"><?= $i ?></a>

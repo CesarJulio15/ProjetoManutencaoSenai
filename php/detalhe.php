@@ -115,19 +115,18 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
   <main class="">
       <header class="top-bar">
 
-            <div class="welcome-msg me-3 text-dark fw-bold">
-            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" class="username" title="Editar meus dados">
-               <?= htmlspecialchars($_SESSION['nome']) ?>
-            </a>     
-            <br>
-               <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
-                  <?php echo htmlspecialchars($_SESSION['tipo']); ?>
-               </span>
+      <div class="welcome-msg me-3 text-dark fw-bold">
+            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
+                <?= htmlspecialchars($_SESSION['nome']) ?>
+            </a><br>
+                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
+                    <?php echo htmlspecialchars($_SESSION['tipo']); ?>
+                </span>
             </div>
             <div class="logout-btn">
-               <a href="logout.php" title="Sair">
-                  <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
-               </a>
+                <a href="logout.php" title="Sair">
+                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                </a>
             </div>
       </header>
       <div class="detalhe-container <?= $statusClass ?> d-flex flex-column mb-5">

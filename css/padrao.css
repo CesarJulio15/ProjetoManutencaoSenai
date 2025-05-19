@@ -89,10 +89,19 @@ a {
   margin: auto 10px;
   user-select: none;
 }
+.username:active, .username:hover{
+  background: -webkit-linear-gradient(#005bff,#00c3ff);
+  background: linear-gradient(90deg, #005bff, #00c3ff);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+filter: brightness(1.2);
+}
 .logout-btn {
   margin: auto 10px;
 }
-
+.logout-btn:hover{
+  transform:scale(1.05);
+}
 .search-box {
   display: inline-flex;
   gap: 0;
@@ -519,7 +528,7 @@ table tr:nth-child(even) {
   align-items: center;
   align-content: center;
 }
-.paginacao a {
+.paginacao a, .page-item {
   display: inline-flex;
   width: 40px;
   height: 40px;

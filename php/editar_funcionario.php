@@ -60,7 +60,7 @@ if (!$docente) {
         <h3>Editar Funcionário</h3>
         </div>
         <div class="welcome-msg me-3 text-dark fw-bold">
-            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                 <?= htmlspecialchars($_SESSION['nome']) ?>
             </a><br>
                 <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">

@@ -146,6 +146,11 @@ a:has(.card),
   height: fit-content;
   width: fit-content;
 }
+
+.card-link:hover, .card-link:active{
+  transform:scale(1.01);
+}
+
 .card {
   min-height: 300px;
   display: flex;
