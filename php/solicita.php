@@ -92,7 +92,7 @@
                                         echo '<div class="d-flex flex-row mb-3 gap-2">';
                                         echo '<label for="executante">Técnico responsável:</label>';
                                         echo '<select name="executante" id="executante" class="form-select">';
-                                        echo '<option value="" disabled selected>Selecione</option>';
+                                        echo '<option value="" selected>Selecione</option>';
                                         while ($tec = $tecnicos->fetch_assoc()) {
                                             echo "<option value='{$tec['id']}'>{$tec['nome']}</option>";
                                         }
@@ -125,11 +125,11 @@
                         <div class="conjunto d-flex flex-column gap-4">
                         <div class="d-flex mb-3 gap-2">
                         <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
-                        </div>
-                        <br>                      
+                        </div>                  
                         <div class="text-center mb-3 gap-2">
                         <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
                         </div>
+                        <br>    
                         <div class="d-flex mb-3 gap-4">
                             <div class="d-flex flex-md-row gap-2">
                                     <label for="origem">Origem:</label>

@@ -81,9 +81,7 @@
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
-    <style>
-
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 </head>
 <body>
 <aside class="sidebar" role="complementary" aria-label="Menu lateral">
@@ -167,7 +165,7 @@
                                 <div class="d-flex conjunto">
                                 <p><strong>Nº OS:</strong> <?php echo htmlspecialchars($row['numero_os']); ?></p>
                                 </div>                    
-                                <div class="d-flex conjunto">
+                                <div class="d-flex conjunto os-texto" id="">
                                                     <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
                                                     <p><strong>Localização:</strong> <?php echo htmlspecialchars($row['localizacao_ambiente']); ?></p>
                                     <?php if (!empty($row['nome_executante'])): ?>
@@ -190,7 +188,33 @@
                         }
                     }
                     ?>
+
                     </section>
+                    <?php if ($totalPaginas > 1): ?>
+                    <div class="paginacao">
+                        <?php
+                            $queryString = $_GET;
+
+                            if ($paginaAtual > 1) {
+                                $queryString['pagina'] = $paginaAtual - 1;
+                                echo '<a href="?' . http_build_query($queryString) . '">
+                                <span class="material-symbols-outlined">arrow_back_ios</span></a>';
+                            }
+
+                            for ($i = 1; $i <= $totalPaginas; $i++) {
+                                $queryString['pagina'] = $i;
+                                $classe = ($i == $paginaAtual) ? 'class="ativa"' : '';
+                                echo '<a href="?' . http_build_query($queryString) . "\" $classe>$i</a>";
+                            }
+
+                            if ($paginaAtual < $totalPaginas) {
+                                $queryString['pagina'] = $paginaAtual + 1;
+                                echo '<a href="?' . http_build_query($queryString) . '">
+                                <span class="material-symbols-outlined">arrow_forward_ios</span></a>';
+                            }
+                        ?>
+                    </div>
+                <?php endif; ?>
                         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
                     <a href="listar_funcionarios.php" title="Visualizar funcionários">
                         <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
@@ -206,21 +230,7 @@
                         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
                     </a>
                 <?php endif; ?>
-                <?php if ($totalPaginas > 1): ?>
-                    <div class="paginacao">
-                        <?php if ($paginaAtual > 1): ?>
-                            <a href="?pagina=<?= $paginaAtual - 1 ?>">Anterior</a>
-                        <?php endif; ?>
-                
-                        <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-                            <a href="?pagina=<?= $i ?>" <?= ($i == $paginaAtual) ? 'class="ativa"' : '' ?>><?= $i ?></a>
-                        <?php endfor; ?>
-                
-                        <?php if ($paginaAtual < $totalPaginas): ?>
-                            <a href="?pagina=<?= $paginaAtual + 1 ?>">Próxima</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
+
 
 </main>
 <script>

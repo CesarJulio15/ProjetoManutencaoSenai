@@ -511,6 +511,44 @@ table tr:nth-child(even) {
   user-select: none;
   background: transparent;
 }
+.paginacao {
+  display: inline-flex;
+  gap: 10px;
+  user-select: none;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+.paginacao a {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: #e0e0e0;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #f4f6fb;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  outline: none;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.paginacao a:hover{
+  box-shadow: 4px 4px 8px #bebebe -4px -4px #f4f6fb;
+}
+.paginacao a.ativa, .paginacao a:active{
+box-shadow:  inset 8px 8px 16px #bebebe, inset -8x -8px 16px #f4f6fb;
+}
+.paginacao a.ativa{
+background: #03a9f4;
+color: white;
+box-shadow: inset 8px 8px 16px #bebebe, inset -8px -8px 16px #f4f6fb;
+}
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

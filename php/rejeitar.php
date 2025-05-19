@@ -2,30 +2,32 @@
 session_start();
 require_once 'conexao.php';
 
-if (!isset($_SESSION['nif']) || !isset($_POST['titulo'])) {
+if (!isset($_SESSION['nif']) || !isset($_POST['numero_os'])) {
     header("Location: panelTecnico.php");
     exit;
 }
 
 $docente = $_SESSION['docente'];
+$numero_os = $_POST['numero_os'];
+if (!preg_match('/^OS-\d{8}-\d{4}$/', $numero_os)) {
+    header("Location: panelTecnico.php");
+    exit;
+}
 $titulo = $_POST['titulo'];
 
-// Remove rejeição anterior, se existir
-$sqlDelete = "DELETE FROM rejeicoes WHERE docente = ? AND titulo = ?";
-$stmt = $conn->prepare($sqlDelete);
-$stmt->bind_param("ss", $docente, $titulo);
+// 1. Remove rejeição anterior
+$stmt = $conn->prepare("DELETE FROM rejeicoes WHERE docente = ? AND numero_os = ?");
+$stmt->bind_param("ss", $docente, $numero_os);
 $stmt->execute();
 
-// Remove o usuário como executante do pedido, se ele tiver aceitado
-$sqlUpdate = "UPDATE manutencao SET executante = NULL, status = 'pendente' WHERE titulo = ? AND executante = ?";
-$stmt = $conn->prepare($sqlUpdate);
-$stmt->bind_param("ss", $titulo, $docente);
+// 2. Atualiza a manutenção
+$stmt = $conn->prepare("UPDATE manutencao SET executante = NULL, status = 'Pendente' WHERE numero_os = ? AND executante = ?");
+$stmt->bind_param("ss", $numero_os, $docente);
 $stmt->execute();
 
-// Registra nova rejeição
-$sqlInsert = "INSERT INTO rejeicoes (docente, titulo) VALUES (?, ?)";
-$stmt = $conn->prepare($sqlInsert);
-$stmt->bind_param("ss", $docente, $titulo);
+// 3. Registra rejeição
+$stmt = $conn->prepare("INSERT INTO rejeicoes (docente, numero_os) VALUES (?, ?)");
+$stmt->bind_param("ss", $docente, $numero_os);
 $stmt->execute();
 
 header("Location: panelTecnico.php?status=pendente");

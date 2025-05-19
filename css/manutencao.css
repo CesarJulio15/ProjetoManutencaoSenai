@@ -36,6 +36,7 @@
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  text-wrap: pretty;
 }
 input,
 button,
@@ -51,6 +52,7 @@ button,
   text-align: center;
   background-color: #ebecf0;
   transition: all 250ms ease-in-out;
+  text-wrap: pretty;
 }
 input:hover,
 button:hover,
@@ -59,12 +61,15 @@ button:hover,
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-button,
-.status-btn {
+button, .status-btn {
+  width: fit-content;
+  height: fit-content;
   box-shadow: 8px 8px 12px -2px rgba(72, 79, 96, 0.4), -6px -6px 12px -1px white;
   cursor: pointer;
-  padding: 10px;
+  padding: 15px;
   margin: auto;
+  text-wrap: pretty;
+  text-overflow: ellipsis;
 }
 button:active,
 .status-btn:active {
@@ -100,6 +105,8 @@ button > span:last-child {
 .status-btn.active {
   background-color: red;
   color: white;
+  /*border:none;
+  box-shadow: inset 8px 8px 16px #bebebe, inset -8px -8px 16px #f4f6fb;*/
 }
 .status.pendente {
   background-color: #a0352b;
@@ -125,7 +132,7 @@ button > span:last-child {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-top: 15px;
   overflow: auto;
@@ -154,6 +161,8 @@ a:has(.card),
   user-select: none;
   grid-row-start: 1;
   grid-row-end: 3;
+  text-wrap: pretty;
+  text-overflow: ellipsis;
 }
 
 .card:hover {
@@ -167,6 +176,11 @@ a:has(.card),
   align-items: center;
   padding: 10px;
   position: relative;
+}
+.os-texto, .os-texto h4{
+  max-width: 263px;
+  text-overflow: ellipsis;
+  text-wrap: pretty;
 }
 
 .flag {

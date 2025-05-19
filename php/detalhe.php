@@ -10,7 +10,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
 
    // Candidatar
    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_POST['acao'])) {
-      $titulo = $_POST['titulo'];
+      $titulo = filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS);
       if ($_POST['acao'] === 'candidatar') {
          $executante = $tecnico_id;
 
@@ -55,6 +55,10 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
        if ($row = $result->fetch_assoc()) {
           $jaExecutando = ($row['executante'] === $tecnico_id);
           $status = $row['status'];
+          $data_abertura = $row['data_abertura']; // yyyy-mm-dd
+          $data_conclusao = $row['data_encerramento']; // pode ser null
+          $data_abertura_formatada = date("d/m/Y", strtotime($data_abertura));
+          $data_conclusao_formatada = $data_conclusao ? date("d/m/Y", strtotime($data_conclusao)) : '—';
           switch ($status) {
               case 'Pendente':     $statusClass = 'status-pendente';     break;
               case 'Em Andamento': $statusClass = 'status-em-andamento'; break;
@@ -75,10 +79,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-      <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
-      <style>
-
-      </style>
+      <link rel="icon" type="image/png" href="../img/senai-logo 5.svg"> 
    </head>
    <body class="">
    <?php
@@ -115,9 +116,10 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
       <header class="top-bar">
 
             <div class="welcome-msg me-3 text-dark fw-bold">
-            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
+            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" class="username" title="Editar meus dados">
                <?= htmlspecialchars($_SESSION['nome']) ?>
-            </a><br>
+            </a>     
+            <br>
                <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
                   <?php echo htmlspecialchars($_SESSION['tipo']); ?>
                </span>
@@ -161,6 +163,17 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                   <?php endif; ?>
                </div>
                <div class="d-flex flex-md-row gap-4 align-center w-100">
+                     <div class="info-item mt-3">
+                        <p><strong>Data de Abertura:</strong> <?= $data_abertura_formatada ?></p>
+                     </div>
+                     <?php if (!empty($row['data_encerramento'])): ?>
+                     <div class="info-item mt-3">
+                     <p><strong>Data de Conclusão:</strong> <?= $data_conclusao_formatada ?></p>
+                     </div>
+                     <?php endif; ?>
+
+               </div>
+               <div class="d-flex flex-md-row gap-4 align-center w-100">
                         <div class="info-item mt-3">
                            <label class="info-label"><b>Bloco</b>:</label>
                            <p class="info-text"><?php echo nl2br(htmlspecialchars($row['bloco'])); ?></p>
@@ -175,6 +188,7 @@ if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'té
                         <label class="info-label"><b>Descrição</b>:</label>
                         <p class="info-text"><?php echo nl2br(htmlspecialchars($row['descricao'])); ?></p>
                      </div>
+
                </div>
 
                <div class="d-flex flex-md-row gap-4 align-center w-100">

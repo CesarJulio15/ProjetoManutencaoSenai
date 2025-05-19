@@ -15,7 +15,12 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id = $_GET['id'];
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id) {
+    echo "ID inválido.";
+    exit;
+}
+
 if ($tipoUsuario !== 'coordenador' && $idUsuario != $id) {
     echo "Acesso negado.";
     exit;
@@ -76,7 +81,7 @@ if (!$docente) {
             <div class="d-flex flex-wrap w100" style="gap:10px;">
         <div class="d-flex flex-wrap" style="gap:10px;">        
             <label><b>Nome:</b></label>
-        <input type="text" name="nome" value="<?= htmlspecialchars($docente['nome']) ?>" required>
+            <input type="text" name="nome" value="<?= htmlspecialchars($docente['nome'], ENT_QUOTES) ?>" required>
         </div>
         <div class="d-flex flex-wrap" style="gap:10px;">        
             <label><b>NIF:</b></label>

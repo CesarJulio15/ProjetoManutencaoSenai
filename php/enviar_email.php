@@ -39,15 +39,16 @@ function enviarEmailCadastro($destinatario, $nome, $senha, $linkLogin) {
 
     try {
         $mail->isSMTP();
-        $mail->Host       = 'smtp.seudominio.com';
+        $mail->SMTPDebug = 0; // altere para 2 para ver detalhes no console
+        $mail->Debugoutput = 'html';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'seuemail@seudominio.com';
-        $mail->Password   = 'suasenhaemail';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port       = 587;
-
-        $mail->setFrom('no-reply@seudominio.com', 'Equipe Senai Manutenções');
-        $mail->addAddress($destinatario, $nome);
+        $mail->Host       = 'smtp.titan.email';
+        $mail->Username   = 'contato@devgomes.com'; // seu e-mail
+        $mail->Password   = 'Fgs@991554618';         // sua senha
+        $mail->SMTPSecure = 'ssl';    
+        $mail->Port       = 465;
+        $mail->setFrom('contato@devgomes.com', 'Sistema de Manutenção');
+        $mail->addAddress($destinatario); // destinatário
 
         $mail->isHTML(true);
         $mail->Subject = 'Bem-vindo! Acesso ao Portal Senai Manutenções';

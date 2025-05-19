@@ -16,22 +16,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 function gerarNumeroOS($conn) {
     do {
-        $numero_os = 'OS-' . date('Ymd') . '-' . rand(1000, 9999);
+        $numero_os = 'OS-' . date('Ymd') . '-' . str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
         $check = $conn->prepare("SELECT id FROM manutencao WHERE numero_os = ?");
         $check->bind_param("s", $numero_os);
         $check->execute();
         $result = $check->get_result();
+        $check->close();
     } while ($result->num_rows > 0);
     return $numero_os;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $numero_os = gerarNumeroOS($conn);  
-    $titulo = $_POST["titulo"];
-    $descricao = $_POST["descricao"];
+    $titulo = trim(filter_input(INPUT_POST, "titulo", FILTER_SANITIZE_SPECIAL_CHARS));
+    $descricao = trim(filter_input(INPUT_POST, "descricao", FILTER_SANITIZE_SPECIAL_CHARS));
+    $bloco = trim(filter_input(INPUT_POST, "bloco", FILTER_SANITIZE_SPECIAL_CHARS));
+    $localizacao = trim(filter_input(INPUT_POST, "localizacao", FILTER_SANITIZE_SPECIAL_CHARS));
     $data_abertura = date("Y-m-d");
-    $bloco = $_POST['bloco'];
-    $localizacao = $_POST["localizacao"];
     $tipoUsuario = $_SESSION['tipo'] ?? null;
     $origem = $_POST['origem'] ?? 'Não especificado';
     $tipo_manutencao = $_POST['tipo_manutencao'] ?? 'Corretiva';
@@ -58,9 +59,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $prioridade = 'Média';
     } else {
         // validação extra
-        $prioridade = in_array($_POST['prioridade'], ['Baixa','Média','Alta','Urgente'])
-                    ? $_POST['prioridade']
-                    : 'Média';
+        $prioridade = filter_input(INPUT_POST, 'prioridade', FILTER_SANITIZE_SPECIAL_CHARS);
+        $prioridade = in_array($prioridade, ['Baixa', 'Média', 'Alta', 'Urgente']) ? $prioridade : 'Média';
     }
 
     // 5) Define o executante: se for técnico, é o próprio usuário; senão, null
@@ -77,7 +77,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Tratamento da imagem (opcional)
     $foto = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $foto = file_get_contents($_FILES['foto']['tmp_name']);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES['foto']['tmp_name']);
+        $tiposPermitidos = ['image/jpeg', 'image/png'];
+    
+        if (in_array($mime, $tiposPermitidos)) {
+            $foto = file_get_contents($_FILES['foto']['tmp_name']);
+        } else {
+            $_SESSION['erro'] = "Formato de imagem inválido. Apenas JPEG e PNG são permitidos.";
+            header("Location: solicita.php");
+            exit();
+        }
     }
     
     $sql = "INSERT INTO manutencao (

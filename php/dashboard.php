@@ -1,11 +1,11 @@
 <?php
-session_start();
-if (!isset($_SESSION['tipo'])) {
-    // redirecione ou trate o erro
-    header("Location: index.php");
-    exit();
-}
-$tipo = $_SESSION['tipo'];
+  session_start();
+  if (!isset($_SESSION['tipo'])) {
+      // redirecione ou trate o erro
+      header("Location: index.php");
+      exit();
+  }
+  $tipo = $_SESSION['tipo'];
     
     include 'conexao.php';
     // Totais por status
@@ -222,7 +222,7 @@ $tipo = $_SESSION['tipo'];
     // Tickets por atendente (executante)
     // Paginação para atendentes
     $pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
-    $limite = 4;
+    $limite = 8;
     $offset = ($pagina - 1) * $limite;
     
     $totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
@@ -401,8 +401,7 @@ $tipo = $_SESSION['tipo'];
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-        <style>
-        </style>
+<script src="../js/checarNovidades.js"></script>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
         <aside class="sidebar">
@@ -476,7 +475,7 @@ $tipo = $_SESSION['tipo'];
                                 </nav>
                           </div>
                     </div>
-                    <div class="dashboard-cards p-3 m-auto w-25">
+                    <div class="dashboard-cards p-3 m-auto w-50">
                             <div class="info-box bg-pink hover-expand-effect">
                                 <div class="icon">
                                     <span class="material-symbols-outlined">
@@ -522,7 +521,7 @@ $tipo = $_SESSION['tipo'];
                                 </div>
                             </div>
 
-                        </div>
+                      </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <!-- Gráfico de Pizza (à esquerda) -->
@@ -634,6 +633,7 @@ $tipo = $_SESSION['tipo'];
             <a href="solicita.php">
         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
     </a>
+
   <?php endif; ?>            
             <script>
                 // captura as cores diretamente das info-box
@@ -944,73 +944,70 @@ $tipo = $_SESSION['tipo'];
                   }
                 );
             </script>
-<script>
-fetch('dados_por_setor.php')
-  .then(res => res.json())
-  .then(data => {
-    const labels = data.map(item => item.bloco);
-    const valores = data.map(item => item.total);
-    const total = valores.reduce((a, b) => a + b, 0);
+  <script>
+      fetch('dados_por_setor.php')
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.map(item => item.bloco);
+          const valores = data.map(item => item.total);
+          const total = valores.reduce((a, b) => a + b, 0);
 
-    const cores = [
-      '#000000', // Preto
-  '#c0c0c0', // Cinza claro
-  '#ffffff', // Branco
-  '#8c4a28', // Marrom escuro
-  '#d98c74', // Marrom claro
-  '#e6b5aa', // Rosa claro
-  '#004080', // Azul escuro
-  '#007080', // Ciano escuro
-  '#30a0a0', // Ciano médio
-  '#38a850', // Verde claro
-  '#70b080', // Verde médio
-  '#a0b870', // Verde oliva
-  '#f0e850', // Amarelo claro
-  '#f8a800', // Laranja
-  '#b01030', // Vermelho escuro
-  '#8c003c'  // Magenta escuro
-];
+          const cores = [
+            '#000000', // Preto
+        '#e6b5aa', // Rosa claro
+        '#004080', // Azul escuro
+        '#007080', // Ciano escuro
+        '#30a0a0', // Ciano médio
+        '#38a850', // Verde claro
+        '#70b080', // Verde médio
+        '#a0b870', // Verde oliva
+        '#f0e850', // Amarelo claro
+        '#f8a800', // Laranja
+        '#b01030', // Vermelho escuro
+        '#8c003c'  // Magenta escuro
+      ];
 
-    new Chart(document.getElementById('graficoSetor'), {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: valores,
-          backgroundColor: cores.slice(0, valores.length),
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        rotation: -90,
-        circumference: 180,
-        cutout: '55%',
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            enabled: false
-          },
-          datalabels: {
-            color: '#fff',
-            font: {
-              weight: 'bold',
-              size: 14
+          new Chart(document.getElementById('graficoSetor'), {
+            type: 'doughnut',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: valores,
+                backgroundColor: cores.slice(0, valores.length),
+                borderWidth: 0
+              }]
             },
-            formatter: function(value, ctx) {
-              const label = ctx.chart.data.labels[ctx.dataIndex];
-              const percent = ((value / total) * 100).toFixed(1) + '%';
-              return `${label}\n${percent}`;
-            }
-          }
-        }
-      },
-      plugins: [ChartDataLabels]
-    });
-  });
-</script>
+            options: {
+              responsive: true,
+              rotation: -90,
+              circumference: 180,
+              cutout: '55%',
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  enabled: false
+                },
+                datalabels: {
+                  color: '#fff',
+                  font: {
+                    weight: 'bold',
+                    size: 14
+                  },
+                  formatter: function(value, ctx) {
+                    const label = ctx.chart.data.labels[ctx.dataIndex];
+                    const percent = ((value / total) * 100).toFixed(1) + '%';
+                    return `${label}\n${percent}`;
+                  }
+                }
+              }
+            },
+            plugins: [ChartDataLabels]
+          });
+        });
+  </script>
         </main>
+
     </body>
 </html>
