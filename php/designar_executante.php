@@ -4,12 +4,13 @@ include 'conexao.php';
 require 'enviar_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $numero_os = $_POST['numero_os'] ?? '';
     $titulo = $_POST['titulo'] ?? '';
     $executante = $_POST['executante'] ?? '';
 
-    $sql = "UPDATE manutencao SET executante = ? WHERE titulo = ?";
+    $sql = "UPDATE manutencao SET executante = ? WHERE numero_os = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $executante, $titulo);
+    $stmt->bind_param("is", $executante, $numero_os);
 
     if ($stmt->execute()) {
         $_SESSION['executante_sucesso'] = true;

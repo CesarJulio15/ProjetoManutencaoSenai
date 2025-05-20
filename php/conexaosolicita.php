@@ -2,6 +2,10 @@
 session_start();
 require 'conexao.php';
 require_once 'enviar_email.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
+
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
@@ -111,7 +115,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $nome = $row['nome'];
                 $email = $row['email'];
                 $linkOS = "https://devgomes.com/projetos/SENAImanutencao/php/detalhe.php?numero_os=" . urlencode($numero_os);
-                $qrcodeURL = "https://chart.googleapis.com/chart?cht=qr&chs=180x180&chl=" . urlencode($linkOS);
+                $qrcodeTempDir = __DIR__ . '/../qrcodes/';
+                if (!file_exists($qrcodeTempDir)) {
+                    mkdir($qrcodeTempDir, 0755, true);
+                }
+                
+                $qrcodeFile = $qrcodeTempDir . $numero_os . '.png';
+                $options = new QROptions([
+                    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+                    'eccLevel' => QRCode::ECC_L,
+                    'scale' => 5,
+                ]);
+                
+                // Gera o QR Code e salva no diretório temporário
+                (new QRCode($options))->render($linkOS, $qrcodeFile);
+                
+                // Gera URL acessível (ajuste o caminho conforme necessário)
+                $qrcodeURL = 'https://devgomes.com/projetos/SENAImanutencao/qrcodes/' . $numero_os . '.png';
                 // ✉️ Enviar e-mail usando PHPMailer
                 $assunto = "Confirmação de abertura de Ordem de Serviço";
                 $mensagem = "
