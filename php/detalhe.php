@@ -219,8 +219,6 @@
                       </div>
                    </div>
                    <div class="info d-flex flex-column align-items-start align-center w-100">
-   
-
                       <div class="d-flex-flex-md-row gap-4 align-center w-100">
                           <div class="info-item mt-3 w-100">
                               <label class="info-label"><b>Imagem anexada</b>:</label>
@@ -289,14 +287,14 @@
                               <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
                                     <!-- Exibir botão "Candidatar" se não há executante -->
                                     <form method="post">
-                                          <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                       <input type="hidden" id="titulo" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <input type="hidden" name="acao" value="candidatar">
                                           <button type="submit" class="btn-candidatar" title="Candidatar-se">
                                           <span class="material-symbols-outlined">how_to_reg</span></button>
                                     </form>
                                     <form action="rejeitar.php" method="post">
-                                          <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                       <input type="hidden" id="titulo" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <button type="submit" class="btn-rejeitar" title="Rejeitar">
                                           <span class="material-symbols-outlined">person_cancel</span></button>
@@ -343,13 +341,13 @@
                                 echo '</div>';
                                 ?>
                             <?php if (!empty($row['executante'])): ?>
-                            <div class="alert alert-warning mt-3">
-                                Já existe um técnico designado. Você pode substituí-lo ou removê-lo abaixo.
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remover_executante" value="1" id="remover_executante">
-                                <label class="form-check-label" for="remover_executante">Remover executante atual</label>
-                            </div>
+                                 <div class="alert alert-warning mt-3">
+                                    Já existe um técnico designado. Você pode substituí-lo ou removê-lo abaixo.
+                                 </div>
+                                 <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="remover_executante" value="1" id="remover_executante">
+                                    <label class="form-check-label" for="remover_executante">Remover executante atual</label>
+                                 </div>
                             <?php endif; ?>
                         </div>
                         <div class="modal-footer">
@@ -360,56 +358,73 @@
             </div>
         </div>
         <script>
-            document.querySelectorAll('.status-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const status = btn.dataset.status;
-                    const titulo = document.getElementById('titulo').value;
-            
-                    fetch('atualizar_status.php', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: 'titulo=' + encodeURIComponent(titulo) + '&status=' + encodeURIComponent(status)
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Status atualizado!',
-                            text: 'O status foi alterado para "' + status + '".',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            location.reload(); // recarrega a página para refletir alterações
-                        });
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro ao atualizar',
-                            text: 'Não foi possível alterar o status.',
-                            confirmButtonText: 'OK'
-                        });
-                    });
-                });
+document.querySelectorAll('.status-btn').forEach(btn => {
+   btn.addEventListener('click', () => {
+      const status = btn.dataset.status;
+      const numero_os = document.getElementById('numero_os').textContent.trim();
+      Swal.fire({
+         title: 'Atualizando...',
+         text: 'Por favor, aguarde.',
+         allowOutsideClick: false,
+         didOpen: () => {
+            Swal.showLoading();
+         }
+      });
+
+      fetch('atualizar_status.php', {
+         method: 'POST',
+         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+         body: 'numero_os=' + encodeURIComponent(numero_os) + '&status=' + encodeURIComponent(status)
+      })
+      .then(response => response.text())
+      .then(data => {
+         if (data.toLowerCase().includes("sucesso")) {
+            Swal.fire({
+               icon: 'success',
+               title: 'Status atualizado!',
+               text: data,
+               confirmButtonText: 'OK'
+            }).then(() => {
+               location.reload();
             });
-            
-            function confirmarExclusao() {
-                Swal.fire({
-                    title: 'Tem certeza?',
-                    text: "Esta ação é irreversível!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sim, excluir!',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('form-excluir').submit();
-                    }
-                });
-            }
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+         } else {
+            Swal.fire({
+               icon: 'info',
+               title: 'Aviso',
+               text: data,
+               confirmButtonText: 'OK'
+            });
+         }
+      })
+      .catch(error => {
+         Swal.fire({
+            icon: 'error',
+            title: 'Erro ao atualizar',
+            text: 'Não foi possível alterar o status.',
+            confirmButtonText: 'OK'
+         });
+      });
+   });
+});
+
+         function confirmarExclusao() {
+            Swal.fire({
+               title: 'Tem certeza?',
+               text: "Esta ação é irreversível!",
+               icon: 'warning',
+               showCancelButton: true,
+               confirmButtonColor: '#d33',
+               cancelButtonColor: '#3085d6',
+               confirmButtonText: 'Sim, excluir!',
+               cancelButtonText: 'Cancelar'
+            }).then((result) => {
+               if (result.isConfirmed) {
+                     document.getElementById('form-excluir').submit();
+               }
+            });
+         }
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         </main>
     </body>
 </html>
