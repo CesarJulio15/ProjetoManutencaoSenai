@@ -109,6 +109,7 @@ foreach ($dados as $titulo => $valor) {
 
 // === IMAGEM DA OS (se houver) ===
 if (!empty($os['foto'])) {
+    $section->addPageBreak();
     // Detecta tipo MIME real da imagem
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mimeType = $finfo->buffer($os['foto']);

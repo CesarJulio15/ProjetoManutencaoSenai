@@ -4,7 +4,11 @@
   width: calc(100% - 163px);*/
   padding-top: 100px; /* compensando a altura da .top-bar */
 }
-
+.info-container{
+  display: inline-flex;
+  width: 100%;
+  gap: 10px;
+}
 /* Cartão de detalhes */
 .detalhe-container {
   display: inline-flex;
@@ -13,11 +17,10 @@
   max-width: 670px;
   max-height: unset; 
   position: relative;
-  padding: 20px;
+  padding: 20px 20px 0 20px;
   margin: auto 80px;
 
   border-radius: 16px;
-    /* border: 2px solid #be4444; */
   background: #f2f2f2;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
@@ -91,8 +94,8 @@
 }
 .container-img img {
   width: 100%;
-  max-height: 200px;
-  object-fit: contain;
+  /*max-height: 200px;*/
+  object-fit: cover;
   border-radius: 8px;
 }
 
@@ -198,6 +201,12 @@ form button {
   border-radius: 100%;
   color: whitesmoke;
 }
+.botao-voltar {
+  margin: auto;
+  margin-left: 0;
+  width: fit-content;
+  height: fit-content;
+}
 /* Botão Candidatar: verde */
 .btn-candidatar,
 .btn-confirma {
@@ -227,12 +236,11 @@ form button {
   border-radius:100%;
   display:inline-flex;
 }
-.botao-voltar{
-  margin:auto;
-  margin-left:0;
-}
+
 #numero_os{
   margin:auto;
+  left: 0;
+  margin-left: 0;
 }
 .card-header {
   display: inline-flex;
@@ -270,8 +278,52 @@ footer .btn {
   min-width: 120px;
   font-weight: 500;
 }
+#form-observacoes{
+  height:fit-content;
+  user-select:none;
+  background: transparent;
+}
+#observacoes,#descricao {
+width: 100%;
+min-height: 120px;
+padding: 15px 20px;
+font-size: 16px;
+font-family: "Segoe UI", sans-serif;
+color: #333;
+background: rgba(255, 255, 255, 0.8);
+border: 2px solid #ccc;
+border-radius: 12px;
+resize: vertical;
+box-shadow: inset 2px 2px 6px rgba(0,0,0,0.1), inset -2px -2px 6px rgba(255,255,255,0.5);
+transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
 
-/* Centraliza o conteúdo no desktop */
+#observacoes:focus {
+outline: none;
+border-color: #5b7f2e;
+box-shadow: 0 0 0 3px rgba(91, 127, 46, 0.2);
+background: #fff;
+}
+
+/* Responsividade */
+@media (min-width:1920px) {
+  .info-container{
+    gap: 10px;
+  }
+  .info-detalhe{
+    width: 90%;
+  }
+  .detalhe-container{
+    width: max-content;
+    gap: 10px;
+  }
+}
+@media (max-width: 1024px) {
+.info-container{
+  flex-direction: column;
+}
+}
+
 @media (min-width: 768px) {
   .detalhe-container {
     margin: 0 auto;

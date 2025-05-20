@@ -1,11 +1,12 @@
 /* padrao.css - Estilos compartilhados entre páginas */
-
 /* Reset e base */
-* {
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
+  outline: none;
+  backface-visibility: hidden;
 }
 
 body {
@@ -63,6 +64,7 @@ a {
   align-items: center;
   padding-bottom: 10px;
   position: sticky;
+  margin: auto;
   background: transparent;
   backdrop-filter: blur(10px);
   z-index: 100;
@@ -360,7 +362,7 @@ form {
   gap: 4px;
 }
 
-form:not(.search-box) {
+form:not(.search-box,#form-observacoes) {
   display: flex;
   flex-direction: column;
   /* gap: 20px; */
