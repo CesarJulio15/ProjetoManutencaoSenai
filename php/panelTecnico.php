@@ -162,43 +162,43 @@
             width:170px;
         }
         .search-container {
-  position: relative;
-  display: inline-block;
-  transition: all 0.3s ease-in-out;
-}
+        position: relative;
+        display: inline-block;
+        transition: all 0.3s ease-in-out;
+        }
 
-.search-input {
-  width: 130px;
-  padding: 10px 40px 10px 20px;
-  border-radius: 30px;
-  border: none;
-  outline: none;
-  transition: all 0.3s ease;
-  background: #f0f0f0;
-  color: #333;
-  text-align:left;
-}
+        .search-input {
+        width: 130px;
+        padding: 10px 40px 10px 20px;
+        border-radius: 30px;
+        border: none;
+        outline: none;
+        transition: all 0.3s ease;
+        background: #f0f0f0;
+        color: #333;
+        text-align:left;
+        }
 
-.search-input:focus,
-.search-input:not(:placeholder-shown) {
-  width: 280px;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+        .search-input:focus,
+        .search-input:not(:placeholder-shown) {
+        width: 280px;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-.search-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
+        .search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        }
 
-.search-icon svg {
-  width: 20px;
-  height: 20px;
-  fill: #6c7587;
-}
+        .search-icon svg {
+        width: 20px;
+        height: 20px;
+        fill: #6c7587;
+        }
     </style>
 </head>
 <body>

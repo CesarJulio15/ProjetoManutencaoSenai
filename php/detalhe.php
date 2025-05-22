@@ -220,8 +220,8 @@
                    </div>
                    <div class="info d-flex flex-column align-items-start align-center w-100">
                       <div class="d-flex-flex-md-row gap-4 align-center w-100">
-                          <div class="info-item mt-3 w-100">
-                              <label class="info-label"><b>Imagem anexada</b>:</label>
+                          <div class="info-item mb-2 w-100">
+                              <label class="info-label mb-2"><b>Imagem anexada</b>:</label>
                               <div class="container-img mt-2">
                                   <?php 
                                       if (!empty($row['foto'])) {
@@ -233,8 +233,7 @@
                                                      ?>
                               </div>
                           </div>
-                      </div>
-                      <div class="observacoes-wrapper mt-4 w-100">
+                          <div class="observacoes-wrapper mt-4 w-100">
                           <label for="observacoes" class="observacoes-label"><b>Observações:</b></label>
                           <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
                               <form method="post" action="salvar_observacoes.php" id="form-observacoes">
@@ -252,6 +251,9 @@
                            <?php endif; ?>
                         </div>
                      </div>
+
+                      </div>                      
+
 
                         </div>
                                                              <!-- Rodapé com botões -->

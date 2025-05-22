@@ -25,9 +25,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="sweetalert2.all.min.js"></script>
-        <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
-        <style>
-        </style>
+        <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
     </head>
     <body class="d-flex flex-column bg-body">
         <header class="top-bar">
@@ -53,7 +51,9 @@
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="drag-area text-center p-4">
                         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                        <button type="button">Insira uma foto</button>
+                        <button type="button" class="btn mb-2 mb-md-0 btn-tertiary btn-block btn-round">
+                            <span>Insira uma foto</span> 
+						</button>
                         <input type="file" id="foto" name="foto" hidden>
                     </div>
                     <fieldset class="card-body d-flex flex-column flex-wrap w-100 h-100">
@@ -76,7 +76,6 @@
                                         <label for="responsavel" class="form-label">
                                         <span class="material-symbols-outlined">assignment_ind</span>
                                         Solicitado por: </label>
-                                        <br>
                                         <select name="responsavel" id="responsavel" class="form-select" required>
                                             <option value="" disabled selected>Selecione o responsável</option>
                                             <?php while ($r = $resps->fetch_assoc()): ?>
@@ -99,12 +98,10 @@
                                         echo '</select>';
                                         echo '</div>';
                                     ?>
-                                            <br>
                                             <div class="d-flex mb-3">
                                                 <label for="prioridade">
                                                 <span class="material-symbols-outlined">priority_high</span> 
                                                 Prioridade: </label>
-                                                <br>
                                                 <select name="prioridade" id="prioridade" required>
                                                     <option value="Baixa">Baixa</option>
                                                     <option value="Média" selected>Média</option>
@@ -112,6 +109,7 @@
                                                     <option value="Urgente">Urgente</option>
                                                 </select>
                                             </div>
+                                            <br>
                                 <?php else: ?>                  
                                         </div>
                                         </div>
@@ -120,8 +118,7 @@
                                         <!-- usuários “normais” não veem select -->
                                         <input type="hidden" name="prioridade" value="Média">
                               <?php endif; ?>
-                        <br>
-                        </div>
+                                </div>
                         <div class="conjunto d-flex flex-column gap-4">
                         <div class="d-flex mb-3 gap-2">
                         <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
@@ -129,7 +126,6 @@
                         <div class="text-center mb-3 gap-2">
                         <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
                         </div>
-                        <br>    
                         <div class="d-flex mb-3 gap-4">
                             <div class="d-flex flex-md-row gap-2">
                                     <label for="origem">Origem:</label>
@@ -154,35 +150,14 @@
                                 </div>
                             <?php endif; ?>           
                         </div>
-                        <br>
                         <div class="direita d-flex flex-column mt-3 w-100 justify-content-between align-items-center ">
                         <div class="d-flex flex-column mb-3">
                         <input type="hidden" id="bloco" name="bloco" required>
                         <div class="map-wrapper mb-3" style="width: 100%; margin: auto;">
-                        <img src="../img/mapa_bloco.png" usemap="#blocosmapa" class="img-fluid" style="max-width: 100%; height: auto;   user-select: none; z-index:0;">
-                        <map name="blocosmapa">
-                        <!-- E0 -->
-                        <area shape="rect" coords="150,15,370,55" href="#" alt="E0" onclick="selecionarBloco('E0'); return false;">
-                        <!-- C0 -->
-                        <area shape="rect" coords="150,55,400,100" href="#" alt="C0" onclick="selecionarBloco('C0'); return false;">
-                        <!-- B0 (salas) -->
-                        <area shape="rect" coords="150,100,400,150" href="#" alt="B0" onclick="selecionarBloco('B0'); return false;">
-                        <!-- B0 - Quadra -->
-                        <area shape="rect" coords="40,100,150,150" href="#" alt="B0 - Quadra" onclick="selecionarBloco('B0 - Quadra'); return false;">
-                        <!-- A0 -->
-                        <area shape="rect" coords="150,150,400,200" href="#" alt="A0" onclick="selecionarBloco('A0'); return false;">
-                        <!-- D0 (bloco vertical) -->
-                        <area shape="rect" coords="400,150,425,240" href="#" alt="D0" onclick="selecionarBloco('D0'); return false;">
-                        <!-- Secretaria / Auditório -->
-                        <area shape="rect" coords="425,210,505,265" href="#" alt="Secretaria / Auditório" onclick="selecionarBloco('Secretaria / Auditório'); return false;">
-                        <!-- F0 -->
-                        <area shape="rect" coords="10,140,50,230" href="#" alt="F0" onclick="selecionarBloco('F0'); return false;">
-                        <!-- G0 -->
-                        <area shape="rect" coords="100,230,190,280" href="#" alt="G0" onclick="selecionarBloco('G0'); return false;">
-                        </map>                    
+                        <img src="../img/mapa_bloco.png" usemap="#blocosmapa" class="img-fluid" style="max-width: 100%; height: auto;   user-select: none; z-index:0;">                  
                         </div>
                         <div class="d-flex flex-md-row">
-                            <label><strong><i class="fa-solid fa-location-dot"></i> Selecione o setor/bloco:</strong></label><br>
+                            <label><strong><i class="fa-solid fa-location-dot"></i> Selecione o setor/bloco:</strong></label>
                             <select name="bloco" id="bloco" class="form-select" required>
                                 <option value="" disabled selected>Escolha um setor</option>
                                 <option value="G0">G0 – Portaria</option>
@@ -209,14 +184,13 @@
                         </div>
                         <br>
                         <div class="form-group d-flex flex-md-row">
-                          <label for="localizacao"><b>Localização do Ambiente:</b> </label>
+                          <label for="localizacao"><b>Localização do Ambiente: </b></label>
                           <input type="text" class="form-control" name="localizacao" id="localizacao" placeholder="Insira o ambiente com problema (Ex: Sala 32)" required>
                         </div>
-
                         </div>
                         </div>
-                        <br>
                     </fieldset>
+
                     <div class="form-footer">
                     <button type="submit" class="btn-confirma" title="Salvar"><i class="fa-solid fa-check"></i></button>
                     <a href="panelTecnico.php" class="btn-cancela" title="Cancelar"><i class="fa-solid fa-xmark"></i></a>  
@@ -323,9 +297,8 @@
             document.getElementById("bloco").value = cod;
             document.getElementById("blocoSelecionado").innerText = "Bloco selecionado: " + cod;
             }
-        </script>
-<script>
-window.onload = function () {
+
+            window.onload = function () {
     <?php if (isset($_SESSION['sucesso'])): ?>
         Swal.fire({
             icon: 'success',
@@ -345,7 +318,7 @@ window.onload = function () {
         <?php unset($_SESSION['erro']); ?>
     <?php endif; ?>
 }
-</script>
+        </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </body>
 

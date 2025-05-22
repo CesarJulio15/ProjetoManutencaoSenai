@@ -4,7 +4,7 @@ if (isset($_SESSION['id'])) {
     header("Location: panelTecnico.php");
     exit();
 }
-include 'conexao.php';
+require 'conexao.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $identificacao = trim($_POST['login']);
@@ -78,14 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- essencial para responsividade -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+    <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
 </head>
-<body class="d-flex align-items-center justify-content-center min-vh-100 px-3"> <!-- min-vh + padding horizontal -->
+<body class="d-flex align-items-center justify-content-center w-100 px-3">
 
     <div class="container text-center px-0">
         <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-2" style="user-select: none;">
@@ -94,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50" style="height:max-content;user-select: none;">
-            <form method="POST" autocomplete="off">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75" style="height:max-content;user-select: none;">
+            <form method="POST" autocomplete="off" class="d-flex flex-md-column">
                 <div class="mb-2">
                     <input type="text" name="login" class="form-control" placeholder="E-mail ou NIF" required>
                 </div>
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-3" style="user-select:none;">
             <img src="../img/Clip path group.svg" alt="Techfix" class="img-fluid mx-2" style="height: 70px; user-select:none;">
-            <img src="../img/senai-logo 5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px; user-select:none;">
+            <img src="../img/senai-logo5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px; user-select:none;">
         </div>
     </div> 
     <script>
