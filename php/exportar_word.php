@@ -92,10 +92,10 @@ $section->addTitle("Detalhes da Ordem de Serviço", 1);
 
 $dados = [
     'Número da OS:' => $os['numero_os'],
-    'Título:' => $os['titulo'],
-    'Local:' => $os['local'],
+    'Título:' => $os['titulo']?? '—',
+    'Local:' => $os['localizacao_ambiente'] ?? '—',
     'Bloco:' => $os['bloco'],
-    'Descrição:' => $os['descricao'],
+    'Descrição:' => $os['descricao']?? '—',
     'Status:' => $os['status'],
     'Responsável:' => $os['nome_responsavel'],
     'Executante:' => $os['nome_executante'] ?? 'Não designado',
@@ -171,4 +171,9 @@ $writer->save("php://output");
 if (file_exists($qrcodePath)) {
     unlink($qrcodePath);
 }
+// Limpar imagem temporária, se existir
+if (isset($tempImagePath) && file_exists($tempImagePath)) {
+    unlink($tempImagePath);
+}
+
 exit;

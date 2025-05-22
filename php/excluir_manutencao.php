@@ -10,7 +10,7 @@ if (!isset($_SESSION['id']) || !in_array($_SESSION['tipo'], ['coordenador', 'té
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'])) {
     $titulo = $_POST['titulo'];
-
+    $numero_os = trim($_POST['numero_os']);
     // Buscar dados da OS antes de excluir
     $sql = "
         SELECT m.titulo, m.numero_os,
@@ -19,16 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo'])) {
         FROM manutencao m
         JOIN docentes d1 ON m.responsavel = d1.id
         LEFT JOIN docentes d2 ON m.executante = d2.id
-        WHERE m.titulo = ?
+        WHERE m.numero_os = ?
     ";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $titulo);
+    $stmt->bind_param("s", $numero_os);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
         $numero_os = $row['numero_os'];
-        $assunto = "OS Excluída: {$row['titulo']}";
+        $assunto = "OS Excluída: {$row['numero_os']}";
 
         // Enviar para o responsável
         if (!empty($row['email_responsavel'])) {

@@ -78,7 +78,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+        <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
         <style>
             button > span:last-child{
             padding-left:0;
@@ -277,7 +277,7 @@
                                           <div class="flex-shrink-0">
                                              <form method="POST" action="excluir_manutencao.php" id="form-excluir">
                                                 <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
-                                                <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
+                                                <input type="hidden" name="numero_os" value="<?= htmlspecialchars($row['numero_os']) ?>">
                                                 <button type="button" class="btn p-0 btn-excluir" onclick="confirmarExclusao()">
                                                 <img src="../img/trash.png" alt="Excluir" width="24" height="24">
                                                 </button>

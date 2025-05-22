@@ -348,6 +348,28 @@
                     </a>
                 <?php endif; ?>
 </main>
+<script>
+window.onload = function () {
+    <?php if (isset($_SESSION['sucesso'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: <?= json_encode($_SESSION['sucesso']) ?>,
+            showConfirmButton: false,
+            timer: 2000
+        });
+        <?php unset($_SESSION['sucesso']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['erro'])): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro!',
+            text: <?= json_encode($_SESSION['erro']) ?>
+        });
+        <?php unset($_SESSION['erro']); ?>
+    <?php endif; ?>
+}
+</script>
 <script src="../js/panelPedidos.js"></script>
 </body>
 </html>
