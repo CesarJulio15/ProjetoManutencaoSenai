@@ -7,39 +7,65 @@ if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
 include 'conexao.php'; 
 require_once 'enviar_email.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nome = htmlspecialchars($_POST["nome"]);
-    $tipo = $_POST["tipo"];
-    $nif = str_replace('sn', '',htmlspecialchars($_POST["nif"])); // Remove 'sn' se existir
-    $email = $_POST['email'];
-    $senha = password_hash($_POST["senha"], PASSWORD_DEFAULT);
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 
-    $sql =  "INSERT INTO docentes (nome, nif, tipo, email, senha) VALUES (?, ? ,?, ?, ?)";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome  = htmlspecialchars($_POST['nome'] ?? '');
+    $email = htmlspecialchars($_POST['email'] ?? '');
+    $nif   = str_replace('sn', '', htmlspecialchars($_POST["nif"]));
+    $senha = password_hash($_POST['senha'] ?? '', PASSWORD_DEFAULT);
+    $senhaUsuario = $_POST['senha']; // Usada no e-mail
+    $tipo  = $_POST['tipo'] ?? 'docente';
 
-    if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("sssss", $nome, $nif, $tipo, $email, $senha);
-        // Após cadastrar no banco com sucesso:
-        if ($stmt->execute()) {
-            // Dados do novo usuário
-            $nomeUsuario = $_POST['nome'];
-            $emailUsuario = $_POST['email'];
-            $senhaUsuario = $_POST['senha']; // Cuidado: nunca envie a senha real em produção!
-            $paginaLogin = "https://devgomes.com/projetos/SENAImanutencao/php/";
-            // Envia e-mail com os dados
-            enviarEmailCadastro($emailUsuario, $nomeUsuario, $senhaUsuario, $paginaLogin);
-            // Redireciona ou exibe mensagem de sucesso
-            header("Location: panelTecnico.php");
-            exit();
-        }
-        $stmt->close();
+    // Verificação se já existe
+    $checkStmt = $conn->prepare("SELECT id FROM docentes WHERE email = ? OR nif = ?");
+    $checkStmt->bind_param('ss', $email, $nif);
+    $checkStmt->execute();
+    $checkStmt->store_result();
+
+    if ($checkStmt->num_rows > 0) {
+        header("Location: cadastro.php?erro=duplicado");
+        exit;
+    }
+    $checkStmt->close();
+
+    // Realiza cadastro
+    $insertStmt = $conn->prepare("INSERT INTO docentes (nome, email, nif, senha, tipo) VALUES (?, ?, ?, ?, ?)");
+    $insertStmt->bind_param('sssss', $nome, $email, $nif, $senha, $tipo);
+
+    if ($insertStmt->execute()) {
+        $paginaLogin = "https://devgomes.com/projetos/SENAImanutencao/php/";
+
+        // Gera QR code
+        $qrOptions = new QROptions([
+            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'eccLevel'   => QRCode::ECC_L,
+            'scale'      => 5,
+        ]);
+        $qrCode = (new QRCode($qrOptions))->render($paginaLogin);
+        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrCode);
+
+        // Envia e-mail com QR
+        enviarEmailCadastroComQR($email, $nome, $senhaUsuario, $paginaLogin, $qrCodeBase64);
+
+        header("Location: panelTecnico.php");
+        exit;
+    } else {
+        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Erro ao cadastrar funcionário.',
+                    confirmButtonColor: '#dc3545',
+                });
+            });
+        </script>";
     }
 
+    $insertStmt->close();
     $conn->close();
-
-    header("Location: panelTecnico.php");
-    exit();
-} else {
-    header("Location: panelTecnico.php");
-    exit();
 }
 ?>

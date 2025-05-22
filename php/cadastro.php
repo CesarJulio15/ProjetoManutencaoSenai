@@ -19,9 +19,22 @@ require __DIR__ . '/conexao.php';
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/cadastro.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100">
-
+<?php if (isset($_GET['erro']) && $_GET['erro'] === 'duplicado') : ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Funcionário já cadastrado',
+                text: 'Este e-mail ou NIF já está em uso.',
+                confirmButtonColor: '#3085d6'
+            });
+        });
+    </script>
+<?php endif; ?>
 <main>
           <header class="top-bar">
                 <div class="welcome-msg me-3 text-dark fw-bold">
@@ -51,7 +64,7 @@ require __DIR__ . '/conexao.php';
         <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data" style="width: 100%;" autocomplete="off">
             <div class="topo-cadastro mt-3">
     <div class="volta">
-        <a href="manutencao.php" class="btn btn-danger btn-volta w-100"><span class="material-symbols-outlined">
+        <a href="listar_funcionarios.php" class="btn btn-danger btn-volta w-100"><span class="material-symbols-outlined">
             arrow_back_ios
             </span></a>
     </div>

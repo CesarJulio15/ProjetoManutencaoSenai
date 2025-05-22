@@ -6,6 +6,7 @@ use PHPMailer\PHPMailer\Exception;
 require_once __DIR__ . '/../../../PHPMailer-6.10.0/src/Exception.php';
 require_once __DIR__ . '/../../../PHPMailer-6.10.0/src/PHPMailer.php';
 require_once __DIR__ . '/../../../PHPMailer-6.10.0/src/SMTP.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
 
 function enviarEmailUsuario($destinatario, $assunto, $mensagemHtml) {
     $mail = new PHPMailer(true);
@@ -38,6 +39,16 @@ function enviarEmailCadastro($destinatario, $nome, $senha, $linkLogin) {
     $mail = new PHPMailer(true);
 
     try {
+        // Gera QR code (como base64)
+        $qrOptions = new QROptions([
+            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+            'eccLevel'   => QRCode::ECC_L,
+            'scale'      => 5,
+        ]);
+
+        $qrCode = (new QRCode($qrOptions))->render($linkLogin);
+        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrCode);
+
         $mail->isSMTP();
         $mail->SMTPDebug = 0; // altere para 2 para ver detalhes no console
         $mail->Debugoutput = 'html';
@@ -59,6 +70,8 @@ function enviarEmailCadastro($destinatario, $nome, $senha, $linkLogin) {
             <p><strong>Senha:</strong> {$senha}</p>
             <p>Você pode acessar o sistema pelo seguinte link:</p>
             <p><a href='{$linkLogin}'>{$linkLogin}</a></p>
+            <p><strong>Ou escaneie o QR Code abaixo para abrir diretamente:</strong></p>
+            <p><img src='{$qrCodeBase64}' alt='QR Code de acesso'></p>
             <p>Recomendamos alterar sua senha após o primeiro acesso.</p>
             <br>
             <p>Atenciosamente,<br>Equipe de Suporte</p>
