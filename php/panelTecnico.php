@@ -157,6 +157,7 @@
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         .status-btn:nth-child(2) {
             width:170px;
@@ -199,6 +200,10 @@
         height: 20px;
         fill: #6c7587;
         }
+        .top-bar{
+            animation-duration: 0.8s;
+            animation-fill-mode: both;
+        }
     </style>
 </head>
 <body>
@@ -209,7 +214,7 @@
 </aside>
 
 <main class="main-content d-flex flex-md-column w-100 h-100" role="main">
-    <header class="top-bar">
+    <header class="top-bar  animate__animated animate__fadeInDown">
             <div class="search-container">
         <input type="text" id="buscaInput" placeholder="Buscar..." class="search-input" />
         <span class="search-icon">
@@ -266,7 +271,7 @@
                         $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
             ?>
                 <a href="<?php echo $link; ?>" class="card-link">
-                    <div class="card">
+                    <div class="card  animate__animated animate__fadeInUp">
                         <div class="card-header">
                             <div class="avatar"><?php echo strtoupper(substr($row['nome_responsavel'], 0, 1)); ?></div>
                             <span><?php echo htmlspecialchars($row['nome_responsavel']); ?></span>

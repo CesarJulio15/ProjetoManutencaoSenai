@@ -81,7 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
 </head>
@@ -96,16 +98,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75" style="height:max-content;user-select: none;">
             <form method="POST" autocomplete="off" class="d-flex flex-md-column">
-                <div class="mb-2">
-                    <input type="text" name="login" class="form-control" placeholder="E-mail ou NIF" required>
+                <div class="mb-2 d-flex">
+                    <input type="text" name="login" class="form-control rounded" placeholder="E-mail ou NIF" required>
                 </div>
-                <div class="mb-3">
-                    <input type="password" name="senha" class="form-control" placeholder="Senha" required>
+                <div class="mb-3 d-flex">
+                <div class="d-flex input-group align-items-sm-center">
+                    <input type="password" name="senha" id="senhaInput" class="form-control rounded-right" placeholder="Senha"  autocomplete="off"  oninput="verificarSenha()" required>
+                    <button type="button" id="toggle" class="btn btn-dark rounded-end d-flex justify-content-xl-evenly align-items-sm-center" onclick="toggleSenha(this)" tabindex="-1">
+                    <span id="iconeSenha" class="material-symbols-outlined">visibility</span>
+                    </button>
+                </div>
                 </div>
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
                 <div class="form-footer mt-1">
                     <p><a href="#" onclick="abrirModalRecuperacaoSenha()" class="forgot text-muted">Esqueceu a senha?</a></p>
-
                 </div>
             </form>
         </div>
@@ -115,40 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <img src="../img/senai-logo5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px; user-select:none;">
         </div>
     </div> 
-    <script>
-function abrirModalRecuperacaoSenha() {
-    Swal.fire({
-        title: 'Recuperar Senha',
-        html: `
-            <input type="email" id="emailRecuperacao" class="swal2-input" placeholder="Digite seu e-mail">
-        `,
-        confirmButtonText: 'Enviar',
-        focusConfirm: false,
-        preConfirm: () => {
-            const email = document.getElementById('emailRecuperacao').value;
-            if (!email) {
-                Swal.showValidationMessage('Informe um e-mail válido');
-                return false;
-            }
-
-            return fetch('enviar_token_recuperacao.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'email=' + encodeURIComponent(email)
-            })
-            .then(response => response.text())
-            .then(res => {
-                Swal.fire('Sucesso', res, 'success');
-            })
-            .catch(() => {
-                Swal.fire('Erro', 'Erro ao enviar e-mail. Tente novamente mais tarde.', 'error');
-            });
-
-        }
-    });
-}
-</script>
+    <script src="../js/login.js"></script>
 </body>
 </html>

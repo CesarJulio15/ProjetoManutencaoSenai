@@ -5,7 +5,6 @@ require 'enviar_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $numero_os = $_POST['numero_os'] ?? '';
-    $titulo = $_POST['titulo'] ?? '';
     $executante = $_POST['executante'] ?? '';
 
     $sql = "UPDATE manutencao SET executante = ? WHERE numero_os = ?";
@@ -15,18 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->execute()) {
         $_SESSION['executante_sucesso'] = true;
         
-        // Buscar dados do executante e responsável
+        // Buscar dados do executante e responsável pela OS
         $busca = $conn->prepare("
             SELECT 
-                m.titulo,
+                m.titulo, m.numero_os,
                 d_exec.nome AS nome_exec, d_exec.email AS email_exec,
                 d_resp.nome AS nome_resp, d_resp.email AS email_resp
             FROM manutencao m
             LEFT JOIN docentes d_exec ON m.executante = d_exec.id
             LEFT JOIN docentes d_resp ON m.responsavel = d_resp.id
-            WHERE m.titulo = ?
+            WHERE m.numero_os = ?
         ");
-        $busca->bind_param("s", $titulo);
+        $busca->bind_param("s", $numero_os);
         $busca->execute();
         $resultado = $busca->get_result();
 
@@ -41,9 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Por favor, acesse o sistema para iniciá-la.</p>
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
-                if (!empty($row['email_resp']) && isset($mensagem)) {
-                    enviarEmailUsuario($row['email_resp'], 'Assunto', $mensagem);
-                }
+                enviarEmailUsuario($row['email_exec'], $assunto, $mensagemExec);
             }
 
             // E-mail para o responsável pela OS
@@ -53,17 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Sua ordem de serviço <strong>\"{$row['titulo']}\"</strong> foi atribuída ao técnico <strong>{$row['nome_exec']}</strong>.</p>
                     <p>Atenciosamente,<br>Sistema de Manutenção</p>
                 ";
-                if (isset($destinatario) && isset($mensagem)) {
-                    enviarEmailUsuario($row['email_resp'],$assunto, $mensagemResp);
-                }
+                enviarEmailUsuario($row['email_resp'], $assunto, $mensagemResp);
             }
         }
-
     } else {
         $_SESSION['executante_erro'] = true;
     }
 
-    header("Location: detalhe.php?titulo=" . urlencode($titulo));
+    // Redirecionar para detalhe usando numero_os
+    header("Location: detalhe.php?numero_os=" . urlencode($numero_os));
     exit();
 }
 ?>

@@ -7,34 +7,34 @@
     }
     
     $tecnico_id = $_SESSION['id'] ?? null;
-    
-    // Candidatar
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['titulo']) && isset($_POST['acao'])) {
-       $titulo = filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS);
-       if ($_POST['acao'] === 'candidatar') {
-          $executante = $tecnico_id;
-    
-          $sql = "UPDATE manutencao SET status = 'Em Andamento', executante = ? WHERE titulo = ? AND executante IS NULL";
-          $stmt = $conn->prepare($sql);
-          $stmt->bind_param("ss", $executante, $titulo);
-          $stmt->execute();
-          $stmt->close();
-       }
-       // Concluir
-       if ($_POST['acao'] === 'concluir') {
-          $sql = "
-             UPDATE manutencao
-                SET status = 'Concluído',           /* cuidado com o acento, deve bater com o ENUM */
-                      data_encerramento = CURDATE()  /* atribui a data atual (YYYY-MM-DD) */
-                WHERE titulo = ? 
-                AND executante = ?";
-          $stmt = $conn->prepare($sql);
-          $stmt->bind_param("ss", $titulo, $tecnico_id);
-          $stmt->execute();
-          $stmt->close();
-       }
-       header("Location: panelTecnico.php");
-       exit();
+    // Candidatar ou Concluir
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numero_os']) && isset($_POST['acao'])) {
+        $numero_os = filter_input(INPUT_POST, 'numero_os', FILTER_SANITIZE_SPECIAL_CHARS);
+        
+        if ($_POST['acao'] === 'candidatar') {
+            $executante = $tecnico_id;
+
+            $sql = "UPDATE manutencao SET status = 'Em Andamento', executante = ? WHERE numero_os = ? AND executante IS NULL";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("is", $executante, $numero_os);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        if ($_POST['acao'] === 'concluir') {
+            $sql = "
+                UPDATE manutencao
+                SET status = 'Concluído',
+                    data_encerramento = CURDATE()
+                WHERE numero_os = ? AND executante = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $numero_os, $tecnico_id);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        header("Location: panelTecnico.php");
+        exit();
     }
     
     if (isset($_GET['numero_os'])) {
@@ -290,6 +290,7 @@
                                     <!-- Exibir botão "Candidatar" se não há executante -->
                                     <form method="post">
                                        <input type="hidden" id="titulo" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                       <input type="hidden" name="numero_os" value="<?php echo htmlspecialchars($row['numero_os']); ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <input type="hidden" name="acao" value="candidatar">
                                           <button type="submit" class="btn-candidatar" title="Candidatar-se">
@@ -297,6 +298,7 @@
                                     </form>
                                     <form action="rejeitar.php" method="post">
                                        <input type="hidden" id="titulo" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                       <input type="hidden" name="numero_os" value="<?php echo htmlspecialchars($row['numero_os']); ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <button type="submit" class="btn-rejeitar" title="Rejeitar">
                                           <span class="material-symbols-outlined">person_cancel</span></button>
@@ -305,12 +307,14 @@
                                     <!-- Se o usuário atual for o executante, exibir "Concluir" -->
                                     <form method="post">
                                           <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                          <input type="hidden" name="numero_os" value="<?php echo htmlspecialchars($row['numero_os']); ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <input type="hidden" name="acao" value="concluir">
                                           <button type="submit" class="btn-confirma" title="Concluir"><span class="material-symbols-outlined">check</span></button>
                                     </form>
                                     <form action="rejeitar.php" method="post">
                                           <input type="hidden" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
+                                          <input type="hidden" name="numero_os" value="<?php echo htmlspecialchars($row['numero_os']); ?>">
                                           <input type="hidden" name="os_id" value="<?= htmlspecialchars($row['id']) ?>">
                                           <button type="submit" class="btn-rejeitar" title="Rejeitar">
                                           <span class="material-symbols-outlined">person_cancel</span></button>
@@ -329,7 +333,7 @@
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="titulo" value="<?php echo htmlspecialchars($row['titulo']); ?>">
-                            <?php
+                            <input type="hidden" name="numero_os" value="<?php echo htmlspecialchars($row['numero_os']); ?>">                            <?php
                                 $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
                                 echo '<div class="form-group mb-3">';
                                 echo '<label for="executante">Selecionar usuário:</label>';
@@ -435,8 +439,8 @@ document.querySelectorAll('.status-btn').forEach(btn => {
         echo "<p class='text-center mt-5 text-danger'>Manutenção não encontrada.</p>";
     }
     $stmt->close();
-    } else {
-    echo "<p class='text-center mt-5 text-warning'>Título não fornecido.</p>";
+} else {
+    echo "<p class='text-center mt-5 text-warning'>Número da OS não fornecido.</p>";
     }
     $conn->close();
     ?>

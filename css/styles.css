@@ -135,9 +135,38 @@ button {
   font-size: 1.1rem;
   cursor: pointer;
 }
+input {
+height:48px;
+background-image: none;
+border: 0;
+color: inherit;
+font: inherit;
+margin: 0;
+outline: 0;
+padding: 0;
+-webkit-transition: background-color 0.3s;
+-o-transition: background-color 0.3s;
+transition: background-color 0.3s;
+}
+
+input[type="submit"] {
+cursor: pointer;
+}
 
 button:hover {
   background: #090979;
+}
+#toggle {
+  position: relative;
+  width: FIT-CONTENT;
+  right: 0;
+  /* TOP: 0; */
+  margin: auto;
+  padding: 10px;
+}
+form i {
+  margin-left: -30px;
+  cursor: pointer;
 }
 
 .logos {
