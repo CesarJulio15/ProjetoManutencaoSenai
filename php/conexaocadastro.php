@@ -10,6 +10,10 @@ require_once 'enviar_email.php';
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
+if ($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    die("CSRF token inválido.");
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome  = htmlspecialchars($_POST['nome'] ?? '');
     $email = htmlspecialchars($_POST['email'] ?? '');

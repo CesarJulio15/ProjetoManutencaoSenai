@@ -1,151 +1,12 @@
 <?php
-    session_start();
-    require_once __DIR__ . '/conexao.php';
+session_start();
+require_once __DIR__ . '/conexao.php';
 
-    if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
-        header("Location: index.php");
-        exit();
-    }
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
+    header("Location: index.php");
+    exit();
+}
 
-    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-    $isTecnico   = ($_SESSION['tipo'] === 'técnico');
-    $statusParam = $_GET['status'] ?? '';
-    $busca       = isset($_GET['busca']) ? '%' . $_GET['busca'] . '%' : '%';
-
-    $tipoUsuario = $_SESSION['tipo'];
-    $usuarioId   = $_SESSION['id'];
-
-    // Paginação
-    $resultadosPorPagina = 8;
-    $paginaAtual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-    $offset = ($paginaAtual - 1) * $resultadosPorPagina;
-
-    function prepararConsulta($conn, $sql, $tipos, ...$params) {
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param($tipos, ...$params);
-        return $stmt;
-    }
-
-    $sqlBase = "
-        SELECT SQL_CALC_FOUND_ROWS m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-        FROM manutencao m
-        JOIN docentes d1 ON m.responsavel = d1.id
-        LEFT JOIN docentes d2 ON m.executante = d2.id
-        ";
-
-    if ($isTecnico) {
-        if (isset($_GET['meus'])) {
-            $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
-            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
-        } elseif ($statusParam) {
-            if ($statusParam === 'Pendente') {
-                $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? 
-                ORDER BY
-                    (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                    CASE m.prioridade
-                        WHEN 'Urgente' THEN 1
-                        WHEN 'Alta' THEN 2
-                        WHEN 'Média' THEN 3
-                        WHEN 'Baixa' THEN 4
-                        ELSE 5
-                    END,
-                    m.data_abertura DESC,
-                    m.id DESC
-                LIMIT ? OFFSET ?";
-                $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
-            } else {
-                $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? 
-                ORDER BY
-                    (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                    CASE m.prioridade
-                        WHEN 'Urgente' THEN 1
-                        WHEN 'Alta' THEN 2
-                        WHEN 'Média' THEN 3
-                        WHEN 'Baixa' THEN 4
-                        ELSE 5
-                    END,
-                    m.data_abertura DESC,
-                    m.id DESC
-                LIMIT ? OFFSET ?";
-                $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
-            }
-        } else {
-            $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? 
-            ORDER BY
-                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                END,
-                m.data_abertura DESC,
-                m.id DESC
-            LIMIT ? OFFSET ?";
-            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
-        }
-    } elseif ($tipoUsuario === 'coordenador') {
-        if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? 
-            ORDER BY
-                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                END,
-                m.data_abertura DESC,
-                m.id DESC
-            LIMIT ? OFFSET ?";
-                        
-            $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
-        } else {
-            $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
-            $stmt = prepararConsulta($conn, $sql, "sii", $busca, $resultadosPorPagina, $offset);
-        }
-    } else {
-        if ($statusParam) {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? 
-            ORDER BY
-                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                END,
-                m.data_abertura DESC,
-                m.id DESC
-                LIMIT ? OFFSET ?";
-            
-            $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
-        } else {
-            $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? 
-            ORDER BY
-                (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                END,
-                m.data_abertura DESC,
-                m.id DESC
-            LIMIT ? OFFSET ?";
-            $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
-        }
-    }
-
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $total = $conn->query("SELECT FOUND_ROWS()")->fetch_row()[0];
-    $totalPaginas = ceil($total / $resultadosPorPagina);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -312,31 +173,7 @@
                     }
                     ?>
                     </section>
-                    <?php if ($totalPaginas > 1): ?>
-                    <div class="paginacao mt-3">
-                        <?php
-                            $queryString = $_GET;
-
-                            if ($paginaAtual > 1) {
-                                $queryString['pagina'] = $paginaAtual - 1;
-                                echo '<a href="?' . http_build_query($queryString) . '">
-                                <span class="material-symbols-outlined">arrow_back_ios</span></a>';
-                            }
-
-                            for ($i = 1; $i <= $totalPaginas; $i++) {
-                                $queryString['pagina'] = $i;
-                                $classe = ($i == $paginaAtual) ? 'class="ativa"' : '';
-                                echo '<a href="?' . http_build_query($queryString) . "\" $classe>$i</a>";
-                            }
-
-                            if ($paginaAtual < $totalPaginas) {
-                                $queryString['pagina'] = $paginaAtual + 1;
-                                echo '<a href="?' . http_build_query($queryString) . '">
-                                <span class="material-symbols-outlined">arrow_forward_ios</span></a>';
-                            }
-                        ?>
-                    </div>
-                <?php endif; ?>
+                    <div class="paginacao mt-3"></div>
                         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
                     <a href="listar_funcionarios.php" title="Visualizar funcionários">
                         <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">

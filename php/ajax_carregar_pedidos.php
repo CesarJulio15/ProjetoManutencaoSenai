@@ -31,97 +31,52 @@ $sqlBase = "
     JOIN docentes d1 ON m.responsavel = d1.id
     LEFT JOIN docentes d2 ON m.executante = d2.id
 ";
-
+$orderBy = "
+    ORDER BY
+        CASE m.status
+            WHEN 'Concluído' THEN 1
+            ELSE 0
+        END ASC,
+        DATE(m.data_abertura) DESC,
+        CASE m.prioridade
+            WHEN 'Urgente' THEN 1
+            WHEN 'Alta' THEN 2
+            WHEN 'Média' THEN 3
+            WHEN 'Baixa' THEN 4
+            ELSE 5
+        END ASC,
+        m.id DESC
+";
 if ($tipoUsuario === 'técnico') {
     if ($meus) {
-        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE m.executante = ? AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
     } elseif ($statusParam) {
         if ($statusParam === 'Pendente') {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ?
-            ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                     CASE m.prioridade
-                        WHEN 'Urgente' THEN 1
-                        WHEN 'Alta' THEN 2
-                        WHEN 'Média' THEN 3
-                        WHEN 'Baixa' THEN 4
-                        ELSE 5
-                     END,
-                     m.data_abertura DESC, m.id DESC
-            LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante IS NULL AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
             $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
         } else {
-            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ?
-            ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                     CASE m.prioridade
-                        WHEN 'Urgente' THEN 1
-                        WHEN 'Alta' THEN 2
-                        WHEN 'Média' THEN 3
-                        WHEN 'Baixa' THEN 4
-                        ELSE 5
-                     END,
-                     m.data_abertura DESC, m.id DESC
-            LIMIT ? OFFSET ?";
+            $sql = $sqlBase . "WHERE m.status = ? AND m.executante = ? AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
             $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
         }
     } else {
-        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ?
-        ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                 CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                 END,
-                 m.data_abertura DESC, m.id DESC
-        LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE (m.executante IS NULL OR m.executante = ?) AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
     }
 } elseif ($tipoUsuario === 'coordenador') {
     if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ?
-        ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                 CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                 END,
-                 m.data_abertura DESC, m.id DESC
-        LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE m.status = ? AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "ssii", $statusParam, $busca, $resultadosPorPagina, $offset);
     } else {
-        $sql = $sqlBase . "WHERE m.titulo LIKE ? LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "sii", $busca, $resultadosPorPagina, $offset);
     }
 } else {
     if ($statusParam) {
-        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ?
-        ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                 CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                 END,
-                 m.data_abertura DESC, m.id DESC
-        LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE m.status = ? AND m.responsavel = ? AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "sisii", $statusParam, $usuarioId, $busca, $resultadosPorPagina, $offset);
     } else {
-        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ?
-        ORDER BY (m.prioridade = 'Urgente' AND DATE(m.data_abertura) = CURDATE()) DESC,
-                 CASE m.prioridade
-                    WHEN 'Urgente' THEN 1
-                    WHEN 'Alta' THEN 2
-                    WHEN 'Média' THEN 3
-                    WHEN 'Baixa' THEN 4
-                    ELSE 5
-                 END,
-                 m.data_abertura DESC, m.id DESC
-        LIMIT ? OFFSET ?";
+        $sql = $sqlBase . "WHERE m.responsavel = ? AND m.titulo LIKE ? $orderBy LIMIT ? OFFSET ?";
         $stmt = prepararConsulta($conn, $sql, "isii", $usuarioId, $busca, $resultadosPorPagina, $offset);
     }
 }

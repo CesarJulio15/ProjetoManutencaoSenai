@@ -5,6 +5,9 @@ if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
     header("Location: index.php");
     exit();
 }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 require __DIR__ . '/conexao.php';
 ?>
 <!DOCTYPE html>
@@ -67,6 +70,7 @@ require __DIR__ . '/conexao.php';
     <div class="container text-center">
         <!-- Formulário responsivo -->
         <form action="conexaocadastro.php" method="POST" enctype="multipart/form-data" class="form-box bg-white shadow rounded p-4 mx-auto w-100" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div class="topo-cadastro mt-3">
                 <a href="listar_funcionarios.php" class="btn btn-danger btn-volta volta"><span class="material-symbols-outlined">
                                 arrow_back_ios
