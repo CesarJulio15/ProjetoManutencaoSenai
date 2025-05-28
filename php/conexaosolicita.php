@@ -147,11 +147,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ";
 
                 $resultado = enviarEmailUsuario($email, $assunto, $mensagem);
-                if ($resultado !== true) {
-                    $_SESSION['erro'] = "Erro ao enviar e-mail: $resultado.";
-                    header("Location: solicita.php");
-                    exit();
-                }
             }
             // ✉️ Se houver técnico designado, enviar também para ele
             if (!empty($executante)) {
@@ -171,12 +166,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <p>Status: <strong>Em Andamento</strong><br>Data: <strong>$data_abertura</strong></p>
                         <p>Atenciosamente,<br>Sistema de Manutenção</p>
                     ";
-
-                    enviarEmailUsuario($emailExec, $assuntoExec, $mensagemExec);
+                    $email_resultado = enviarEmailUsuario($emailExec, $assuntoExec, $mensagemExec);
                 }
             }
-
-            $_SESSION['sucesso'] = "Solicitação registrada com sucesso!";
+            if ($email_resultado === true) {
+                $_SESSION['sucesso'] = "Solicitação registrada com sucesso!";
+            } else {
+                $_SESSION['erro'] = "Erro ao enviar e-mail: " . $resultado;
+            }
             header("Location: solicita.php");
             exit();
     } else {

@@ -16,7 +16,7 @@ $meus = isset($_POST['meus']);
 $tipoUsuario = $_SESSION['tipo'];
 $usuarioId = $_SESSION['id'];
 
-$resultadosPorPagina = 8;
+$resultadosPorPagina = 6;
 $offset = ($pagina - 1) * $resultadosPorPagina;
 
 function prepararConsulta($conn, $sql, $tipos, ...$params) {

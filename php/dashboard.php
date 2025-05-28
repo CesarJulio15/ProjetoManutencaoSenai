@@ -401,6 +401,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
         <aside class="sidebar">
@@ -409,7 +410,7 @@
             <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
         </aside>
         <main class="main-content d-flex flex-md-column w-100 h-100">
-            <header class="top-bar">
+            <header class="top-bar animate__animated animate__fadeInDown">
                 <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
                 <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
@@ -428,11 +429,11 @@
             </header>
             <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100">
-                    <div class="card p-3 m-auto shadow-sm w-25 h-75" style="flex:1; min-width:300px">
+                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
-                        <div class="box">
-                            <ul class="list-group">
-                                <li class="list-group-item"><b>Pendente:</b> <?= $totaisHoje['Pendente'] ?></li>
+                        <div class="box ">
+                            <ul class="list-group ">
+                                <li class="list-group-item "><b>Pendente:</b> <?= $totaisHoje['Pendente'] ?></li>
                                 <li class="list-group-item"><b>Em Andamento:</b> <?= $totaisHoje['Em Andamento'] ?></li>
                                 <li class="list-group-item"><b>Concluído:</b> <?= $totaisHoje['Concluído'] ?></li>
                                 <li class="list-group-item fw-bold">Total: <?= $totalHoje ?></li>
@@ -474,7 +475,7 @@
                                 </nav>
                           </div>
                     </div>
-                    <div class="dashboard-cards p-3 m-auto w-50">
+                    <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight">
                             <div class="info-box bg-pink hover-expand-effect">
                                 <div class="icon">
                                     <span class="material-symbols-outlined">
@@ -524,13 +525,13 @@
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <!-- Gráfico de Pizza (à esquerda) -->
-                    <div class="p-2 m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-pie"></i> Distribuição por Status</h5>
                             <canvas id="statusChart"></canvas>
                         </div>
                     </div>
-                    <div class="p-2 m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <!-- Gráfico de Atendimentos por Mês -->
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <div class="d-flex flex-row justify-content-around">
@@ -548,7 +549,7 @@
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <!-- Gráfico de Pizza (à esquerda) -->
-                    <div class="p-2 m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
                             <h5 class="title text-center">
                               <span class="material-symbols-outlined">pie_chart</span> 
@@ -556,7 +557,7 @@
                             <canvas id="graficoSetor"></canvas>
                         </div>
                     </div>
-                    <div class="p-2 m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title"><i class="fa-solid fa-chart-line"></i> Tendência Mensal</h5>
                             <canvas id="trendChart"></canvas>
@@ -564,7 +565,7 @@
                     </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
-                <div class="p-2 m-auto">
+                <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
                             <div class="chart-wrapper">
@@ -572,7 +573,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2  m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
                             <div class="chart-wrapper">
@@ -580,7 +581,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2  m-auto">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title">
                                 <span class="material-symbols-outlined">release_alert</span> 
@@ -593,7 +594,7 @@
                     </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
-                    <div class="p-2  m-auto">
+                    <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
                             <h5 class="title">
                                 <span class="material-symbols-outlined">date_range</span> 
@@ -604,7 +605,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2  m-auto">
+                    <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
                             <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Tempo Médio de Resolução × Nº de Chamados por Prioridade</h5>
                             <div class="chart-wrapper">
@@ -619,18 +620,18 @@
             </div>
             </div>
             <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-            <a href="listar_funcionarios.php" title="Visualizar funcionários">
-        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
+            <a href="listar_funcionarios.php" class="" title="Visualizar funcionários">
+        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img animate__animated animate__fadeInUp">
     </a>
             <a href="export_data.php" class="" title="Exportar dados">
-            <img src="../img/exportar-arquivo.png" alt="add-user" class="add-dash-img">
+            <img src="../img/exportar-arquivo.png" alt="add-user" class="add-dash-img animate__animated animate__fadeInUp">
             </a>
-            <a href="solicita.php" title="Abrir ordem de serviço">
-        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+            <a href="solicita.php" class="" title="Abrir ordem de serviço">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img animate__animated animate__fadeInUp">
     </a>
     <?php else :?>
-            <a href="solicita.php">
-        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+            <a href="solicita.php" class="">
+        <img src="../img/documento.png" alt="Adicionar" class="add-button-img animate__animated animate__fadeInUp">
     </a>
 
   <?php endif; ?>            

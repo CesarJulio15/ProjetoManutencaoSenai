@@ -68,7 +68,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     </style>
 </head>
 <body>
-<aside class="sidebar" role="complementary" aria-label="Menu lateral">
+<aside class="sidebar animate__animated animate__fadeInLeft" role="complementary" aria-label="Menu lateral">
     <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
     <div class="spacer"></div>
     <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
@@ -98,14 +98,14 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
         </div>
 
             <div class="welcome-msg me-3 text-dark fw-bold">
-            <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
-                <?= htmlspecialchars($_SESSION['nome']) ?>
-            </a><br>
+                <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
+                    <?= htmlspecialchars($_SESSION['nome']) ?>
+                </a><br>
                 <span style="font-weight: 300; font-size: 0.85rem; color: #6c757d;">
                     <?php echo htmlspecialchars($_SESSION['tipo']); ?>
                 </span>
             </div>
-            <div class="logout-btn">
+            <div class="logout-btn animate__animated animate__fadeInRight">
                 <a href="logout.php" title="Sair">
                     <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
                 </a>
@@ -131,8 +131,8 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
 
                         $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
             ?>
-                <a href="<?php echo $link; ?>" class="card-link">
-                    <div class="card  animate__animated animate__fadeInUp">
+                <a href="<?php echo $link; ?>" class="card-link  animate__animated animate__fadeInUp">
+                    <div class="card">
                         <div class="card-header">
                             <div class="avatar"><?php echo strtoupper(substr($row['nome_responsavel'], 0, 1)); ?></div>
                             <span><?php echo htmlspecialchars($row['nome_responsavel']); ?></span>
@@ -173,19 +173,19 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
                     }
                     ?>
                     </section>
-                    <div class="paginacao mt-3"></div>
+                    <div class="paginacao mt-3  animate__animated animate__fadeInUp"></div>
                         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-                    <a href="listar_funcionarios.php" title="Visualizar funcionários">
+                    <a href="listar_funcionarios.php" title="Visualizar funcionários" class="animate__animated animate__fadeInUp">
                         <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
                     </a>
-                    <a href="dashboard.php" title="Visualizar Dashboard">
+                    <a href="dashboard.php" title="Visualizar Dashboard" class="animate__animated animate__fadeInUp">
                         <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
                     </a>
-                    <a href="solicita.php" title="Abrir ordem de serviço">
+                    <a href="solicita.php" title="Abrir ordem de serviço" class="animate__animated animate__fadeInUp">
                         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
                     </a>
                     <?php else :?>
-                            <a href="solicita.php">
+                            <a href="solicita.php" class="animate__animated animate__fadeInUp">
                         <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
                     </a>
                 <?php endif; ?>

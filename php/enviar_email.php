@@ -1,11 +1,13 @@
 <?php
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     if (!isset($_SESSION['id'])) {
      header("Location: index.php");
      exit();
     }
     require_once __DIR__ . '/../../../vendor/autoload.php';
-    require 'conexao.php';
+    require __DIR__ . '/conexao.php';
 
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\Exception;

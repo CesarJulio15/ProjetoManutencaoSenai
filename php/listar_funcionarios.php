@@ -42,26 +42,32 @@ $total_paginas = ceil($total_registros / $limite);
 <head>
     <meta charset="UTF-8">
     <title>Lista de Funcionários</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/manutencao.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<style>
+.top-bar {
+  margin: 0 auto 20px auto; /* centralizado horizontalmente, mas não verticalmente */
+}
+</style>
 </head>
-<body>
-<aside class="sidebar">
+<body >
+<aside class="sidebar animate__animated animate__fadeInLeft">
     <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
     <div class="spacer"></div>
     <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
 </aside>
 
 <main class="main-content">
-    <div class="top-bar">
+    <div class="top-bar animate__animated animate__fadeInDown">
     <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
     <div class="title">
     <h3>Lista de Docentes</h3>
     </div>
-        <form method="get" class="search-box">
+        <form method="get" class="search-box ">
             <select name="tipo">
                 <option value="">Todos os tipos</option>
                 <option value="Coordenador" <?= $filtro_tipo == 'Coordenador' ? 'selected' : '' ?>>Coordenador</option>
@@ -86,7 +92,7 @@ $total_paginas = ceil($total_registros / $limite);
                 </a>
             </div>
     </div>
-    <div style="overflow-x:auto;">
+    <div class="animate__animated animate__fadeInUp" style="overflow-x:auto;">
     <?php if ($result->num_rows > 0): ?>
         <table class="mt-3" style="border-radius:15px 15px 0 0; ">
             <thead>
@@ -117,19 +123,18 @@ $total_paginas = ceil($total_registros / $limite);
 
         <div class="mt-3 paginacao">
             <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-                <a href="?pagina=<?= $i ?>&tipo=<?= urlencode($filtro_tipo) ?>" class="status-btn <?= $pagina == $i ? 'active' : '' ?>">
+                <a href="?pagina=<?= $i ?>&tipo=<?= urlencode($filtro_tipo) ?>" class="<?= $pagina == $i ? 'active' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
         </div>
     <?php else: ?>
-        <div class="no-results">
+        <div class="no-results animate__animated animate__fadeInUp">
             <img src="../img/no-results 1.svg" alt="Não foram encontrados registros" style="width: 200px; height: 300px;">
             <p>Nenhum registro de funcionário foi encontrado.</p>
         </div>
     <?php endif; ?>
 </div>
-
 </div>
 </main>
 <?php if ($_SESSION['tipo'] == 'coordenador'): ?>

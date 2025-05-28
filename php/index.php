@@ -80,23 +80,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
 </head>
 <body class="d-flex align-items-center justify-content-center w-100 px-3">
 
-    <div class="container text-center px-0">
+    <div class="container text-center px-0 animate__animated animate__fadeInUp">
         <img src="../img/Mask group.svg" alt="Logo" class="logo img-fluid mb-2" style="user-select: none;">
         <h1 style="user-select: none;">
             <span class="portal">Portal Senai</span><br>
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75" style="height:max-content;user-select: none;">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="height:max-content;user-select: none;">
             <form method="POST" autocomplete="off" class="d-flex flex-md-column">
                 <div class="mb-2 d-flex">
                     <input type="text" name="login" class="form-control rounded" placeholder="E-mail ou NIF" required>
@@ -116,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
 
-        <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-3" style="user-select:none;">
+        <div class="logos d-flex justify-content-center align-items-center flex-wrap mt-3  animate__animated animate__fadeInUp" style="user-select:none;">
             <img src="../img/Clip path group.svg" alt="Techfix" class="img-fluid mx-2" style="height: 70px; user-select:none;">
             <img src="../img/senai-logo5.svg" alt="Senai" class="img-fluid mx-2" style="height: 50px; user-select:none;">
         </div>

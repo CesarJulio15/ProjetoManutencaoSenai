@@ -23,12 +23,13 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="sweetalert2.all.min.js"></script>
         <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
     </head>
     <body class="d-flex flex-column bg-body">
-        <header class="top-bar">
+        <header class="top-bar animate__animated animate__fadeInDown">
         <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
           <h3 class="title">Abertura de ordem de serviço</h3>
           <div class="welcome-msg me-3 text-dark fw-bold">
@@ -47,7 +48,7 @@
         </header>
         <main class="main-content d-flex flex-md-row w-100 h-100">
         <!-- Conteúdo -->
-        <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-wrap justify-content-between align-items-center card w-75" style="max-width: 1200px; overflow:auto;" >
+        <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-wrap justify-content-between align-items-center card w-75 animate__animated animate__fadeInUp" style="max-width: 1200px; overflow:auto;" >
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="drag-area text-center p-4">
                         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
@@ -232,66 +233,66 @@
             });
             
             function showFile() {
-            let fileType = file.type;
-            let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
-            if (validExtensions.includes(fileType)) {
-              let fileReader = new FileReader();
-              fileReader.onload = () => {
-                icon.style.display = "none";
-                button.style.display = "none";
-            
-                // Remove imagem antiga e botão se houver
-                const oldImg = dropArea.querySelector("img");
-                const oldRemoveBtn = dropArea.querySelector(".remove-btn");
-                if (oldImg) oldImg.remove();
-                if (oldRemoveBtn) oldRemoveBtn.remove();
-            
-                const previewImg = document.createElement("img");
-                previewImg.src = fileReader.result;
-                previewImg.alt = "Prévia da imagem";
-                previewImg.style.maxHeight = "200px";
-                previewImg.style.borderRadius = "5px";
-                previewImg.style.marginTop = "10px";
-            
-                const removeBtn = document.createElement("button");
-                removeBtn.innerText = "✖ Remover imagem";
-                removeBtn.className = "remove-btn";
-                removeBtn.style.marginTop = "15px";
-                removeBtn.style.padding = "10px 20px";
-                removeBtn.style.fontSize = "16px";
-                removeBtn.style.border = "none";
-                removeBtn.style.borderRadius = "25px";
-                removeBtn.style.cursor = "pointer";
-                removeBtn.style.backgroundColor = "#b81313";
-                removeBtn.style.color = "#fff";
-                removeBtn.style.transition = "background-color 0.3s ease";
-                removeBtn.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-                removeBtn.style.fontWeight = "bold";
-            
-                removeBtn.onmouseover = () => {
-                  removeBtn.style.backgroundColor = "#991010";
+                let fileType = file.type;
+                let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+                if (validExtensions.includes(fileType)) {
+                let fileReader = new FileReader();
+                fileReader.onload = () => {
+                    icon.style.display = "none";
+                    button.style.display = "none";
+                
+                    // Remove imagem antiga e botão se houver
+                    const oldImg = dropArea.querySelector("img");
+                    const oldRemoveBtn = dropArea.querySelector(".remove-btn");
+                    if (oldImg) oldImg.remove();
+                    if (oldRemoveBtn) oldRemoveBtn.remove();
+                
+                    const previewImg = document.createElement("img");
+                    previewImg.src = fileReader.result;
+                    previewImg.alt = "Prévia da imagem";
+                    previewImg.style.maxHeight = "200px";
+                    previewImg.style.borderRadius = "5px";
+                    previewImg.style.marginTop = "10px";
+                
+                    const removeBtn = document.createElement("button");
+                    removeBtn.innerText = "✖ Remover imagem";
+                    removeBtn.className = "remove-btn";
+                    removeBtn.style.marginTop = "15px";
+                    removeBtn.style.padding = "10px 20px";
+                    removeBtn.style.fontSize = "16px";
+                    removeBtn.style.border = "none";
+                    removeBtn.style.borderRadius = "25px";
+                    removeBtn.style.cursor = "pointer";
+                    removeBtn.style.backgroundColor = "#b81313";
+                    removeBtn.style.color = "#fff";
+                    removeBtn.style.transition = "background-color 0.3s ease";
+                    removeBtn.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    removeBtn.style.fontWeight = "bold";
+                
+                    removeBtn.onmouseover = () => {
+                    removeBtn.style.backgroundColor = "#991010";
+                    };
+                    removeBtn.onmouseleave = () => {
+                    removeBtn.style.backgroundColor = "#b81313";
+                    };
+                    removeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    previewImg.remove();
+                    removeBtn.remove();
+                    input.value = ""; // limpa input
+                    icon.style.display = "block";
+                    button.style.display = "inline-block";
+                    dropArea.classList.remove("active");
+                    };
+                
+                    dropArea.appendChild(previewImg);
+                    dropArea.appendChild(removeBtn);
                 };
-                removeBtn.onmouseleave = () => {
-                  removeBtn.style.backgroundColor = "#b81313";
-                };
-                removeBtn.onclick = (e) => {
-                  e.preventDefault();
-                  previewImg.remove();
-                  removeBtn.remove();
-                  input.value = ""; // limpa input
-                  icon.style.display = "block";
-                  button.style.display = "inline-block";
-                  dropArea.classList.remove("active");
-                };
-            
-                dropArea.appendChild(previewImg);
-                dropArea.appendChild(removeBtn);
-              };
-              fileReader.readAsDataURL(file);
-            } else {
-              alert("Este não é um arquivo de imagem válido!");
-              dropArea.classList.remove("active");
-            }
+                fileReader.readAsDataURL(file);
+                } else {
+                alert("Este não é um arquivo de imagem válido!");
+                dropArea.classList.remove("active");
+                }
             }
             function selecionarBloco(cod) {
             document.getElementById("bloco").value = cod;
