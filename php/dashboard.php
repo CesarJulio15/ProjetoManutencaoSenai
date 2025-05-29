@@ -8,8 +8,29 @@
   $tipo = $_SESSION['tipo'];
     
     include 'conexao.php';
+    // Função para buscar totais por status hoje (aberturas + conclusões)
+    function buscarTotaisHoje($conn) {
+      $hoje = date('Y-m-d');
+      $totaisHoje = ["Pendente"=>0,"Em Andamento"=>0,"Concluído"=>0];
+      $sql = "
+        SELECT status, COUNT(*) AS total
+            FROM manutencao
+            WHERE (status = 'Concluído'   AND data_encerramento = ?)
+            OR (status <> 'Concluído'  AND data_abertura      = ?)
+            GROUP BY status
+        ";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param("ss", $hoje, $hoje);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      while ($row = $res->fetch_assoc()) {
+        $totaisHoje[$row['status']] = (int)$row['total'];
+      }
+      $stmt->close();
+      return $totaisHoje;
+    }
     // Função para obter totais por status
-  function obterTotaisPorStatus($conn) {
+    function obterTotaisPorStatus($conn) {
       $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");
       $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
       while ($row = $dados->fetch_assoc()) {
@@ -22,8 +43,8 @@
       }
       return [$pendentes, $emAndamento, $finalizados, $rejeitados];
     }
-        // Função para obter ranking de responsáveis
-  function obterRankingResponsaveis($conn, $limite = 5) {
+    // Função para obter ranking de responsáveis
+    function obterRankingResponsaveis($conn, $limite = 5) {
           $sql = "
             SELECT d.nome AS responsavel_nome, COUNT(*) as total
             FROM manutencao m
@@ -47,8 +68,8 @@
           return [$responsaveis, $totais];
         }
         
-        // Função para calcular a média de dias de conclusão
-  function calcularMediaDiasConclusao($conn) {
+    // Função para calcular a média de dias de conclusão
+    function calcularMediaDiasConclusao($conn) {
           $sqlMedia = "
             SELECT AVG(
               GREATEST(
@@ -71,315 +92,137 @@
           }
           return $mediaDias;
         }
-    // Chamada da função
-    list($pendentes, $emAndamento, $finalizados, $rejeitados) = obterTotaisPorStatus($conn);
-
-    // Uso da função
-    list($responsaveis, $totais) = obterRankingResponsaveis($conn);
-
-    // Uso da função
-    $mediaDias = calcularMediaDiasConclusao($conn);
     
-    // =====================
-    // ENDPOINTS AJAX PARA DRILL-DOWN/UP
-    // =====================
-    if (isset($_GET['action'])) {
-      header('Content-Type: application/json');
-      $action      = $_GET['action'];
-      // define o ano a partir do parâmetro ou do ano corrente
-      $yearSelected = isset($_GET['year'])
-                     ? (int) $_GET['year']
-                     : (int) date('Y');
-    
-      if ($action === 'ranking_por_status') {
-         $status = $_GET['status'];
-         $stmt = $conn->prepare("
-               SELECT d.nome AS label, COUNT(*) AS value
-               FROM manutencao m
-               JOIN docentes d ON m.responsavel = d.id
-               WHERE m.status = ? 
-                  AND YEAR(m.data_abertura) = ?
-               GROUP BY d.nome
-               ORDER BY value DESC
-               LIMIT 5
-         ");
-         $stmt->bind_param('si', $status, $yearSelected);
-         $stmt->execute();
-         $res = $stmt->get_result();
-    
-         $labels = [];
-         $data   = [];
-         while ($r = $res->fetch_assoc()) {
-               $labels[] = $r['label'];
-               $data[]   = (int) $r['value'];
-         }
-    
-         echo json_encode(['labels' => $labels, 'data' => $data]);
-         exit;
-      }
-    
-      if ($action === 'mes_por_responsavel') {
-         $resp = $_GET['responsavel'];
-         $stmt = $conn->prepare("
-               SELECT MONTH(data_abertura) - 1 AS idx, COUNT(*) AS total
-               FROM manutencao m
-               JOIN docentes d ON m.responsavel = d.id
-               WHERE d.nome = ? 
-                  AND YEAR(m.data_abertura) = ?
-               GROUP BY idx
-         ");
-         $stmt->bind_param('si', $resp, $yearSelected);
-         $stmt->execute();
-         $res = $stmt->get_result();
-    
-         // preenche zeros para todos os 12 meses
-         $arr = array_fill(0, 12, 0);
-         while ($r = $res->fetch_assoc()) {
-               $arr[(int) $r['idx']] = (int) $r['total'];
-         }
-    
-         echo json_encode(['data' => $arr]);
-         exit;
-      }
-    
-      if ($action === 'drill_mes') {
-         $year  = isset($_GET['year'])  ? (int) $_GET['year']  : (int) date('Y');
-         $month = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
-         $stmt = $conn->prepare("
-               SELECT DAY(data_abertura) AS period, status, COUNT(*) AS total
-               FROM manutencao
-               WHERE YEAR(data_abertura) = ?
-                  AND MONTH(data_abertura) = ?
-               GROUP BY period, status
-               ORDER BY period
-         ");
-         $stmt->bind_param('ii', $year, $month);
-         $stmt->execute();
-         $res = $stmt->get_result();
-    
-         $statusList  = ['Pendente','Em Andamento','Concluído','Rejeitado'];
-         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-         $labels      = range(1, $daysInMonth);
-         $datasets    = [];
-    
-         // inicializa todos os status com zeros
-         foreach ($statusList as $s) {
-               $datasets[$s] = array_fill(0, $daysInMonth, 0);
-         }
-    
-         while ($row = $res->fetch_assoc()) {
-               $idx = (int) $row['period'] - 1;
-               $datasets[$row['status']][$idx] = (int) $row['total'];
-         }
-    
-         echo json_encode(['labels' => $labels, 'datasets' => $datasets]);
-         exit;
-      }
-    
-      echo json_encode(['error' => 'Ação inválida']);
-      exit;
-    }
-    
-    // Dados por mês e status (visão mensal)
-    $labelsMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    $dadosMesStatus = [
+    // Função para buscar dados por mês e status (visão mensal)
+    function buscarDadosMesStatus($conn, $anoSelecionado) {
+      $dadosMesStatus = [
         'Pendente'      => array_fill(0, 12, 0),
         'Em Andamento'  => array_fill(0, 12, 0),
         'Concluído'     => array_fill(0, 12, 0),
         'Rejeitado'     => array_fill(0, 12, 0),
-    ];
-    
-    // Definindo ano selecionado antes do bind
-    $anoSelecionado = (int)($_GET['ano'] ?? date('Y'));
-    
-    $sqlMes = 
+      ];
+      $sqlMes = 
         "SELECT MONTH(data_abertura) AS mes, status, COUNT(*) AS total
          FROM manutencao
          WHERE data_abertura IS NOT NULL AND YEAR(data_abertura) = ?
          GROUP BY mes, status";
-    $stmtMes = $conn->prepare($sqlMes);
-    $stmtMes->bind_param('i', $anoSelecionado);
-    $stmtMes->execute();
-    $resMes = $stmtMes->get_result();
-    while ($row = $resMes->fetch_assoc()) {
+      $stmtMes = $conn->prepare($sqlMes);
+      $stmtMes->bind_param('i', $anoSelecionado);
+      $stmtMes->execute();
+      $resMes = $stmtMes->get_result();
+      while ($row = $resMes->fetch_assoc()) {
         $idx = (int)$row['mes'] - 1;
-        $dadosMesStatus[$row['status']][$idx] = (int)$row['total'];
+        if (isset($dadosMesStatus[$row['status']])) {
+          $dadosMesStatus[$row['status']][$idx] = (int)$row['total'];
+        }
+      }
+      $stmtMes->close();
+      return $dadosMesStatus;
     }
-    
-    // Totais por status hoje (aberturas + conclusões)
-    $hoje = date('Y-m-d');
-    $totaisHoje = ["Pendente"=>0,"Em Andamento"=>0,"Concluído"=>0];
-    
-    $sql = "
-       SELECT status, COUNT(*) AS total
-          FROM manutencao
-       WHERE (status = 'Concluído'   AND data_encerramento = ?)
-          OR (status <> 'Concluído'  AND data_abertura      = ?)
-    GROUP BY status
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $hoje, $hoje);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    while ($row = $res->fetch_assoc()) {
-       $totaisHoje[$row['status']] = (int)$row['total'];
+    // Função para buscar aberturas agrupadas por mês para um ano específico
+    function buscarAberturasPorMes($conn, $ano) {
+      $resultados = array_fill(0, 12, 0);
+      $sql = "
+        SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
+        FROM manutencao
+        WHERE YEAR(data_abertura) = ?
+        GROUP BY mes
+      ";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      while ($row = $res->fetch_assoc()) {
+        $idx = (int)$row['mes'] - 1;
+        $resultados[$idx] = (int)$row['cnt'];
+      }
+      $stmt->close();
+      return $resultados;
     }
-    $stmt->close();
-    
-    $totalHoje = array_sum($totaisHoje);
-    
-    // SLA exemplo: % concluído em menos de 3 dias
-    $sqlSLA = "
-    SELECT COUNT(*) as total,
-             SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
-    FROM manutencao
-    WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
-    ";
-    $resSLA = $conn->query($sqlSLA);
-    $rowSLA = $resSLA->fetch_assoc();
-    $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
-    
-    // Tickets por atendente (executante)
-    // Paginação para atendentes
-    $pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
-    $limite = 8;
-    $offset = ($pagina - 1) * $limite;
-    
-    $totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
-    $totalPaginas = ceil($totalRegistros / $limite);
-    
-    $sqlAtendentes = "
-    SELECT d.nome,
-      SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
-      SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
-      SUM(CASE WHEN m.status = 'Concluido' THEN 1 ELSE 0 END) AS concluido
-    FROM docentes d
-    LEFT JOIN manutencao m ON d.id = m.executante
-    WHERE d.tipo = 'Técnico'
-    GROUP BY d.nome
-    ORDER BY d.nome
-    LIMIT $limite OFFSET $offset";
-    
-    $resAtendentes = $conn->query($sqlAtendentes);
-    $atendentes = [];
-    while ($row = $resAtendentes->fetch_assoc()) {
-        $atendentes[] = $row;
-    }
-    // --- Tendência mensal de aberturas vs. fechamentos (sem consultas no loop) ---
-    $labelsTrend  = [];
-    $abertosMes   = array_fill(0, 12, 0);
-    $fechadosMes  = array_fill(0, 12, 0);
-
-    // Labels dos meses
-    for ($m = 1; $m <= 12; $m++) {
-      $labelsTrend[] = sprintf('%02d', $m);
-    }
-
-    // Busca aberturas do ano selecionado agrupadas por mês
-    $sqlAbertosTrend = "
-      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
-      FROM manutencao
-      WHERE YEAR(data_abertura) = ?
-      GROUP BY mes
-    ";
-    $stmtAbertosTrend = $conn->prepare($sqlAbertosTrend);
-    $stmtAbertosTrend->bind_param('i', $anoSelecionado);
-    $stmtAbertosTrend->execute();
-    $resAbertosTrend = $stmtAbertosTrend->get_result();
-    while ($row = $resAbertosTrend->fetch_assoc()) {
-      $idx = (int)$row['mes'] - 1;
-      $abertosMes[$idx] = (int)$row['cnt'];
-    }
-    $stmtAbertosTrend->close();
-
-    // Busca fechamentos do ano selecionado agrupadas por mês
-    $sqlFechadosTrend = "
+    // Função para buscar fechamentos agrupados por mês para um ano específico
+    function buscarFechamentosPorMes($conn, $ano) {
+      $resultados = array_fill(0, 12, 0);
+      $sql = "
       SELECT MONTH(data_encerramento) AS mes, COUNT(*) AS cnt
       FROM manutencao
       WHERE status = 'Concluído'
         AND data_encerramento IS NOT NULL
         AND YEAR(data_encerramento) = ?
       GROUP BY mes
-    ";
-    $stmtFechadosTrend = $conn->prepare($sqlFechadosTrend);
-    $stmtFechadosTrend->bind_param('i', $anoSelecionado);
-    $stmtFechadosTrend->execute();
-    $resFechadosTrend = $stmtFechadosTrend->get_result();
-    while ($row = $resFechadosTrend->fetch_assoc()) {
+      ";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      while ($row = $res->fetch_assoc()) {
       $idx = (int)$row['mes'] - 1;
-      $fechadosMes[$idx] = (int)$row['cnt'];
+      $resultados[$idx] = (int)$row['cnt'];
+      }
+      $stmt->close();
+      return $resultados;
     }
-    $stmtFechadosTrend->close();
+    // Função para calcular SLA (% concluído em <= 3 dias)
+    function calcularSLA($conn) {
+      $sqlSLA = "
+      SELECT COUNT(*) as total,
+           SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
+      FROM manutencao
+      WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
+      ";
+      $resSLA = $conn->query($sqlSLA);
+      $rowSLA = $resSLA->fetch_assoc();
+      $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
+      return $sla;
+    }
+    // Função para buscar tickets por atendente (executante) com paginação
+    function buscarAtendentes($conn, $pagina = 1, $limite = 8) {
+      $offset = ($pagina - 1) * $limite;
+      $totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
+      $totalPaginas = ceil($totalRegistros / $limite);
+
+      $sqlAtendentes = "
+      SELECT d.nome,
+        SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
+        SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
+        SUM(CASE WHEN m.status = 'Concluído' THEN 1 ELSE 0 END) AS concluido
+      FROM docentes d
+      LEFT JOIN manutencao m ON d.id = m.executante
+      WHERE d.tipo = 'Técnico'
+      GROUP BY d.nome
+      ORDER BY d.nome
+      LIMIT $limite OFFSET $offset";
+
+      $resAtendentes = $conn->query($sqlAtendentes);
+      $atendentes = [];
+      while ($row = $resAtendentes->fetch_assoc()) {
+        $atendentes[] = $row;
+      }
+      return [$atendentes, $totalPaginas];
+    }
     // --- Backlog e envelhecimento ---
-    $labelsAge = [];
-    $dataAge   = [];
-    
-    // Definindo as faixas
-    $faixas = ['0–3 dias','4–7 dias','>7 dias'];
-    foreach($faixas as $f) {
-      $labelsAge[] = $f;
-      $dataAge[]   = 0;
-    }
-    
-    $sqlBacklog = "
-      SELECT 
+    function calcularBacklogAge($conn) {
+      $labelsAge = ['0–3 dias','4–7 dias','>7 dias'];
+      $dataAge   = array_fill(0, count($labelsAge), 0);
+
+      $sqlBacklog = "
+        SELECT 
         CASE 
           WHEN DATEDIFF(CURDATE(), data_abertura) <= 3 THEN 1
           WHEN DATEDIFF(CURDATE(), data_abertura) <= 7 THEN 2
           ELSE 3
         END AS faixa,
         COUNT(*) AS total
-      FROM manutencao
-      WHERE status <> 'Concluído'
-      GROUP BY faixa
-    ";
-    $resBacklog = $conn->query($sqlBacklog);
-    while($r = $resBacklog->fetch_assoc()){
+        FROM manutencao
+        WHERE status <> 'Concluído'
+        GROUP BY faixa
+      ";
+      $resBacklog = $conn->query($sqlBacklog);
+      while($r = $resBacklog->fetch_assoc()){
         $idx = (int)$r['faixa'] - 1;
         $dataAge[$idx] = (int)$r['total'];
+      }
+      return [$labelsAge, $dataAge];
     }
-    
-    // Acumular por mês para ano atual e anterior (sem consultas dentro do loop)
-    $meses = range(1,12);
-    $anoAtual   = (int) date('Y');
-    $anoAnterior = $anoAtual - 1;
-    $atual = array_fill(0, 12, 0);
-    $anterior = array_fill(0, 12, 0);
-
-    // Busca aberturas do ano atual agrupadas por mês
-    $sqlAbertos = "
-      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
-      FROM manutencao
-      WHERE YEAR(data_abertura) = ?
-      GROUP BY mes
-    ";
-    $stmtAbertos = $conn->prepare($sqlAbertos);
-    $stmtAbertos->bind_param('i', $anoAtual);
-    $stmtAbertos->execute();
-    $resAbertos = $stmtAbertos->get_result();
-    while ($row = $resAbertos->fetch_assoc()) {
-      $idx = (int)$row['mes'] - 1;
-      $atual[$idx] = (int)$row['cnt'];
-    }
-    $stmtAbertos->close();
-
-    // Busca aberturas do ano anterior agrupadas por mês
-    $sqlFechados = "
-      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
-      FROM manutencao
-      WHERE YEAR(data_abertura) = ?
-      GROUP BY mes
-    ";
-    $stmtFechados = $conn->prepare($sqlFechados);
-    $stmtFechados->bind_param('i', $anoAnterior);
-    $stmtFechados->execute();
-    $resFechados = $stmtFechados->get_result();
-    while ($row = $resFechados->fetch_assoc()) {
-      $idx = (int)$row['mes'] - 1;
-      $anterior[$idx] = (int)$row['cnt'];
-    }
-    $stmtFechados->close();
-    
     // Função para calcular SLA por prioridade (% concluído em ≤3 dias)
     function calcularSlaPorPrioridade($conn, $prioridades) {
       // Monta a lista de prioridades para o IN
@@ -409,38 +252,6 @@
       }
       return $slaPorPrioridade;
     }
-
-    // array de prioridades
-    $prioridades = ['Alta','Média','Baixa'];
-    // SLA por prioridade (% concluído em ≤3 dias)
-    $slaPorPrioridade = calcularSlaPorPrioridade($conn, $prioridades);
-    // Função para buscar aberturas agrupadas por mês para um ano específico
-    function buscarAberturasPorMes($conn, $ano) {
-      $resultados = array_fill(0, 12, 0);
-      $sql = "
-      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
-      FROM manutencao
-      WHERE YEAR(data_abertura) = ?
-      GROUP BY mes
-      ";
-      $stmt = $conn->prepare($sql);
-      $stmt->bind_param('i', $ano);
-      $stmt->execute();
-      $res = $stmt->get_result();
-      while ($row = $res->fetch_assoc()) {
-      $idx = (int)$row['mes'] - 1;
-      $resultados[$idx] = (int)$row['cnt'];
-      }
-      $stmt->close();
-      return $resultados;
-    }
-
-    // para o comparativo ano a ano (sem consultas dentro do loop)
-    $meses = range(1,12);
-    $anoAtual   = (int) date('Y');
-    $anoAnterior = $anoAtual - 1;
-    $abertosMes   = buscarAberturasPorMes($conn, $anoAtual);
-    $fechadosMes  = buscarAberturasPorMes($conn, $anoAnterior);
     // Função para calcular médias de horas e totais por prioridade para o Cross-Trend
     function calcularCrossTrend($conn, $prioridades) {
       // Monta a lista de prioridades para o IN
@@ -474,6 +285,162 @@
       $totaisCross = array_values(array_replace(array_fill(0, count($prioridades), 0), array_intersect_key($totaisCross, array_flip($prioridades))));
       return [$mediaHoras, $totaisCross];
     }
+    // Função para obter pedidos por mês para um responsável e ano
+    function obterPedidosPorMesResponsavel($conn, $responsavel, $ano) {
+          $stmt = $conn->prepare("
+            SELECT MONTH(data_abertura) - 1 AS idx, COUNT(*) AS total
+            FROM manutencao m
+            JOIN docentes d ON m.responsavel = d.id
+            WHERE d.nome = ? 
+             AND YEAR(m.data_abertura) = ?
+            GROUP BY idx
+          ");
+          $stmt->bind_param('si', $responsavel, $ano);
+          $stmt->execute();
+          $res = $stmt->get_result();
+
+          // preenche zeros para todos os 12 meses
+          $arr = array_fill(0, 12, 0);
+          while ($r = $res->fetch_assoc()) {
+            $arr[(int) $r['idx']] = (int) $r['total'];
+          }
+          $stmt->close();
+          return $arr;
+    }
+    // Função para obter ranking de responsáveis por status e ano
+    function obterRankingPorStatus($conn, $status, $ano) {
+          $stmt = $conn->prepare("
+            SELECT d.nome AS label, COUNT(*) AS value
+            FROM manutencao m
+            JOIN docentes d ON m.responsavel = d.id
+            WHERE m.status = ? 
+              AND YEAR(m.data_abertura) = ?
+            GROUP BY d.nome
+            ORDER BY value DESC
+            LIMIT 5
+          ");
+          $stmt->bind_param('si', $status, $ano);
+          $stmt->execute();
+          $res = $stmt->get_result();
+
+          $labels = [];
+          $data   = [];
+          while ($r = $res->fetch_assoc()) {
+            $labels[] = $r['label'];
+            $data[]   = (int) $r['value'];
+          }
+          $stmt->close();
+          return ['labels' => $labels, 'data' => $data];
+    }
+    // Função para buscar detalhamento diário por status em um mês/ano
+    function buscarDetalhePorDia($conn, $ano, $mes) {
+      $stmt = $conn->prepare("
+            SELECT DAY(data_abertura) AS period, status, COUNT(*) AS total
+            FROM manutencao
+            WHERE YEAR(data_abertura) = ?
+             AND MONTH(data_abertura) = ?
+            GROUP BY period, status
+            ORDER BY period
+      ");
+          $stmt->bind_param('ii', $ano, $mes);
+          $stmt->execute();
+          $res = $stmt->get_result();
+
+          $statusList  = ['Pendente','Em Andamento','Concluído','Rejeitado'];
+          $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $mes, $ano);
+          $labels      = range(1, $daysInMonth);
+          $datasets    = [];
+
+          // inicializa todos os status com zeros
+          foreach ($statusList as $s) {
+            $datasets[$s] = array_fill(0, $daysInMonth, 0);
+          }
+
+          while ($row = $res->fetch_assoc()) {
+            $idx = (int) $row['period'] - 1;
+            $datasets[$row['status']][$idx] = (int) $row['total'];
+          }
+          $stmt->close();
+
+          return ['labels' => $labels, 'datasets' => $datasets];
+    }
+    
+    // =====================
+    // ENDPOINTS AJAX PARA DRILL-DOWN/UP
+    // =====================
+    if (isset($_GET['action'])) {
+      header('Content-Type: application/json');
+      $action      = $_GET['action'];
+      // define o ano a partir do parâmetro ou do ano corrente
+      $yearSelected = isset($_GET['year'])
+                     ? (int) $_GET['year']
+                     : (int) date('Y');
+    
+      if ($action === 'ranking_por_status') {
+         $status = $_GET['status'];
+         $result = obterRankingPorStatus($conn, $status, $yearSelected);
+         echo json_encode($result);
+         exit;
+      }
+      if ($action === 'mes_por_responsavel') {
+         $resp = $_GET['responsavel'];
+         $data = obterPedidosPorMesResponsavel($conn, $resp, $yearSelected);
+         echo json_encode(['data' => $data]);
+         exit;
+      }
+      if ($action === 'drill_mes') {
+         $ano  = isset($_GET['year'])  ? (int) $_GET['year']  : (int) date('Y');
+         $mes = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
+         $resultado = buscarDetalhePorDia($conn, $ano, $mes);
+         echo json_encode($resultado);
+         exit;
+      }
+    
+      echo json_encode(['error' => 'Ação inválida']);
+      exit;
+    }
+
+    // Uso das funções agrupadas
+    list($pendentes, $emAndamento, $finalizados, $rejeitados) = obterTotaisPorStatus($conn);
+    list($responsaveis, $totais) = obterRankingResponsaveis($conn);
+    $mediaDias = calcularMediaDiasConclusao($conn);
+    $labelsMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    $anoSelecionado = (int)($_GET['ano'] ?? date('Y'));
+    $dadosMesStatus = buscarDadosMesStatus($conn, $anoSelecionado);
+
+    $totaisHoje = buscarTotaisHoje($conn);
+    $totalHoje = array_sum($totaisHoje);
+
+    $sla = calcularSLA($conn);
+
+    $pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
+    list($atendentes, $totalPaginas) = buscarAtendentes($conn, $pagina);
+
+    // --- Tendência mensal de aberturas vs. fechamentos (sem consultas no loop) ---
+    $labelsTrend  = [];
+    for ($m = 1; $m <= 12; $m++) {
+      $labelsTrend[] = sprintf('%02d', $m);
+    }
+    $abertosMes   = buscarAberturasPorMes($conn, $anoSelecionado);
+
+    // Busca fechamentos do ano selecionado agrupadas por mês
+    $fechadosMes = buscarFechamentosPorMes($conn, $anoSelecionado);
+
+    list($labelsAge, $dataAge) = calcularBacklogAge($conn);
+
+    // array de prioridades
+    $prioridades = ['Alta','Média','Baixa'];
+    // SLA por prioridade (% concluído em ≤3 dias)
+    $slaPorPrioridade = calcularSlaPorPrioridade($conn, $prioridades);
+
+    // para o comparativo ano a ano (sem consultas dentro do loop)
+    $meses = range(1,12);
+    $anoAtual   = (int) date('Y');
+    $anoAnterior = $anoAtual - 1;
+    // Busca aberturas do ano anterior agrupadas por mês
+    $anterior = buscarAberturasPorMes($conn, $anoAnterior);
+    $abertosMes   = buscarAberturasPorMes($conn, $anoAtual);
+    $fechadosMes  = buscarAberturasPorMes($conn, $anoAnterior);
 
     // Uso da função
     list($mediaHoras, $totaisCross) = calcularCrossTrend($conn, $prioridades);
