@@ -27,9 +27,14 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="sweetalert2.all.min.js"></script>
         <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
+        <style>
+            .btn-drag{
+                background: rgb(112, 35, 35);
+            }
+        </style>
     </head>
     <body class="d-flex flex-column bg-body">
-        <header class="top-bar animate__animated animate__fadeInDown">
+        <header class="top-bar mt-2 animate__animated animate__fadeInDown">
         <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
           <h3 class="title">Abertura de ordem de serviço</h3>
           <div class="welcome-msg me-3 text-dark fw-bold">
@@ -52,8 +57,8 @@
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="drag-area text-center p-4">
                         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                        <button type="button" class="btn mb-2 mb-md-0 btn-tertiary btn-block btn-round">
-                            <span>Insira uma foto</span> 
+                        <button type="button" class="btn-round mb-2 mb-md-0 btn-drag">
+                        Insira uma foto
 						</button>
                         <input type="file" id="foto" name="foto" hidden>
                     </div>

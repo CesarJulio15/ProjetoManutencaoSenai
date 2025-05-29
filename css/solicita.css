@@ -228,6 +228,16 @@
   background-repeat: no-repeat;
 }
 
+.drag-area button {
+  padding: 10px 25px;
+  font-size: 20px;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 .drag-area.active {
   border: 2px solid #fff;
 }
@@ -249,18 +259,6 @@
   font-weight: bolder;
   color: #f9f9f9;
   margin: 10px 0 15px 0;
-}
-
-.drag-area button {
-  padding: 10px 25px;
-  font-size: 20px;
-  font-weight: 500;
-  border: none;
-  outline: none;
-  background-color: #f9f9f9;
-  color: rgb(184, 15, 15);
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .drag-area img {

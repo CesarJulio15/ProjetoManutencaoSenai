@@ -8,58 +8,78 @@
   $tipo = $_SESSION['tipo'];
     
     include 'conexao.php';
-    // Totais por status
-    $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");
-    $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
-    while ($row = $dados->fetch_assoc()) {
+    // Função para obter totais por status
+  function obterTotaisPorStatus($conn) {
+      $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");
+      $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
+      while ($row = $dados->fetch_assoc()) {
         switch ($row['status']) {
-            case 'Pendente': $pendentes = $row['total']; break;
-            case 'Em Andamento': $emAndamento = $row['total']; break;
-            case 'Concluído': $finalizados = $row['total']; break;
-            case 'Rejeitado': $rejeitados = $row['total']; break;
+          case 'Pendente': $pendentes = $row['total']; break;
+          case 'Em Andamento': $emAndamento = $row['total']; break;
+          case 'Concluído': $finalizados = $row['total']; break;
+          case 'Rejeitado': $rejeitados = $row['total']; break;
         }
+      }
+      return [$pendentes, $emAndamento, $finalizados, $rejeitados];
     }
+        // Função para obter ranking de responsáveis
+  function obterRankingResponsaveis($conn, $limite = 5) {
+          $sql = "
+            SELECT d.nome AS responsavel_nome, COUNT(*) as total
+            FROM manutencao m
+            JOIN docentes d ON m.responsavel = d.id
+            GROUP BY d.nome
+            ORDER BY total DESC
+            LIMIT ?
+          ";
+          $stmt = $conn->prepare($sql);
+          $stmt->bind_param('i', $limite);
+          $stmt->execute();
+          $res = $stmt->get_result();
     
-    // Ranking de responsáveis
-    $ranking = $conn->query("
-        SELECT d.nome AS responsavel_nome, COUNT(*) as total
-        FROM manutencao m
-        JOIN docentes d ON m.responsavel = d.id
-        GROUP BY d.nome
-        ORDER BY total DESC
-        LIMIT 5
-    ");
-
-    $responsaveis = [];
-    $totais = [];
-    
-    while ($r = $ranking->fetch_assoc()) {
-        $responsaveis[] = $r['responsavel_nome'];
-        $totais[] = $r['total'];
-    }
-    
-    // --- cálculo seguro para média de dias de conclusão ---
-    $sqlMedia = "
-     SELECT AVG(
+          $responsaveis = [];
+          $totais = [];
+          while ($r = $res->fetch_assoc()) {
+            $responsaveis[] = $r['responsavel_nome'];
+            $totais[] = $r['total'];
+          }
+          $stmt->close();
+          return [$responsaveis, $totais];
+        }
+        
+        // Função para calcular a média de dias de conclusão
+  function calcularMediaDiasConclusao($conn) {
+          $sqlMedia = "
+            SELECT AVG(
               GREATEST(
                 DATEDIFF(data_encerramento, data_abertura),
                 0
               )
             ) AS media_dias
-       FROM manutencao
-      WHERE status = 'Concluído'
-        AND data_encerramento IS NOT NULL
-    ";
-    $resultMedia = $conn->query($sqlMedia);
+            FROM manutencao
+            WHERE status = 'Concluído'
+              AND data_encerramento IS NOT NULL
+          ";
+          $resultMedia = $conn->query($sqlMedia);
     
-    $mediaDias = 0;
-    if ($row = $resultMedia->fetch_assoc()) {
-     // se vier NULL (nenhum registro), define 0
-     $mediaBruta = $row['media_dias'];
-     $mediaDias = $mediaBruta !== null
-        ? round($mediaBruta, 1)
-        : 0;
-    }
+          $mediaDias = 0;
+          if ($row = $resultMedia->fetch_assoc()) {
+            $mediaBruta = $row['media_dias'];
+            $mediaDias = $mediaBruta !== null
+              ? round($mediaBruta, 1)
+              : 0;
+          }
+          return $mediaDias;
+        }
+    // Chamada da função
+    list($pendentes, $emAndamento, $finalizados, $rejeitados) = obterTotaisPorStatus($conn);
+
+    // Uso da função
+    list($responsaveis, $totais) = obterRankingResponsaveis($conn);
+
+    // Uso da função
+    $mediaDias = calcularMediaDiasConclusao($conn);
+    
     // =====================
     // ENDPOINTS AJAX PARA DRILL-DOWN/UP
     // =====================
@@ -245,44 +265,51 @@
     while ($row = $resAtendentes->fetch_assoc()) {
         $atendentes[] = $row;
     }
-    
-    // --- Tendência mensal de aberturas vs. fechamentos ---
+    // --- Tendência mensal de aberturas vs. fechamentos (sem consultas no loop) ---
     $labelsTrend  = [];
-    $abertosMes   = [];
-    $fechadosMes  = [];
-    
+    $abertosMes   = array_fill(0, 12, 0);
+    $fechadosMes  = array_fill(0, 12, 0);
+
+    // Labels dos meses
     for ($m = 1; $m <= 12; $m++) {
-    // Label no formato “01”, “02”, ..., “12”
-    $labelsTrend[] = sprintf('%02d', $m);
-    
-    // Quantos foram abertos no mês $m
-    $stmtA = $conn->prepare("
-        SELECT COUNT(*) AS cnt
-          FROM manutencao
-         WHERE YEAR(data_abertura) = ?
-           AND MONTH(data_abertura) = ?
-    ");
-    $stmtA->bind_param('ii', $anoSelecionado, $m);
-    $stmtA->execute();
-    $cntA = $stmtA->get_result()->fetch_assoc()['cnt'];
-    $abertosMes[] = (int) $cntA;
-    $stmtA->close();
-    
-    // Quantos foram concluídos no mês $m (usa data_encerramento)
-    $stmtF = $conn->prepare("
-        SELECT COUNT(*) AS cnt
-          FROM manutencao
-         WHERE status = 'Concluído'
-           AND data_encerramento IS NOT NULL
-           AND YEAR(data_encerramento) = ?
-           AND MONTH(data_encerramento) = ?
-    ");
-    $stmtF->bind_param('ii', $anoSelecionado, $m);
-    $stmtF->execute();
-    $cntF = $stmtF->get_result()->fetch_assoc()['cnt'];
-    $fechadosMes[] = (int) $cntF;
-    $stmtF->close();
+      $labelsTrend[] = sprintf('%02d', $m);
     }
+
+    // Busca aberturas do ano selecionado agrupadas por mês
+    $sqlAbertosTrend = "
+      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
+      FROM manutencao
+      WHERE YEAR(data_abertura) = ?
+      GROUP BY mes
+    ";
+    $stmtAbertosTrend = $conn->prepare($sqlAbertosTrend);
+    $stmtAbertosTrend->bind_param('i', $anoSelecionado);
+    $stmtAbertosTrend->execute();
+    $resAbertosTrend = $stmtAbertosTrend->get_result();
+    while ($row = $resAbertosTrend->fetch_assoc()) {
+      $idx = (int)$row['mes'] - 1;
+      $abertosMes[$idx] = (int)$row['cnt'];
+    }
+    $stmtAbertosTrend->close();
+
+    // Busca fechamentos do ano selecionado agrupadas por mês
+    $sqlFechadosTrend = "
+      SELECT MONTH(data_encerramento) AS mes, COUNT(*) AS cnt
+      FROM manutencao
+      WHERE status = 'Concluído'
+        AND data_encerramento IS NOT NULL
+        AND YEAR(data_encerramento) = ?
+      GROUP BY mes
+    ";
+    $stmtFechadosTrend = $conn->prepare($sqlFechadosTrend);
+    $stmtFechadosTrend->bind_param('i', $anoSelecionado);
+    $stmtFechadosTrend->execute();
+    $resFechadosTrend = $stmtFechadosTrend->get_result();
+    while ($row = $resFechadosTrend->fetch_assoc()) {
+      $idx = (int)$row['mes'] - 1;
+      $fechadosMes[$idx] = (int)$row['cnt'];
+    }
+    $stmtFechadosTrend->close();
     // --- Backlog e envelhecimento ---
     $labelsAge = [];
     $dataAge   = [];
@@ -312,82 +339,144 @@
         $dataAge[$idx] = (int)$r['total'];
     }
     
-    // Acumular por mês para ano atual e anterior
-    $meses = range(1,12);
-    $atual = []; $anterior = [];
-    foreach ($meses as $m) {
-    // ano atual
-    $r1 = $conn->query("
-     SELECT COUNT(*) AS cnt
-     FROM manutencao
-     WHERE YEAR(data_abertura)=YEAR(CURDATE()) AND MONTH(data_abertura)=$m
-    ")->fetch_assoc();
-    // ano anterior
-    $r2 = $conn->query("
-     SELECT COUNT(*) AS cnt
-     FROM manutencao
-     WHERE YEAR(data_abertura)=YEAR(CURDATE())-1 AND MONTH(data_abertura)=$m
-    ")->fetch_assoc();
-    $atual[]     = (int)$r1['cnt'];
-    $anterior[]  = (int)$r2['cnt'];
-    }
-    
-    // array de prioridades
-    $prioridades = ['Alta','Média','Baixa'];
-    // SLA por prioridade (% concluído em ≤3 dias)
-    $slaPorPrioridade = [];
-    foreach($prioridades as $p) {
-    $r = $conn->query("
-        SELECT
-          SUM(CASE WHEN DATEDIFF(data_encerramento,data_abertura) <= 3 THEN 1 ELSE 0 END) AS dentro_prazo,
-          COUNT(*) AS total
-        FROM manutencao
-       WHERE prioridade = '{$conn->real_escape_string($p)}'
-         AND status = 'Concluído'
-    ")->fetch_assoc();
-    $slaPorPrioridade[] = $r['total'] > 0
-        ? round(($r['dentro_prazo']/$r['total'])*100, 2)
-        : 0;
-    }
-    
-    // para o comparativo ano a ano
+    // Acumular por mês para ano atual e anterior (sem consultas dentro do loop)
     $meses = range(1,12);
     $anoAtual   = (int) date('Y');
     $anoAnterior = $anoAtual - 1;
-    $abertosMes   = [];
-    $fechadosMes  = [];
-    foreach ($meses as $m) {
-    $ra = $conn->query("
-      SELECT COUNT(*) AS cnt
+    $atual = array_fill(0, 12, 0);
+    $anterior = array_fill(0, 12, 0);
+
+    // Busca aberturas do ano atual agrupadas por mês
+    $sqlAbertos = "
+      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
       FROM manutencao
-     WHERE YEAR(data_abertura) = {$anoAtual}
-       AND MONTH(data_abertura) = {$m}
-    ")->fetch_assoc();
-    $rf = $conn->query("
-      SELECT COUNT(*) AS cnt
-      FROM manutencao
-     WHERE YEAR(data_abertura) = {$anoAnterior}
-       AND MONTH(data_abertura) = {$m}
-    ")->fetch_assoc();
-    $abertosMes[]  = (int)$ra['cnt'];
-    $fechadosMes[] = (int)$rf['cnt'];
+      WHERE YEAR(data_abertura) = ?
+      GROUP BY mes
+    ";
+    $stmtAbertos = $conn->prepare($sqlAbertos);
+    $stmtAbertos->bind_param('i', $anoAtual);
+    $stmtAbertos->execute();
+    $resAbertos = $stmtAbertos->get_result();
+    while ($row = $resAbertos->fetch_assoc()) {
+      $idx = (int)$row['mes'] - 1;
+      $atual[$idx] = (int)$row['cnt'];
     }
+    $stmtAbertos->close();
+
+    // Busca aberturas do ano anterior agrupadas por mês
+    $sqlFechados = "
+      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
+      FROM manutencao
+      WHERE YEAR(data_abertura) = ?
+      GROUP BY mes
+    ";
+    $stmtFechados = $conn->prepare($sqlFechados);
+    $stmtFechados->bind_param('i', $anoAnterior);
+    $stmtFechados->execute();
+    $resFechados = $stmtFechados->get_result();
+    while ($row = $resFechados->fetch_assoc()) {
+      $idx = (int)$row['mes'] - 1;
+      $anterior[$idx] = (int)$row['cnt'];
+    }
+    $stmtFechados->close();
     
-    // para o Cross-Trend (média horas × volume)
-    $mediaHoras = [];
-    $totais     = [];
-    foreach ($prioridades as $p) {
-    $r = $conn->query("
-      SELECT
+    // Função para calcular SLA por prioridade (% concluído em ≤3 dias)
+    function calcularSlaPorPrioridade($conn, $prioridades) {
+      // Monta a lista de prioridades para o IN
+      $prioridadesEscapadas = array_map([$conn, 'real_escape_string'], $prioridades);
+      $prioridadesIn = "'" . implode("','", $prioridadesEscapadas) . "'";
+
+      $sqlSLAprioridade = "
+        SELECT
+          prioridade,
+          SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) AS dentro_prazo,
+          COUNT(*) AS total
+        FROM manutencao
+        WHERE prioridade IN ($prioridadesIn)
+          AND status = 'Concluído'
+        GROUP BY prioridade
+      ";
+      $resSLAprioridade = $conn->query($sqlSLAprioridade);
+
+      // Inicializa com zeros
+      $slaPorPrioridade = array_fill(0, count($prioridades), 0);
+      while ($row = $resSLAprioridade->fetch_assoc()) {
+        $p = $row['prioridade'];
+        $idx = array_search($p, $prioridades);
+        if ($idx !== false && $row['total'] > 0) {
+          $slaPorPrioridade[$idx] = round(($row['dentro_prazo'] / $row['total']) * 100, 2);
+        }
+      }
+      return $slaPorPrioridade;
+    }
+
+    // array de prioridades
+    $prioridades = ['Alta','Média','Baixa'];
+    // SLA por prioridade (% concluído em ≤3 dias)
+    $slaPorPrioridade = calcularSlaPorPrioridade($conn, $prioridades);
+    // Função para buscar aberturas agrupadas por mês para um ano específico
+    function buscarAberturasPorMes($conn, $ano) {
+      $resultados = array_fill(0, 12, 0);
+      $sql = "
+      SELECT MONTH(data_abertura) AS mes, COUNT(*) AS cnt
+      FROM manutencao
+      WHERE YEAR(data_abertura) = ?
+      GROUP BY mes
+      ";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      while ($row = $res->fetch_assoc()) {
+      $idx = (int)$row['mes'] - 1;
+      $resultados[$idx] = (int)$row['cnt'];
+      }
+      $stmt->close();
+      return $resultados;
+    }
+
+    // para o comparativo ano a ano (sem consultas dentro do loop)
+    $meses = range(1,12);
+    $anoAtual   = (int) date('Y');
+    $anoAnterior = $anoAtual - 1;
+    $abertosMes   = buscarAberturasPorMes($conn, $anoAtual);
+    $fechadosMes  = buscarAberturasPorMes($conn, $anoAnterior);
+    // Função para calcular médias de horas e totais por prioridade para o Cross-Trend
+    function calcularCrossTrend($conn, $prioridades) {
+      // Monta a lista de prioridades para o IN
+      $prioridadesEscapadas = array_map([$conn, 'real_escape_string'], $prioridades);
+      $prioridadesIn = "'" . implode("','", $prioridadesEscapadas) . "'";
+      $sqlCross = "
+        SELECT
+        prioridade,
         AVG(TIMESTAMPDIFF(HOUR, data_abertura, data_encerramento)) AS media_h,
         COUNT(*) AS tot
-      FROM manutencao
-     WHERE prioridade = '{$conn->real_escape_string($p)}'
-       AND status = 'Concluído'
-    ")->fetch_assoc();
-    $mediaHoras[] = round((float)$r['media_h'], 1);
-    $totais[]     = (int)$r['tot'];
+        FROM manutencao
+        WHERE prioridade IN ($prioridadesIn)
+        AND status = 'Concluído'
+        GROUP BY prioridade
+      ";
+      $resCross = $conn->query($sqlCross);
+      // Inicializa com zeros
+      $mediaHoras = [];
+      $totaisCross = [];
+      foreach ($prioridades as $p) {
+        $mediaHoras[$p] = 0;
+        $totaisCross[$p] = 0;
+      }
+      while ($row = $resCross->fetch_assoc()) {
+        $p = $row['prioridade'];
+        $mediaHoras[$p] = round((float)$row['media_h'], 1);
+        $totaisCross[$p] = (int)$row['tot'];
+      }
+      // Garante a ordem correta
+      $mediaHoras = array_values(array_replace(array_fill(0, count($prioridades), 0), array_intersect_key($mediaHoras, array_flip($prioridades))));
+      $totaisCross = array_values(array_replace(array_fill(0, count($prioridades), 0), array_intersect_key($totaisCross, array_flip($prioridades))));
+      return [$mediaHoras, $totaisCross];
     }
+
+    // Uso da função
+    list($mediaHoras, $totaisCross) = calcularCrossTrend($conn, $prioridades);
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -410,7 +499,7 @@
             <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
         </aside>
         <main class="main-content d-flex flex-md-column w-100 h-100">
-            <header class="top-bar animate__animated animate__fadeInDown">
+            <header class="top-bar mt-2 animate__animated animate__fadeInDown">
                 <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
                 <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
@@ -428,8 +517,8 @@
             </div>
             </header>
             <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
-                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100">
-                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100" id="topo">
+                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
                             <ul class="list-group ">
@@ -441,25 +530,25 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="card p-3 m-auto shadow-sm w-100 h-100 d-flex flex-column" style="" id="tecnicos">
+                    <div class="card p-3 m-auto shadow-sm h-100 d-flex flex-column" id="tecnicos">
                         <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
                         <div class="table-wrapper" style="overflow-x:auto;">
                                 <table class="" style="border-radius:15px 15px 0 0; ">
                                     <thead>
                                         <tr>
                                             <th>Nome</th>
-                                            <th>Pendente</th>
-                                            <th>Andamento</th>
-                                            <th>Concluído</th>
+                                            <th class="status-pendente">Pendente</th>
+                                            <th class="status-andamento">Andamento</th>
+                                            <th class="status-concluido">Concluído</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php foreach ($atendentes as $a): ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($a['nome']) ?></td>
-                                            <td><?= $a['pendente'] ?></td>
-                                            <td><?= $a['andamento'] ?></td>
-                                            <td><?= $a['concluido'] ?></td>
+                                            <td class="nomeAtendente"><?= htmlspecialchars($a['nome']) ?></td>
+                                            <td data-label="Pendentes" class="status-pendente"><b><?= $a['pendente'] ?></b></td>
+                                            <td data-label="Em Andamento" class="status-andamento"><?= $a['andamento'] ?></td>
+                                            <td data-label="Concluídos" class="status-concluido"><?= $a['concluido'] ?></td>
                                         </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -475,7 +564,7 @@
                                 </nav>
                           </div>
                     </div>
-                    <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight">
+                    <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight" id="cards-metricas">
                             <div class="info-box bg-pink hover-expand-effect">
                                 <div class="icon">
                                     <span class="material-symbols-outlined">
@@ -547,7 +636,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap" >
                     <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">

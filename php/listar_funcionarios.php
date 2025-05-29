@@ -49,9 +49,7 @@ $total_paginas = ceil($total_registros / $limite);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <style>
-.top-bar {
-  margin: 0 auto 20px auto; /* centralizado horizontalmente, mas não verticalmente */
-}
+
 </style>
 </head>
 <body >
@@ -64,9 +62,7 @@ $total_paginas = ceil($total_registros / $limite);
 <main class="main-content">
     <div class="top-bar animate__animated animate__fadeInDown">
     <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-    <div class="title">
-    <h3>Lista de Docentes</h3>
-    </div>
+    <h2 class="title text-center mb-4">Lista de Docentes</h2>
         <form method="get" class="search-box ">
             <select name="tipo">
                 <option value="">Todos os tipos</option>
@@ -92,9 +88,9 @@ $total_paginas = ceil($total_registros / $limite);
                 </a>
             </div>
     </div>
-    <div class="animate__animated animate__fadeInUp" style="overflow-x:auto;">
+    <div class="animate__animated animate__fadeInUp" style="overflow-x:auto;  padding:15px;">
     <?php if ($result->num_rows > 0): ?>
-        <table class="mt-3" style="border-radius:15px 15px 0 0; ">
+        <table class="mt-3" style="border-radius:15px 15px 0 0;">
             <thead>
                 <tr>
                     <th style="width:10%">NIF</th>

@@ -44,6 +44,10 @@
   user-select: none;
 }
 
+.card .title{
+  margin: 10px auto;
+}
+
 .card-metric {
   color: whitesmoke;
   padding: 20px;
@@ -127,12 +131,66 @@
   width: 100% !important;
   height: 300px !important;
 }
+table {
+  border-collapse: collapse;
+}
+table thead{
+  border: 1px solid transparent;
+}
+table thead tr th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+
+table thead tr th:last-child {
+  border-top-right-radius: 0.75rem;
+}
+table td{
+  transition: all 0.2s ease-in-out;
+}
+table tr:last-child{
+  border-bottom: 1px solid #03a9f4;
+}
+th.status-pendente {
+  background-color: #e91e63;
+  color: white;
+}
+th.status-andamento {
+  background-color: #ff9800;
+  color: white;
+}
+th.status-concluido {
+  background-color: #8bc34a;
+  color: white;
+}
+
+td.status-pendente {
+  color: #e91e63;
+  font-weight: bolder;
+}
+td.status-andamento {
+  color: #ff9800;
+  font-weight: bolder;
+}
+td.status-concluido {
+  color: #8bc34a;
+  font-weight: bolder;
+}
+td.nomeAtendente{
+  font-weight: bolder;
+  color: #333;
+}
+td.nomeAtendente:hover{
+  color: #03a9f4;
+}
 
 .box {
   /*width: 300px; */
   border-bottom: 20px solid #03a9f4;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 .box h2 {
   color: #fff;
@@ -333,6 +391,14 @@
   transform: scale(1.1);
 }
 
+@media (min-width: 1024px){
+  #topo{
+    display: inline-flex;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: space-evenly;
+}
+}
 @media (max-width: 1024px) {
   .dashboard-container {
     width: 100%;
@@ -345,27 +411,39 @@
   }
   .dashboard-group{
     max-width: 1024px;
+    gap: 10px;
     display: inline-flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-wrap: wrap;
     flex-direction: column;
   }
-
-  .dashboard-group *{
-    width: 100%;
-  }
-  .dashboard-group:first-of-type {
+  #topo {
     display: inline-flex;
-    flex-flow: column-reverse;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    justify-content: flex-start;
+    flex-direction: column !important;
+  }
+  #cards-metricas {
+    display: inline-flex;
+    order: 1;
     align-items: flex-start;
+    align-content: flex-start;
 }
-.dashboard-group{
-  gap: 10px;
+
+#status-hoje {
+  order: 2;
+  width: fit-content;
 }
+#tecnicos {
+  order: 3;
+  width: 70%;
+}
+
+#status-hoje + #tecnicos,
+#tecnicos + #status-hoje {
+  display: inline-block;
+  vertical-align: top;
+}
+
 .dashboard-group .chart-container{
   width: fit-content;
   height: fit-content;
@@ -398,6 +476,51 @@
   .dashboard-container + div {
     display: inline-flex;
     flex-wrap: wrap;
+  }
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+  table {
+    border: 0;
+  }
+
+  table thead {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+  }
+
+  table tr {
+    display: block;
+    margin-bottom: 0.625em;
+  }
+
+  table td {
+    display: block;
+    text-align: right;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .status-pendente {
+    background-color: #e91e63;
+    color: white !important;
+  }
+  .status-andamento {
+    background-color: #ff9800;
+    color: white !important;
+  }
+  .status-concluido {
+    background-color: #8bc34a;
+    color: white !important;
   }
 }
 
