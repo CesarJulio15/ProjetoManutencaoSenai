@@ -273,36 +273,38 @@
     }
     // Função para calcular médias de horas e totais por prioridade para o Cross-Trend
     function calcularCrossTrend($conn, $prioridades) {
-      // Monta a lista de prioridades para o IN
-      $prioridadesEscapadas = array_map([$conn, 'real_escape_string'], $prioridades);
-      $prioridadesIn = "'" . implode("','", $prioridadesEscapadas) . "'";
+      $prioridadesLower = array_map('mb_strtolower', $prioridades); // ['alta', 'média', 'baixa']
+      $prioridadesIn = "'" . implode("','", $prioridadesLower) . "'";
+      
       $sqlCross = "
-        SELECT
-        prioridade,
-        AVG(TIMESTAMPDIFF(HOUR, data_abertura, data_encerramento)) AS media_h,
-        COUNT(*) AS tot
+        SELECT LOWER(prioridade) as prioridade,
+               AVG(TIMESTAMPDIFF(DAY, data_abertura, data_encerramento)) AS media_d,
+               COUNT(*) AS tot
         FROM manutencao
-        WHERE prioridade IN ($prioridadesIn)
-        AND status = 'Concluído'
-        GROUP BY prioridade
+        WHERE status = 'Concluído'
+          AND prioridade IS NOT NULL
+          AND LOWER(prioridade) IN ($prioridadesIn)
+        GROUP BY LOWER(prioridade)
       ";
+      
       $resCross = $conn->query($sqlCross);
-      // Inicializa com zeros
-      $mediaHoras = [];
+      $mediaDias = [];
       $totaisCross = [];
       foreach ($prioridades as $p) {
-        $mediaHoras[$p] = 0;
+        $mediaDias[$p] = 0;
         $totaisCross[$p] = 0;
       }
       while ($row = $resCross->fetch_assoc()) {
         $p = $row['prioridade'];
-        $mediaHoras[$p] = round((float)$row['media_h'], 1);
-        $totaisCross[$p] = (int)$row['tot'];
+        $idx = array_search(mb_strtolower($p), array_map('mb_strtolower', $prioridades));
+        if ($idx !== false) {
+          $mediaDias[$prioridades[$idx]] = round((float)$row['media_d'], 1);
+          $totaisCross[$prioridades[$idx]] = (int)$row['tot'];
+        }
       }
-      // Garante a ordem correta
-      $mediaHoras = array_values(array_replace(array_fill(0, count($prioridades), 0), array_intersect_key($mediaHoras, array_flip($prioridades))));
-      $totaisCross = array_values(array_replace(array_fill(0, count($prioridades), 0), array_intersect_key($totaisCross, array_flip($prioridades))));
-      return [$mediaHoras, $totaisCross];
+      $mediaDias = array_values(array_map(fn($p) => $mediaDias[$p], $prioridades));
+      $totaisCross = array_values(array_map(fn($p) => $totaisCross[$p], $prioridades));      
+      return [$mediaDias, $totaisCross];
     }
     // Função para obter pedidos por mês para um responsável e ano
     function obterPedidosPorMesResponsavel($conn, $responsavel, $ano) {
@@ -666,10 +668,7 @@
 
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title">
-                                <span class="material-symbols-outlined">release_alert</span> 
-                                Compliance por Prioridade
-                            </h5>
+
                             <div class="chart-wrapper w-100">
                                 <canvas id="chartSLA"></canvas>
                             </div>
@@ -679,7 +678,6 @@
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
-                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Tempo Médio de Resolução × Nº de Chamados por Prioridade</h5>
                             <div class="chart-wrapper">
                                 <canvas id="chartCross"></canvas>
                             </div>
@@ -687,10 +685,6 @@
                     </div>
                     <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
-                            <h5 class="title">
-                                <span class="material-symbols-outlined">date_range</span> 
-                                Comparação anual
-                            </h5>
                             <div class="chart-wrapper">
                                 <canvas id="chartYoY"></canvas>
                             </div>
@@ -907,50 +901,64 @@
     );
 
     // 3) Cross-Trend: Tempo Médio × Volume de Chamados
+    $prioridades = ['Urgente', 'Média', 'Baixa'];
     const chartCross = new Chart(
-      document.getElementById('chartCross').getContext('2d'),
-      {
-        type: 'bar',
-        data: {
-          labels: <?= json_encode($prioridades) ?>,
-          datasets: [
-            {
-              type: 'line',
-              label: 'Tempo Médio (h)',
-              yAxisID: 'A',
-              data: <?= json_encode($mediaHoras) ?>,
-            },
-            {
-              type: 'bar',
-              label: 'Total de Chamados',
-              yAxisID: 'B',
-              data: <?= json_encode($totais) ?>,
-            }
-          ]
+  document.getElementById('chartCross').getContext('2d'),
+  {
+    type: 'bar',
+    data: {
+  labels: <?= json_encode($prioridades) ?>,
+  datasets: [
+    {
+      type: 'line',
+      label: 'Tempo Médio (dias)',
+      yAxisID: 'A',
+      data: <?= json_encode($mediaHoras) ?>,
+      borderColor: '#43434f',
+      backgroundColor: '#f7e3ff',
+    },
+    {
+      type: 'bar',
+      label: 'Total de Chamados',
+      yAxisID: 'B',
+      data: <?= json_encode($totaisCross) ?>,      backgroundColor: [
+        '#dc3545', // Urgente
+        '#007bff', // Média
+        '#6c757d'  // Baixa
+      ],
+      borderColor: [
+        '#dc3545',
+        '#007bff',
+        '#6c757d'
+      ],
+      borderWidth: 1
+    }
+  ]
+},
+    options: {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Resolução (dias) × Volume de Chamados' // ← alterado aqui também
+        }
+      },
+      scales: {
+        A: {
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: 'Dias' } // ← alterado
         },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: 'Resolução (h) × Volume de Chamados'
-            }
-          },
-          scales: {
-            A: {
-              type: 'linear',
-              position: 'left',
-              title: { display: true, text: 'Horas' }
-            },
-            B: {
-              type: 'linear',
-              position: 'right',
-              title: { display: true, text: 'Chamados' },
-              grid: { drawOnChartArea: false }
-            }
-          }
+        B: {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Chamados' },
+          grid: { drawOnChartArea: false }
         }
       }
-    );
+    }
+  }
+);
+
 
     const fetchSetor = fetch('dados_por_setor.php')
       .then(res => res.json())
