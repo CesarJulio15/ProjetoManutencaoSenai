@@ -146,7 +146,7 @@ foreach ($dados as $status => $valores) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Detalhes do Técnico</title>
+    <title>Painel de indicadores por técnico</title>
 
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/dashboard.css">    
@@ -158,6 +158,17 @@ foreach ($dados as $status => $valores) {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <style>
+            .flag {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 48px;
+    height: 32px;
+    border-bottom-left-radius: 5px;
+    background: gray;
+}
+        </style>
 </head>
 <body class="d-flex flex-md-row w-100 h-100">
   <aside class="sidebar">
@@ -168,7 +179,7 @@ foreach ($dados as $status => $valores) {
   <main class="main-content d-flex flex-md-column w-100 h-100">
     <header class="top-bar mt-2 animate__animated animate__fadeInDown">
                 <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-                <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
+                <h2 class="title text-center mb-4">Painel de indicadores por técnico</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
                   <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                       <?= htmlspecialchars($_SESSION['nome']) ?>
@@ -186,15 +197,16 @@ foreach ($dados as $status => $valores) {
             <section class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
 
             <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100">
-              <div class="card p-3 m-auto shadow-sm w-25 h-25 animate__animated animate__fadeInLeft"  style="flex:1; min-width:300px">
-                    <h2>Informações do Técnico</h2>
+              <div class="info card p-3 m-auto shadow-sm w-25 h-25 animate__animated animate__fadeInLeft"  style="flex:1; min-width:50px; border: 1px solid <?= $tecnico['docente_status'] === 'Ativo' ? '#5b7f2e' : '#a0352b' ?>;">
+              <h5 class="title"><i class="fa-solid fa-id-badge"></i>Informações de cadastro</h5>
+              <div class="flag" style="background-color: <?= strtolower($tecnico['docente_status']) === 'ativo' ? '#5b7f2e' : '#a0352b' ?>;"></div>
                     <p><strong>Nome:</strong> <?= htmlspecialchars($tecnico['nome']) ?></p>
-                    <p><strong>Status:</strong> <?= htmlspecialchars($tecnico['docente_status']) ?></p>
                     <p><strong>NIF:</strong> <?= htmlspecialchars($tecnico['nif']) ?></p>
+                    <p><strong>Status:</strong> <?= htmlspecialchars($tecnico['docente_status']) ?></p>
                     <p><strong>Email:</strong> <?= htmlspecialchars($tecnico['email']) ?></p>
               </div>
               <div class="card p-3 m-auto shadow-sm w-25 animate__animated animate__fadeInRight">
-                    <h3>Status dos Pedidos de Hoje</h3>
+              <h5 class="title"><i class="fa-solid fa-list-ul"></i>Status de Hoje</h5>
                                   <ul class="list-group">
                                       <?php foreach ($statusHoje as $linha): ?>
                                           <li class="list-group-item "><strong><?= $linha['status'] ?>:</strong> <?= $linha['total'] ?></li>
@@ -203,20 +215,26 @@ foreach ($dados as $status => $valores) {
                     </div>
             </div>
             <div class="dashboard-group d-flex flex-row gap-4">
+                    <!-- Gráfico de Pizza (à esquerda) -->
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
+                        <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
+                            <h5 class="title text-center">
+                              <span class="material-symbols-outlined">pie_chart</span> 
+                              Distribuição geral dos pedidos por status</h5>
+                              <canvas id="gaugeStatusGeral" height="300"></canvas>
+                        </div>
+                    </div>
             <div class="card p-3 m-auto shadow-sm w-100 h-75 animate__animated animate__fadeInRight">
-                      <h3>Pedidos por Mês e Status</h3>
-
+                <h5 class="title"><i class="fa-solid fa-chart-line"></i>Pedidos por Mês e Status</h5>
                       <canvas id="graficoPedidos"  width="600" height="300"></canvas>
                   </div>
             </div>
             <div class="dashboard-group d-flex flex-row gap-4">
-                  <div class="card p-3 m-auto shadow-sm w-50 h-75 animate__animated animate__fadeInLeft">
-                      <h3>Status Geral dos Pedidos do Técnico</h3>
-                      <canvas id="gaugeStatusGeral" height="70"></canvas>
-                  </div>
-                  <div class="card p-3 m-auto shadow-sm w-50 h-75 animate__animated animate__fadeInUp">
-                      <h3>Pedidos por Bloco</h3>
-                      <canvas id="gaugeBloco" height="70"></canvas>
+                  <div class="card p-3 m-auto shadow-sm w-100 h-75 animate__animated animate__fadeInUp">
+                    <h5 class="title">
+                    <i class="fa-solid fa-chart-pie"></i> Pedidos por bloco
+                    </h5>
+                      <canvas id="gaugeBloco" height="200"></canvas>
                   </div>
             </div>
 
@@ -224,35 +242,35 @@ foreach ($dados as $status => $valores) {
   </main>
  
     <script>
-const ctxBloco = document.getElementById('gaugeBloco').getContext('2d');
-new Chart(ctxBloco, {
-    type: 'doughnut',
-    data: {
-        labels: <?= json_encode(array_column($dadosBloco, 'bloco')) ?>,
-        datasets: [{
-            data: <?= json_encode(array_column($dadosBloco, 'total')) ?>,
-            backgroundColor: ['#000000', '#e6b8b8', '#8bc34a', '#ff9800', '#03a9f4', '#9c27b0']
-        }]
-    },
-    options: {
-        plugins: {
-            legend: { position: 'bottom' },
-            datalabels: {
-                color: '#fff',
-                font: { weight: 'bold', size: 12 },
-                formatter: (value, ctx) => {
-                    const data = ctx.chart.data.datasets[0].data;
-                    const total = data.reduce((a, b) => a + b, 0);
-                    const percent = total > 0 ? (value / total) * 100 : 0;
-                    return `${percent.toFixed(1)}%`;
-                }
-            }
-        },
-        cutout: '60%',
-        responsive: true,
-    },
-    plugins: [ChartDataLabels]
-});
+        const ctxBloco = document.getElementById('gaugeBloco').getContext('2d');
+        new Chart(ctxBloco, {
+            type: 'doughnut',
+            data: {
+                labels: <?= json_encode(array_column($dadosBloco, 'bloco')) ?>,
+                datasets: [{
+                    data: <?= json_encode(array_column($dadosBloco, 'total')) ?>,
+                    backgroundColor: ['#000000', '#e6b8b8', '#8bc34a', '#ff9800', '#03a9f4', '#9c27b0']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: (value, ctx) => {
+                            const data = ctx.chart.data.datasets[0].data;
+                            const total = data.reduce((a, b) => a + b, 0);
+                            const percent = total > 0 ? (value / total) * 100 : 0;
+                            return `${percent.toFixed(1)}%`;
+                        }
+                    }
+                },
+                cutout: '60%',
+                responsive: true,
+            },
+            plugins: [ChartDataLabels]
+        });
 
         const dadosMes = <?= json_encode($dadosMesStatus) ?>;
         const agrupado = {};
@@ -268,37 +286,35 @@ new Chart(ctxBloco, {
             data: meses.map(m => agrupado[m][status] || 0),
         }));
 
-
-
         const ctxStatusGeral = document.getElementById('gaugeStatusGeral').getContext('2d');
-new Chart(ctxStatusGeral, {
-    type: 'doughnut',
-    data: {
-        labels: <?= json_encode(array_column($statusGeral, 'status')) ?>,
-        datasets: [{
-            data: <?= json_encode(array_column($statusGeral, 'total')) ?>,
-            backgroundColor: ['#e91e63','#ff9800','#8bc34a','#9e9e9e']
-        }]
-    },
-    options: {
-        plugins: {
-            legend: { position: 'bottom' },
-            datalabels: {
-                color: '#fff',
-                font: { weight: 'bold', size: 12 },
-                formatter: (value, ctx) => {
-                    const data = ctx.chart.data.datasets[0].data;
-                    const total = data.reduce((a, b) => a + b, 0);
-                    const percent = total > 0 ? (value / total) * 100 : 0;
-                    return `${percent.toFixed(1)}%`;
-                }
-            }
-        },
-        cutout: '60%',
-        responsive: true,
-    },
-    plugins: [ChartDataLabels]
-});
+        new Chart(ctxStatusGeral, {
+            type: 'doughnut',
+            data: {
+                labels: <?= json_encode(array_column($statusGeral, 'status')) ?>,
+                datasets: [{
+                    data: <?= json_encode(array_column($statusGeral, 'total')) ?>,
+                    backgroundColor: ['#e91e63','#ff9800','#8bc34a','#9e9e9e']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        formatter: (value, ctx) => {
+                            const data = ctx.chart.data.datasets[0].data;
+                            const total = data.reduce((a, b) => a + b, 0);
+                            const percent = total > 0 ? (value / total) * 100 : 0;
+                            return `${percent.toFixed(1)}%`;
+                        }
+                    }
+                },
+                cutout: '60%',
+                responsive: true,
+            },
+            plugins: [ChartDataLabels]
+        });
     </script>
     
 <script>

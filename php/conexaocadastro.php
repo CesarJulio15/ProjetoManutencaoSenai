@@ -41,17 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($insertStmt->execute()) {
         $paginaLogin = "https://devgomes.com/projetos/SENAImanutencao/php/";
 
-        // Gera QR code
+        /*// Gera QR code
         $qrOptions = new QROptions([
             'outputType' => QRCode::OUTPUT_IMAGE_PNG,
             'eccLevel'   => QRCode::ECC_L,
             'scale'      => 5,
         ]);
         $qrCode = (new QRCode($qrOptions))->render($paginaLogin);
-        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrCode);
+        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrCode);*/
 
         // Envia e-mail com QR
-        enviarEmailCadastroComQR($email, $nome, $senhaUsuario, $paginaLogin, $qrCodeBase64);
+        enviarEmailCadastro($email, $nome, $senhaUsuario, $paginaLogin);
 
         header("Location: panelTecnico.php");
         exit;

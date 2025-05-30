@@ -408,12 +408,19 @@
          exit;
       }
       if ($action === 'drill_mes') {
-         $ano  = isset($_GET['year'])  ? (int) $_GET['year']  : (int) date('Y');
-         $mes = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
-         $resultado = buscarDetalhePorDia($conn, $ano, $mes);
-         echo json_encode($resultado);
-         exit;
-      }
+        $ano  = isset($_GET['year'])  ? (int) $_GET['year']  : (int) date('Y');
+        $mes = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
+     
+        // validação de faixa para mês
+        if ($mes < 1 || $mes > 12) {
+            echo json_encode(['error' => 'Mês inválido']);
+            exit;
+        }
+     
+        $resultado = buscarDetalhePorDia($conn, $ano, $mes);
+        echo json_encode($resultado);
+        exit;
+     }
     
       echo json_encode(['error' => 'Ação inválida']);
       exit;
@@ -615,20 +622,18 @@
                         </div>
                     </div>
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <!-- Gráfico de Atendimentos por Mês -->
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <div class="d-flex flex-row justify-content-around">
-                                <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Pedidos por Mês 
-                                    <button id="backMes" class="btn btn-sm btn-outline-secondary ms-auto" style="display:none;"><span class="material-symbols-outlined">
-                                    filter_alt_off
-                                    </span></button>
-                                </h5>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="mesChart"></canvas>
-                            </div>
+                        <div class="d-flex flex-row justify-content-around">
+                                  <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Distribuição Mensal por status
+                                      <button id="backMultiLine" class="btn btn-sm btn-outline-secondary ms-auto" style="display:none;"><span class="material-symbols-outlined">
+                                      filter_alt_off
+                                      </span></button>
+                                  </h5>
+                              </div>
+                            <canvas id="multiLineChart" height="320" ></canvas>
                         </div>
                     </div>
+
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap" >
                     <!-- Gráfico de Pizza (à esquerda) -->
@@ -642,8 +647,10 @@
                     </div>
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title"><i class="fa-solid fa-chart-line"></i> Tendência Mensal</h5>
-                            <canvas id="multiLineChart" height="320" ></canvas>
+                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
+                            <div class="chart-wrapper">
+                                <canvas id="backlogChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -656,14 +663,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
-                            <div class="chart-wrapper">
-                                <canvas id="backlogChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title">
@@ -679,20 +679,20 @@
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
+                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Tempo Médio de Resolução × Nº de Chamados por Prioridade</h5>
+                            <div class="chart-wrapper">
+                                <canvas id="chartCross"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-2  m-auto animate__animated animate__fadeInUp">
+                        <div class="chart-container card p-3 shadow-sm">
                             <h5 class="title">
                                 <span class="material-symbols-outlined">date_range</span> 
                                 Comparação anual
                             </h5>
                             <div class="chart-wrapper">
                                 <canvas id="chartYoY"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-2  m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm">
-                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Tempo Médio de Resolução × Nº de Chamados por Prioridade</h5>
-                            <div class="chart-wrapper">
-                                <canvas id="chartCross"></canvas>
                             </div>
                         </div>
                     </div>
@@ -720,426 +720,376 @@
   <?php endif; ?>            
   <script>
     // captura as cores diretamente das info-box
-      const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;
-      const infoOrange     = getComputedStyle(document.querySelector('.bg-orange')).backgroundColor;
-      const infoLightGreen = getComputedStyle(document.querySelector('.bg-light-green')).backgroundColor;
-      const infoCyan       = getComputedStyle(document.querySelector('.bg-cyan')).backgroundColor;
-      const cores = [
-            '#000000', // Preto
-        '#e6b5aa', // Rosa claro
-        '#004080', // Azul escuro
-        '#007080', // Ciano escuro
-        '#30a0a0', // Ciano médio
-        '#38a850', // Verde claro
-        '#70b080', // Verde médio
-        '#a0b870', // Verde oliva
-        '#f0e850', // Amarelo claro
-        '#f8a800', // Laranja
-        '#b01030', // Vermelho escuro
-        '#8c003c'  // Magenta escuro
-      ];
-      // array de cores para statusChart e mesChart
-      const infoColors = [
-                infoPink,       // Pendente
-                infoOrange,     // Em andamento
-                infoLightGreen, // Concluído
-                infoCyan        // Rejeitado (você pode realocar se quiser outro mapeamento)
-                ];
-      // Ano atualmente selecionado (usado em todas as chamadas AJAX)
-      const yearSelected = <?= json_encode($anoSelecionado) ?>;
-      // -----------------------------
-      // 1) Instância os 3 charts em variáveis
-      // -----------------------------
-      const statusCtx   = document.getElementById('statusChart').getContext('2d');
-      const mesCtx      = document.getElementById('mesChart').getContext('2d');
-      const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
-      const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');
+    const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;
+    const infoOrange     = getComputedStyle(document.querySelector('.bg-orange')).backgroundColor;
+    const infoLightGreen = getComputedStyle(document.querySelector('.bg-light-green')).backgroundColor;
+    const infoCyan       = getComputedStyle(document.querySelector('.bg-cyan')).backgroundColor;
+    const cores = [
+      '#000000', // Preto
+      '#e6b5aa', // Rosa claro
+      '#004080', // Azul escuro
+      '#007080', // Ciano escuro
+      '#30a0a0', // Ciano médio
+      '#38a850', // Verde claro
+      '#70b080', // Verde médio
+      '#a0b870', // Verde oliva
+      '#f0e850', // Amarelo claro
+      '#f8a800', // Laranja
+      '#b01030', // Vermelho escuro
+      '#8c003c'  // Magenta escuro
+    ];
+    // array de cores para statusChart
+    const infoColors = [
+      infoPink,       // Pendente
+      infoOrange,     // Em andamento
+      infoLightGreen, // Concluído
+      infoCyan        // Rejeitado (você pode realocar se quiser outro mapeamento)
+    ];
+    // Ano atualmente selecionado (usado em todas as chamadas AJAX)
+    const yearSelected = <?= json_encode($anoSelecionado) ?>;
+    // -----------------------------
+    // 1) Instância os charts em variáveis (exceto mesChart)
+    // -----------------------------
+    const statusCtx   = document.getElementById('statusChart').getContext('2d');
+    const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
+    const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');
 
-      const statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                      labels: ['Pendente', 'Em andamento', 'Concluído', 'Rejeitado'],
-                      datasets: [{
-                        data: [<?= $pendentes ?>, <?= $emAndamento ?>, <?= $finalizados ?>, <?= $rejeitados ?>],
-                        backgroundColor: infoColors
-                      }]
-                    },
-                    options: {
-                      responsive: true,
-                      maintainAspectRatio: true,  
-                      plugins: {
-                        legend: { position: 'bottom' },
-                        datalabels: {
-                          formatter: (v, ctx) => {
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-                            return (v*100/sum).toFixed(1)+'%';
-                          },
-                          color: '#fff', font:{weight:'bold',size:14}
-                        }
-                      },
-                      onClick: (evt, elems) => {
-                        if (!elems.length) return;
-                        const status = statusChart.data.labels[elems[0].index];
-                        // filtra mesChart
-                        mesChart.data.datasets.forEach(ds => ds.hidden = ds.label !== status);
-                        mesChart.update();
-                        // atualiza rankingChart via AJAX
-                        fetch(`?action=ranking_por_status&status=${encodeURIComponent(status)}&year=${yearSelected}`)
-                          .then(r=>r.json()).then(json=>{
-                            rankingChart.data.labels = json.labels;
-                            rankingChart.data.datasets[0].data = json.data;
-                            rankingChart.update();
-                          });
-                      }
-                    },
-                    plugins: [ChartDataLabels]
-                });
-                
-      const mesChart = new Chart(mesCtx, {
-                    type: 'bar',
-                    data: {
-                      labels: <?= json_encode($labelsMeses) ?>,
-                      datasets: [
-                        { label: 'Pendente',      data: <?= json_encode($dadosMesStatus['Pendente']) ?>,      backgroundColor: infoPink },
-                        { label: 'Em Andamento',  data: <?= json_encode($dadosMesStatus['Em Andamento']) ?>,  backgroundColor: infoOrange },
-                        { label: 'Concluído',     data: <?= json_encode($dadosMesStatus['Concluído']) ?>,     backgroundColor: infoLightGreen },
-                        { label: 'Rejeitado',     data: <?= json_encode($dadosMesStatus['Rejeitado']) ?>,     backgroundColor:'gray' }
-                      ]
-                    },
-                    options: {
-                      responsive: true,
-                      maintainAspectRatio: true,  
-                      plugins: { legend: { position: 'top' } },
-                      scales: { x:{stacked:true}, y:{stacked:true} },
-                      onClick: (evt, elems) => {
-                        if (!elems.length) return;
-                        const month = elems[0].index + 1;
-                        // detalha dia-a-dia
-                        fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
-                          .then(r=>r.json()).then(json=>{
-                            mesChart.data.labels = json.labels;
-                            mesChart.data.datasets = Object.entries(json.datasets).map(
-                              ([label,data])=>({ label, data, backgroundColor: mesChart.data.datasets.find(ds=>ds.label===label).backgroundColor })
-                            );
-                            mesChart.options.scales.x.stacked = false;
-                            mesChart.options.scales.y.stacked = false;
-                            mesChart.update();
-                            document.getElementById('backMes').style.display = 'inline-block';
-                          });
-                      }
-                    }
-                });
-                                
-      const rankingChart = new Chart(rankingCtx, {
-                  type: 'bar',
-                  data: {
-                    labels: <?= json_encode($responsaveis) ?>,
-                    datasets: [{
-                      label: 'Problemas Reportados',
-                      data: <?= json_encode($totais) ?>,
-                      backgroundColor: infoCyan,
-                      borderColor: infoCyan,
-                      borderWidth: 1
-                    }]
-                  },
-                  options: {
-                    responsive: true,
-                    maintainAspectRatio: false,  
-                    plugins: { legend:{display:false} },
-                    scales: { y:{beginAtZero:true,precision:0} },
-                    onClick: (evt, elems) => {
-                      if (!elems.length) return;
-                      const resp = rankingChart.data.labels[elems[0].index];
-                      // pedidos por mês para esse responsável
-                      fetch(`?action=mes_por_responsavel&responsavel=${encodeURIComponent(resp)}&year=${yearSelected}`)
-                        .then(r=>r.json()).then(json=>{
-                          mesChart.data.datasets.forEach(ds => ds.data = json.data);
-                          mesChart.options.scales.x.stacked = false;
-                          mesChart.options.scales.y.stacked = false;
-                          mesChart.update();
-                        });
-                      // status para esse responsável
-                      fetch(`?action=ranking_por_status&status=${encodeURIComponent(resp)}&year=${yearSelected}`)
-                        .then(r=>r.json()).then(json=>{
-                          statusChart.data.labels = json.labels;
-                          statusChart.data.datasets[0].data = json.data;
-                          statusChart.update();
-                        });
-                    }
-                  }
-                });
-
-      const backlogCtx = document.getElementById('backlogChart').getContext('2d');
-                    new Chart(backlogCtx, {
-                    type: 'bar',
-                    data: {
-                    labels: <?= json_encode($labelsAge) ?>,
-                    datasets: [{
-                      label: 'Tickets Pendentes',
-                      data: <?= json_encode($dataAge) ?>,
-                      borderWidth: 1
-                    }]
-                    },
-                    options: {
-                    responsive: true,
-                    maintainAspectRatio: true,  
-                    scales: { y: { beginAtZero: true, precision: 0 } }
-                    }
-                    });  
-                
-                
-                    // 1) SLA Compliance por Prioridade
-        const chartSLA = new Chart(
-                  document.getElementById('chartSLA').getContext('2d'),
-                  {
-                    type: 'bar',
-                    data: {
-                      labels: <?= json_encode($prioridades) ?>,
-                      datasets: [{
-                        label: '% Compliance SLA',
-                        data: <?= json_encode($slaPorPrioridade) ?>,
-                      }]
-                    },
-                    options: {
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: 'SLA Compliance por Prioridade'
-                        }
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                          max: 100,
-                          ticks: {
-                            callback: v => v + '%'
-                          }
-                        }
-                      }
-                    }
-                  }
-        );
-                
-                // 2) Comparativo Ano a Ano (Aberturas)
-        const chartYoY = new Chart(
-                  document.getElementById('chartYoY').getContext('2d'),
-                  {
-                    type: 'line',
-                    data: {
-                      labels: <?= json_encode(array_map(fn($m)=>sprintf('%02d',$m), $meses)) ?>,
-                      datasets: [
-                        {
-                          label: '<?= $anoAtual ?>',
-                          data: <?= json_encode($abertosMes) ?>,
-                          fill: false
-                        },
-                        {
-                          label: '<?= $anoAnterior ?>',
-                          data: <?= json_encode($fechadosMes) ?>,
-                          fill: false
-                        }
-                      ]
-                    },
-                    options: {
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: 'Comparativo Ano a Ano (aberturas)'
-                        }
-                      },
-                      scales: {
-                        y: { beginAtZero: true }
-                      }
-                    }
-                  }
-                );
-
-                // 3) Cross-Trend: Tempo Médio × Volume de Chamados
-        const chartCross = new Chart(
-                  document.getElementById('chartCross').getContext('2d'),
-                  {
-                    type: 'bar',
-                    data: {
-                      labels: <?= json_encode($prioridades) ?>,
-                      datasets: [
-                        {
-                          type: 'line',
-                          label: 'Tempo Médio (h)',
-                          yAxisID: 'A',
-                          data: <?= json_encode($mediaHoras) ?>,
-                        },
-                        {
-                          type: 'bar',
-                          label: 'Total de Chamados',
-                          yAxisID: 'B',
-                          data: <?= json_encode($totais) ?>,
-                        }
-                      ]
-                    },
-                    options: {
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: 'Resolução (h) × Volume de Chamados'
-                        }
-                      },
-                      scales: {
-                        A: {
-                          type: 'linear',
-                          position: 'left',
-                          title: { display: true, text: 'Horas' }
-                        },
-                        B: {
-                          type: 'linear',
-                          position: 'right',
-                          title: { display: true, text: 'Chamados' },
-                          grid: { drawOnChartArea: false }
-                        }
-                      }
-                    }
-                  }
-        );
-
-        const fetchSetor = fetch('dados_por_setor.php')
-                  .then(res => res.json())
-                  .then(data => {
-                    const labels = data.map(item => item.bloco);
-                    const valores = data.map(item => item.total);
-                    const total = valores.reduce((a, b) => a + b, 0);
-
-                    const graficoSetor = new Chart(document.getElementById('graficoSetor'), {
-                      type: 'doughnut',
-                      data: {
-                        labels: labels,
-                        datasets: [{
-                          data: valores,
-                          backgroundColor: cores.slice(0, valores.length),
-                          borderWidth: 0
-                        }]
-                      },
-                      options: {
-                        responsive: true,
-                        rotation: -90,
-                        circumference: 180,
-                        cutout: '55%',
-                        plugins: {
-                          legend: {
-                            display: false
-                          },
-                          tooltip: {
-                            enabled: false
-                          },
-                          datalabels: {
-                            color: '#fff',
-                            font: {
-                              weight: 'bold',
-                              size: 14
-                            },
-                            formatter: function(value, ctx) {
-                              const label = ctx.chart.data.labels[ctx.dataIndex];
-                              const percent = ((value / total) * 100).toFixed(1) + '%';
-                              return `${label}\n${percent}`;
-                            }
-                          }
-                        }
-                      },
-                      plugins: [ChartDataLabels]
-                    });
-          });
-
-    // Dados iniciais: 12 meses
-    const multiLineLabels = <?= json_encode($labelsMeses) ?>;
-  const multiLineData = {
-    'Pendente': <?= json_encode($dadosMesStatus['Pendente']) ?>,
-    'Em Andamento': <?= json_encode($dadosMesStatus['Em Andamento']) ?>,
-    'Concluído': <?= json_encode($dadosMesStatus['Concluído']) ?>
-  };
-
-  const multiLineChart = new Chart(multiLineChartCtx, {
-    type: 'line',
-    data: {
-      labels: multiLineLabels,
-      datasets: [
-        {
-          label: 'Pendente',
-          borderColor: '#e91e63',
-          data: multiLineData['Pendente'],
-          fill: false
+    const statusChart = new Chart(statusCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pendente', 'Em andamento', 'Concluído', 'Rejeitado'],
+        datasets: [{
+          data: [<?= $pendentes ?>, <?= $emAndamento ?>, <?= $finalizados ?>, <?= $rejeitados ?>],
+          backgroundColor: infoColors
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,  
+        plugins: {
+          legend: { position: 'bottom' },
+          datalabels: {
+            formatter: (v, ctx) => {
+              let sum = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+              return (v*100/sum).toFixed(1)+'%';
+            },
+            color: '#fff', font:{weight:'bold',size:14}
+          }
         },
-        {
-          label: 'Em Andamento',
-          borderColor: '#ff9800',
-          data: multiLineData['Em Andamento'],
-          fill: false
-        },
-        {
-          label: 'Concluído',
-          borderColor: '#8bc34a',
-          data: multiLineData['Concluído'],
-          fill: false
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: 'Pedidos por Status nos Últimos 12 Meses'
+        onClick: (evt, elems) => {
+          if (!elems.length) return;
+          const status = statusChart.data.labels[elems[0].index];
+          // atualiza rankingChart via AJAX
+          fetch(`?action=ranking_por_status&status=${encodeURIComponent(status)}&year=${yearSelected}`)
+            .then(r=>r.json()).then(json=>{
+              rankingChart.data.labels = json.labels;
+              rankingChart.data.datasets[0].data = json.data;
+              rankingChart.update();
+            });
         }
       },
-      onClick: (evt, elems) => {
-        if (!elems.length) return;
-        const month = elems[0].index + 1;
-        // Drill-down: busca dados diários do mês clicado
-        fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
-          .then(r=>r.json()).then(json=>{
+      plugins: [ChartDataLabels]
+    });
+
+    const rankingChart = new Chart(rankingCtx, {
+      type: 'bar',
+      data: {
+        labels: <?= json_encode($responsaveis) ?>,
+        datasets: [{
+          label: 'Problemas Reportados',
+          data: <?= json_encode($totais) ?>,
+          backgroundColor: infoCyan,
+          borderColor: infoCyan,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,  
+        plugins: { legend:{display:false} },
+        scales: { y:{beginAtZero:true,precision:0} },
+        onClick: (evt, elems) => {
+          if (!elems.length) return;
+          const resp = rankingChart.data.labels[elems[0].index];
+          // status para esse responsável
+          fetch(`?action=ranking_por_status&status=${encodeURIComponent(resp)}&year=${yearSelected}`)
+            .then(r=>r.json()).then(json=>{
+              statusChart.data.labels = json.labels;
+              statusChart.data.datasets[0].data = json.data;
+              statusChart.update();
+            });
+        }
+      }
+    });
+
+    const backlogCtx = document.getElementById('backlogChart').getContext('2d');
+    new Chart(backlogCtx, {
+      type: 'bar',
+      data: {
+        labels: <?= json_encode($labelsAge) ?>,
+        datasets: [{
+          label: 'Tickets Pendentes',
+          data: <?= json_encode($dataAge) ?>,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,  
+        scales: { y: { beginAtZero: true, precision: 0 } }
+      }
+    });  
+
+    // 1) SLA Compliance por Prioridade
+    const chartSLA = new Chart(
+      document.getElementById('chartSLA').getContext('2d'),
+      {
+        type: 'bar',
+        data: {
+          labels: <?= json_encode($prioridades) ?>,
+          datasets: [{
+            label: '% Compliance SLA',
+            data: <?= json_encode($slaPorPrioridade) ?>,
+          }]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: 'SLA Compliance por Prioridade'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: v => v + '%'
+              }
+            }
+          }
+        }
+      }
+    );
+
+    // 2) Comparativo Ano a Ano (Aberturas)
+    const chartYoY = new Chart(
+      document.getElementById('chartYoY').getContext('2d'),
+      {
+        type: 'line',
+        data: {
+          labels: <?= json_encode(array_map(fn($m)=>sprintf('%02d',$m), $meses)) ?>,
+          datasets: [
+            {
+              label: '<?= $anoAtual ?>',
+              data: <?= json_encode($abertosMes) ?>,
+              fill: false
+            },
+            {
+              label: '<?= $anoAnterior ?>',
+              data: <?= json_encode($fechadosMes) ?>,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: 'Comparativo Ano a Ano (aberturas)'
+            }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      }
+    );
+
+    // 3) Cross-Trend: Tempo Médio × Volume de Chamados
+    const chartCross = new Chart(
+      document.getElementById('chartCross').getContext('2d'),
+      {
+        type: 'bar',
+        data: {
+          labels: <?= json_encode($prioridades) ?>,
+          datasets: [
+            {
+              type: 'line',
+              label: 'Tempo Médio (h)',
+              yAxisID: 'A',
+              data: <?= json_encode($mediaHoras) ?>,
+            },
+            {
+              type: 'bar',
+              label: 'Total de Chamados',
+              yAxisID: 'B',
+              data: <?= json_encode($totais) ?>,
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: 'Resolução (h) × Volume de Chamados'
+            }
+          },
+          scales: {
+            A: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'Horas' }
+            },
+            B: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Chamados' },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      }
+    );
+
+    const fetchSetor = fetch('dados_por_setor.php')
+      .then(res => res.json())
+      .then(data => {
+        const labels = data.map(item => item.bloco);
+        const valores = data.map(item => item.total);
+        const total = valores.reduce((a, b) => a + b, 0);
+
+        const graficoSetor = new Chart(document.getElementById('graficoSetor'), {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: valores,
+              backgroundColor: cores.slice(0, valores.length),
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            rotation: -90,
+            circumference: 180,
+            cutout: '55%',
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                enabled: false
+              },
+              datalabels: {
+                color: '#fff',
+                font: {
+                  weight: 'bold',
+                  size: 14
+                },
+                formatter: function(value, ctx) {
+                  const label = ctx.chart.data.labels[ctx.dataIndex];
+                  const percent = ((value / total) * 100).toFixed(1) + '%';
+                  return `${label}\n${percent}`;
+                }
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+      });
+
+    
+      // Dados iniciais: 12 meses
+    const multiLineLabels = <?= json_encode($labelsMeses) ?>;
+    const multiLineData = {
+      'Pendente': <?= json_encode($dadosMesStatus['Pendente']) ?>,
+      'Em Andamento': <?= json_encode($dadosMesStatus['Em Andamento']) ?>,
+      'Concluído': <?= json_encode($dadosMesStatus['Concluído']) ?>
+    };
+
+    const multiLineChart = new Chart(multiLineChartCtx, {
+  type: 'line',
+  data: {
+    labels: multiLineLabels,
+    datasets: [
+      {
+        label: 'Pendente',
+        borderColor: '#e91e63',
+        data: multiLineData['Pendente'],
+        fill: false
+      },
+      {
+        label: 'Em Andamento',
+        borderColor: '#ff9800',
+        data: multiLineData['Em Andamento'],
+        fill: false
+      },
+      {
+        label: 'Concluído',
+        borderColor: '#8bc34a',
+        data: multiLineData['Concluído'],
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Pedidos por Status nos Últimos 12 Meses'
+      }
+    },
+    onClick: (evt, elems) => {
+      if (!elems.length) return;
+      const month = elems[0].index + 1;
+      fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
+        .then(r => r.text()) // ← Primeiro lê como texto
+        .then(text => {
+          try {
+            const json = JSON.parse(text);
             multiLineChart.data.labels = json.labels;
             multiLineChart.data.datasets = Object.entries(json.datasets).map(
-              ([label,data],i)=>({
+              ([label, data], i) => ({
                 label,
-                borderColor: ['#e91e63','#ff9800','#8bc34a'][i],
+                borderColor: ['#e91e63', '#ff9800', '#8bc34a'][i],
                 data,
                 fill: false
               })
             );
-            multiLineChart.options.plugins.title.text = `Pedidos por Status em ${multiLineLabels[month-1]}`;
+            const monthLabel = month > 0 && month <= multiLineLabels.length ? multiLineLabels[month - 1] : 'Mês Inválido';
+            multiLineChart.options.plugins.title.text = `Pedidos por Status em ${monthLabel}`;
             multiLineChart.update();
             document.getElementById('backMultiLine').style.display = 'inline-block';
-          });
-      }
+          } catch (e) {
+            console.error('Resposta não JSON:', text);
+            alert('Erro ao processar os dados do drill-down.');
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao buscar dados de drill-down:', error);
+          alert('Falha ao buscar os dados. Tente novamente.');
+        });
     }
+  }
+});
+
+// Correção: uso do ID correto
+const backBtn = document.getElementById('backMultiLine');
+backBtn.style.display = 'none';
+//document.getElementById('multiLineChart').parentNode.prepend(backBtn);
+
+backBtn.addEventListener('click', () => {
+  multiLineChart.data.labels = multiLineLabels;
+  const multiLineDataValues = Object.values(multiLineData);
+  multiLineChart.data.datasets.forEach((ds, i) => {
+    ds.data = multiLineDataValues[i];
   });
-
-                // botão de voltar ao mês (drill-up)
-                document.getElementById('backMes').addEventListener('click', ()=>{
-                mesChart.data.labels = <?= json_encode($labelsMeses) ?>;
-                mesChart.data.datasets.forEach(ds => {
-                  ds.data = <?= json_encode($dadosMesStatus) ?>[ds.label];
-                });
-                mesChart.options.scales.x.stacked = true;
-                mesChart.options.scales.y.stacked = true;
-                mesChart.update();
-                document.getElementById('backMes').style.display = 'none';
-                });
-
-  // Botão drill-up
-  const backBtn = document.createElement('button');
-  backBtn.id = 'backMultiLine';
-  backBtn.textContent = 'Voltar';
-  backBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+  multiLineChart.options.plugins.title.text = 'Pedidos por Status nos Últimos 12 Meses';
+  multiLineChart.update();
   backBtn.style.display = 'none';
-  document.getElementById('multiLineChart').parentNode.prepend(backBtn);
-
-  backBtn.addEventListener('click', ()=>{
-    multiLineChart.data.labels = multiLineLabels;
-    multiLineChart.data.datasets.forEach((ds,i) => {
-      ds.data = Object.values(multiLineData)[i];
-    });
-    multiLineChart.options.plugins.title.text = 'Pedidos por Status nos Últimos 12 Meses';
-    multiLineChart.update();
-    backBtn.style.display = 'none';
-  });        
+});
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>
