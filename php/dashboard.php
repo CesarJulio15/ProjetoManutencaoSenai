@@ -31,7 +31,7 @@
     }
     // Função para obter totais por status
     function obterTotaisPorStatus($conn) {
-      $dados = $conn->query("SELECT status, COUNT(*) as total FROM manutencao GROUP BY status");
+      $dados = $conn->query("SELECT status, total FROM vw_pedidos_por_status");
       $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
       while ($row = $dados->fetch_assoc()) {
         switch ($row['status']) {
@@ -66,8 +66,27 @@
           }
           $stmt->close();
           return [$responsaveis, $totais];
-        }
-        
+    }
+    function obterRankingExecutantes($conn, $limite = 5) {
+          $sql = "
+            SELECT d.nome AS responsavel_nome, v.total
+            FROM vw_ranking_executantes v
+            JOIN docentes d ON d.id = v.executante
+            ORDER BY v.total DESC
+            LIMIT ?
+          ";
+          $stmt = $conn->prepare($sql);
+          $stmt->bind_param("i", $limite);
+          $stmt->execute();
+          $res = $stmt->get_result();
+          $responsaveis = [];
+          $totais = [];
+          while ($row = $res->fetch_assoc()) {
+            $responsaveis[] = $row['responsavel_nome'];
+            $totais[] = $row['total'];
+          }
+          return [$responsaveis, $totais];
+        }    
     // Função para calcular a média de dias de conclusão
     function calcularMediaDiasConclusao($conn) {
           $sqlMedia = "
@@ -95,29 +114,29 @@
     
     // Função para buscar dados por mês e status (visão mensal)
     function buscarDadosMesStatus($conn, $anoSelecionado) {
-      $dadosMesStatus = [
-        'Pendente'      => array_fill(0, 12, 0),
-        'Em Andamento'  => array_fill(0, 12, 0),
-        'Concluído'     => array_fill(0, 12, 0),
-        'Rejeitado'     => array_fill(0, 12, 0),
+      $dados = [
+        'Pendente' => array_fill(0, 12, 0),
+        'Em Andamento' => array_fill(0, 12, 0),
+        'Concluído' => array_fill(0, 12, 0),
+        'Rejeitado' => array_fill(0, 12, 0),
       ];
-      $sqlMes = 
-        "SELECT MONTH(data_abertura) AS mes, status, COUNT(*) AS total
-         FROM manutencao
-         WHERE data_abertura IS NOT NULL AND YEAR(data_abertura) = ?
-         GROUP BY mes, status";
-      $stmtMes = $conn->prepare($sqlMes);
-      $stmtMes->bind_param('i', $anoSelecionado);
-      $stmtMes->execute();
-      $resMes = $stmtMes->get_result();
-      while ($row = $resMes->fetch_assoc()) {
-        $idx = (int)$row['mes'] - 1;
-        if (isset($dadosMesStatus[$row['status']])) {
-          $dadosMesStatus[$row['status']][$idx] = (int)$row['total'];
+    
+      $ano = strval($anoSelecionado);
+      $res = $conn->prepare("SELECT ano_mes, status, total FROM vw_pedidos_mes_status WHERE ano_mes LIKE ?");
+      $like = "$ano-%";
+      $res->bind_param("s", $like);
+      $res->execute();
+      $resultado = $res->get_result();
+    
+      while ($row = $resultado->fetch_assoc()) {
+        $mes = intval(substr($row['ano_mes'], 5, 2)) - 1;
+        $status = $row['status'];
+        if (isset($dados[$status])) {
+          $dados[$status][$mes] = (int)$row['total'];
         }
       }
-      $stmtMes->close();
-      return $dadosMesStatus;
+      $res->close();
+      return $dados;
     }
     // Função para buscar aberturas agrupadas por mês para um ano específico
     function buscarAberturasPorMes($conn, $ano) {
@@ -161,19 +180,6 @@
       $stmt->close();
       return $resultados;
     }
-    // Função para calcular SLA (% concluído em <= 3 dias)
-    function calcularSLA($conn) {
-      $sqlSLA = "
-      SELECT COUNT(*) as total,
-           SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
-      FROM manutencao
-      WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
-      ";
-      $resSLA = $conn->query($sqlSLA);
-      $rowSLA = $resSLA->fetch_assoc();
-      $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
-      return $sla;
-    }
     // Função para buscar tickets por atendente (executante) com paginação
     function buscarAtendentes($conn, $pagina = 1, $limite = 8) {
       $offset = ($pagina - 1) * $limite;
@@ -181,7 +187,7 @@
       $totalPaginas = ceil($totalRegistros / $limite);
 
       $sqlAtendentes = "
-      SELECT d.nome,
+      SELECT d.nome, d.nif,
         SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
         SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
         SUM(CASE WHEN m.status = 'Concluído' THEN 1 ELSE 0 END) AS concluido
@@ -222,6 +228,19 @@
         $dataAge[$idx] = (int)$r['total'];
       }
       return [$labelsAge, $dataAge];
+    }
+        // Função para calcular SLA (% concluído em <= 3 dias)
+    function calcularSLA($conn) {
+      $sqlSLA = "
+          SELECT COUNT(*) as total,
+               SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
+          FROM manutencao
+          WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
+      ";
+          $resSLA = $conn->query($sqlSLA);
+          $rowSLA = $resSLA->fetch_assoc();
+          $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
+          return $sla;
     }
     // Função para calcular SLA por prioridade (% concluído em ≤3 dias)
     function calcularSlaPorPrioridade($conn, $prioridades) {
@@ -452,7 +471,7 @@
         <title>Dashboard Gerencial</title>
         <link rel="stylesheet" href="../css/padrao.css">
         <link rel="stylesheet" href="../css/dashboard.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -477,18 +496,18 @@
                         <?php echo htmlspecialchars($_SESSION['tipo']); ?>
                     </span>
                 </div>
-            <div class="logout-btn">
-                <a href="logout.php" title="Sair">
-                    <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
-                </a>
-            </div>
+                <div class="logout-btn">
+                    <a href="logout.php" title="Sair">
+                        <img src="../img/logout.svg" alt="Logout" style="width: 24px; height: 24px;">
+                    </a>
+                </div>
             </header>
             <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100" id="topo">
                     <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
-                            <ul class="list-group ">
+                            <ul class="list-group">
                                 <li class="list-group-item "><b>Pendente:</b> <?= $totaisHoje['Pendente'] ?></li>
                                 <li class="list-group-item"><b>Em Andamento:</b> <?= $totaisHoje['Em Andamento'] ?></li>
                                 <li class="list-group-item"><b>Concluído:</b> <?= $totaisHoje['Concluído'] ?></li>
@@ -512,7 +531,15 @@
                                     <tbody>
                                         <?php foreach ($atendentes as $a): ?>
                                         <tr>
-                                            <td class="nomeAtendente"><?= htmlspecialchars($a['nome']) ?></td>
+                                        <td class="nomeAtendente">
+                                                <?php if (isset($a['nif'])): ?>
+                                                    <a href="tecnico_detalhes.php?nif=<?= urlencode($a['nif']) ?>">
+                                                        <?= htmlspecialchars($a['nome']) ?>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <?= htmlspecialchars($a['nome']) ?>
+                                                <?php endif; ?>
+                                            </td>
                                             <td data-label="Pendentes" class="status-pendente"><b><?= $a['pendente'] ?></b></td>
                                             <td data-label="Em Andamento" class="status-andamento"><?= $a['andamento'] ?></td>
                                             <td data-label="Concluídos" class="status-concluido"><?= $a['concluido'] ?></td>
@@ -616,7 +643,7 @@
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title"><i class="fa-solid fa-chart-line"></i> Tendência Mensal</h5>
-                            <canvas id="trendChart"></canvas>
+                            <canvas id="multiLineChart" height="320" ></canvas>
                         </div>
                     </div>
                 </div>
@@ -691,205 +718,178 @@
     </a>
 
   <?php endif; ?>            
-            <script>
-                // captura as cores diretamente das info-box
-                const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;
-                const infoOrange     = getComputedStyle(document.querySelector('.bg-orange')).backgroundColor;
-                const infoLightGreen = getComputedStyle(document.querySelector('.bg-light-green')).backgroundColor;
-                const infoCyan       = getComputedStyle(document.querySelector('.bg-cyan')).backgroundColor;
-                
-                // array de cores para statusChart e mesChart
-                const infoColors = [
+  <script>
+    // captura as cores diretamente das info-box
+      const infoPink       = getComputedStyle(document.querySelector('.bg-pink')).backgroundColor;
+      const infoOrange     = getComputedStyle(document.querySelector('.bg-orange')).backgroundColor;
+      const infoLightGreen = getComputedStyle(document.querySelector('.bg-light-green')).backgroundColor;
+      const infoCyan       = getComputedStyle(document.querySelector('.bg-cyan')).backgroundColor;
+      const cores = [
+            '#000000', // Preto
+        '#e6b5aa', // Rosa claro
+        '#004080', // Azul escuro
+        '#007080', // Ciano escuro
+        '#30a0a0', // Ciano médio
+        '#38a850', // Verde claro
+        '#70b080', // Verde médio
+        '#a0b870', // Verde oliva
+        '#f0e850', // Amarelo claro
+        '#f8a800', // Laranja
+        '#b01030', // Vermelho escuro
+        '#8c003c'  // Magenta escuro
+      ];
+      // array de cores para statusChart e mesChart
+      const infoColors = [
                 infoPink,       // Pendente
                 infoOrange,     // Em andamento
                 infoLightGreen, // Concluído
                 infoCyan        // Rejeitado (você pode realocar se quiser outro mapeamento)
                 ];
-                
-                // Ano atualmente selecionado (usado em todas as chamadas AJAX)
-                const yearSelected = <?= json_encode($anoSelecionado) ?>;
-                
-                // -----------------------------
-                // 1) Instância os 3 charts em variáveis
-                // -----------------------------
-                const statusCtx   = document.getElementById('statusChart').getContext('2d');
-                const mesCtx      = document.getElementById('mesChart').getContext('2d');
-                const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
-                
-                const statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                  labels: ['Pendente', 'Em andamento', 'Concluído', 'Rejeitado'],
-                  datasets: [{
-                    data: [<?= $pendentes ?>, <?= $emAndamento ?>, <?= $finalizados ?>, <?= $rejeitados ?>],
-                    backgroundColor: infoColors
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: true,  
-                  plugins: {
-                    legend: { position: 'bottom' },
-                    datalabels: {
-                      formatter: (v, ctx) => {
-                        let sum = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-                        return (v*100/sum).toFixed(1)+'%';
+      // Ano atualmente selecionado (usado em todas as chamadas AJAX)
+      const yearSelected = <?= json_encode($anoSelecionado) ?>;
+      // -----------------------------
+      // 1) Instância os 3 charts em variáveis
+      // -----------------------------
+      const statusCtx   = document.getElementById('statusChart').getContext('2d');
+      const mesCtx      = document.getElementById('mesChart').getContext('2d');
+      const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
+      const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');
+
+      const statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                      labels: ['Pendente', 'Em andamento', 'Concluído', 'Rejeitado'],
+                      datasets: [{
+                        data: [<?= $pendentes ?>, <?= $emAndamento ?>, <?= $finalizados ?>, <?= $rejeitados ?>],
+                        backgroundColor: infoColors
+                      }]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: true,  
+                      plugins: {
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                          formatter: (v, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+                            return (v*100/sum).toFixed(1)+'%';
+                          },
+                          color: '#fff', font:{weight:'bold',size:14}
+                        }
                       },
-                      color: '#fff', font:{weight:'bold',size:14}
+                      onClick: (evt, elems) => {
+                        if (!elems.length) return;
+                        const status = statusChart.data.labels[elems[0].index];
+                        // filtra mesChart
+                        mesChart.data.datasets.forEach(ds => ds.hidden = ds.label !== status);
+                        mesChart.update();
+                        // atualiza rankingChart via AJAX
+                        fetch(`?action=ranking_por_status&status=${encodeURIComponent(status)}&year=${yearSelected}`)
+                          .then(r=>r.json()).then(json=>{
+                            rankingChart.data.labels = json.labels;
+                            rankingChart.data.datasets[0].data = json.data;
+                            rankingChart.update();
+                          });
+                      }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+                
+      const mesChart = new Chart(mesCtx, {
+                    type: 'bar',
+                    data: {
+                      labels: <?= json_encode($labelsMeses) ?>,
+                      datasets: [
+                        { label: 'Pendente',      data: <?= json_encode($dadosMesStatus['Pendente']) ?>,      backgroundColor: infoPink },
+                        { label: 'Em Andamento',  data: <?= json_encode($dadosMesStatus['Em Andamento']) ?>,  backgroundColor: infoOrange },
+                        { label: 'Concluído',     data: <?= json_encode($dadosMesStatus['Concluído']) ?>,     backgroundColor: infoLightGreen },
+                        { label: 'Rejeitado',     data: <?= json_encode($dadosMesStatus['Rejeitado']) ?>,     backgroundColor:'gray' }
+                      ]
+                    },
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: true,  
+                      plugins: { legend: { position: 'top' } },
+                      scales: { x:{stacked:true}, y:{stacked:true} },
+                      onClick: (evt, elems) => {
+                        if (!elems.length) return;
+                        const month = elems[0].index + 1;
+                        // detalha dia-a-dia
+                        fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
+                          .then(r=>r.json()).then(json=>{
+                            mesChart.data.labels = json.labels;
+                            mesChart.data.datasets = Object.entries(json.datasets).map(
+                              ([label,data])=>({ label, data, backgroundColor: mesChart.data.datasets.find(ds=>ds.label===label).backgroundColor })
+                            );
+                            mesChart.options.scales.x.stacked = false;
+                            mesChart.options.scales.y.stacked = false;
+                            mesChart.update();
+                            document.getElementById('backMes').style.display = 'inline-block';
+                          });
+                      }
                     }
+                });
+                                
+      const rankingChart = new Chart(rankingCtx, {
+                  type: 'bar',
+                  data: {
+                    labels: <?= json_encode($responsaveis) ?>,
+                    datasets: [{
+                      label: 'Problemas Reportados',
+                      data: <?= json_encode($totais) ?>,
+                      backgroundColor: infoCyan,
+                      borderColor: infoCyan,
+                      borderWidth: 1
+                    }]
                   },
-                  onClick: (evt, elems) => {
-                    if (!elems.length) return;
-                    const status = statusChart.data.labels[elems[0].index];
-                    // filtra mesChart
-                    mesChart.data.datasets.forEach(ds => ds.hidden = ds.label !== status);
-                    mesChart.update();
-                    // atualiza rankingChart via AJAX
-                    fetch(`?action=ranking_por_status&status=${encodeURIComponent(status)}&year=${yearSelected}`)
-                      .then(r=>r.json()).then(json=>{
-                        rankingChart.data.labels = json.labels;
-                        rankingChart.data.datasets[0].data = json.data;
-                        rankingChart.update();
-                      });
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,  
+                    plugins: { legend:{display:false} },
+                    scales: { y:{beginAtZero:true,precision:0} },
+                    onClick: (evt, elems) => {
+                      if (!elems.length) return;
+                      const resp = rankingChart.data.labels[elems[0].index];
+                      // pedidos por mês para esse responsável
+                      fetch(`?action=mes_por_responsavel&responsavel=${encodeURIComponent(resp)}&year=${yearSelected}`)
+                        .then(r=>r.json()).then(json=>{
+                          mesChart.data.datasets.forEach(ds => ds.data = json.data);
+                          mesChart.options.scales.x.stacked = false;
+                          mesChart.options.scales.y.stacked = false;
+                          mesChart.update();
+                        });
+                      // status para esse responsável
+                      fetch(`?action=ranking_por_status&status=${encodeURIComponent(resp)}&year=${yearSelected}`)
+                        .then(r=>r.json()).then(json=>{
+                          statusChart.data.labels = json.labels;
+                          statusChart.data.datasets[0].data = json.data;
+                          statusChart.update();
+                        });
+                    }
                   }
-                },
-                plugins: [ChartDataLabels]
                 });
+
+      const backlogCtx = document.getElementById('backlogChart').getContext('2d');
+                    new Chart(backlogCtx, {
+                    type: 'bar',
+                    data: {
+                    labels: <?= json_encode($labelsAge) ?>,
+                    datasets: [{
+                      label: 'Tickets Pendentes',
+                      data: <?= json_encode($dataAge) ?>,
+                      borderWidth: 1
+                    }]
+                    },
+                    options: {
+                    responsive: true,
+                    maintainAspectRatio: true,  
+                    scales: { y: { beginAtZero: true, precision: 0 } }
+                    }
+                    });  
                 
-                const mesChart = new Chart(mesCtx, {
-                type: 'bar',
-                data: {
-                  labels: <?= json_encode($labelsMeses) ?>,
-                  datasets: [
-                    { label: 'Pendente',      data: <?= json_encode($dadosMesStatus['Pendente']) ?>,      backgroundColor: infoPink },
-                    { label: 'Em Andamento',  data: <?= json_encode($dadosMesStatus['Em Andamento']) ?>,  backgroundColor: infoOrange },
-                    { label: 'Concluído',     data: <?= json_encode($dadosMesStatus['Concluído']) ?>,     backgroundColor: infoLightGreen },
-                    { label: 'Rejeitado',     data: <?= json_encode($dadosMesStatus['Rejeitado']) ?>,     backgroundColor:'gray' }
-                  ]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: true,  
-                  plugins: { legend: { position: 'top' } },
-                  scales: { x:{stacked:true}, y:{stacked:true} },
-                  onClick: (evt, elems) => {
-                    if (!elems.length) return;
-                    const month = elems[0].index + 1;
-                    // detalha dia-a-dia
-                    fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
-                      .then(r=>r.json()).then(json=>{
-                        mesChart.data.labels = json.labels;
-                        mesChart.data.datasets = Object.entries(json.datasets).map(
-                          ([label,data])=>({ label, data, backgroundColor: mesChart.data.datasets.find(ds=>ds.label===label).backgroundColor })
-                        );
-                        mesChart.options.scales.x.stacked = false;
-                        mesChart.options.scales.y.stacked = false;
-                        mesChart.update();
-                        document.getElementById('backMes').style.display = 'inline-block';
-                      });
-                  }
-                }
-                });
                 
-                // botão de voltar ao mês (drill-up)
-                document.getElementById('backMes').addEventListener('click', ()=>{
-                mesChart.data.labels = <?= json_encode($labelsMeses) ?>;
-                mesChart.data.datasets.forEach(ds => {
-                  ds.data = <?= json_encode($dadosMesStatus) ?>[ds.label];
-                });
-                mesChart.options.scales.x.stacked = true;
-                mesChart.options.scales.y.stacked = true;
-                mesChart.update();
-                document.getElementById('backMes').style.display = 'none';
-                });
-                
-              const rankingChart = new Chart(rankingCtx, {
-                type: 'bar',
-                data: {
-                  labels: <?= json_encode($responsaveis) ?>,
-                  datasets: [{
-                    label: 'Problemas Reportados',
-                    data: <?= json_encode($totais) ?>,
-                    backgroundColor: infoCyan,
-                    borderColor: infoCyan,
-                    borderWidth: 1
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,  
-                  plugins: { legend:{display:false} },
-                  scales: { y:{beginAtZero:true,precision:0} },
-                  onClick: (evt, elems) => {
-                    if (!elems.length) return;
-                    const resp = rankingChart.data.labels[elems[0].index];
-                    // pedidos por mês para esse responsável
-                    fetch(`?action=mes_por_responsavel&responsavel=${encodeURIComponent(resp)}&year=${yearSelected}`)
-                      .then(r=>r.json()).then(json=>{
-                        mesChart.data.datasets.forEach(ds => ds.data = json.data);
-                        mesChart.options.scales.x.stacked = false;
-                        mesChart.options.scales.y.stacked = false;
-                        mesChart.update();
-                      });
-                    // status para esse responsável
-                    fetch(`?action=ranking_por_status&status=${encodeURIComponent(resp)}&year=${yearSelected}`)
-                      .then(r=>r.json()).then(json=>{
-                        statusChart.data.labels = json.labels;
-                        statusChart.data.datasets[0].data = json.data;
-                        statusChart.update();
-                      });
-                  }
-                }
-                });
-                
-                const trendCtx = document.getElementById('trendChart').getContext('2d');
-                new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                labels: <?= json_encode($labelsTrend) ?>,
-                datasets: [
-                  {
-                    label: 'Abertos',
-                    data: <?= json_encode($abertosMes) ?>,
-                    fill: false,
-                    borderWidth: 2,
-                    borderDash: []
-                  },
-                  {
-                    label: 'Fechados',
-                    data: <?= json_encode($fechadosMes) ?>,
-                    fill: false,
-                    borderWidth: 2,
-                    borderDash: [5,5]
-                  }
-                ]
-                },
-                options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, precision: 0 } }
-                }
-                });
-                
-                const backlogCtx = document.getElementById('backlogChart').getContext('2d');
-                new Chart(backlogCtx, {
-                type: 'bar',
-                data: {
-                labels: <?= json_encode($labelsAge) ?>,
-                datasets: [{
-                  label: 'Tickets Pendentes',
-                  data: <?= json_encode($dataAge) ?>,
-                  borderWidth: 1
-                }]
-                },
-                options: {
-                responsive: true,
-                maintainAspectRatio: true,  
-                scales: { y: { beginAtZero: true, precision: 0 } }
-                }
-                });  
-                
-                                // 1) SLA Compliance por Prioridade
-                                new Chart(
+                    // 1) SLA Compliance por Prioridade
+        const chartSLA = new Chart(
                   document.getElementById('chartSLA').getContext('2d'),
                   {
                     type: 'bar',
@@ -918,10 +918,10 @@
                       }
                     }
                   }
-                );
+        );
                 
                 // 2) Comparativo Ano a Ano (Aberturas)
-                new Chart(
+        const chartYoY = new Chart(
                   document.getElementById('chartYoY').getContext('2d'),
                   {
                     type: 'line',
@@ -953,9 +953,9 @@
                     }
                   }
                 );
-                
+
                 // 3) Cross-Trend: Tempo Médio × Volume de Chamados
-                new Chart(
+        const chartCross = new Chart(
                   document.getElementById('chartCross').getContext('2d'),
                   {
                     type: 'bar',
@@ -998,72 +998,150 @@
                       }
                     }
                   }
-                );
-            </script>
-  <script>
-      fetch('dados_por_setor.php')
-        .then(res => res.json())
-        .then(data => {
-          const labels = data.map(item => item.bloco);
-          const valores = data.map(item => item.total);
-          const total = valores.reduce((a, b) => a + b, 0);
+        );
 
-          const cores = [
-            '#000000', // Preto
-        '#e6b5aa', // Rosa claro
-        '#004080', // Azul escuro
-        '#007080', // Ciano escuro
-        '#30a0a0', // Ciano médio
-        '#38a850', // Verde claro
-        '#70b080', // Verde médio
-        '#a0b870', // Verde oliva
-        '#f0e850', // Amarelo claro
-        '#f8a800', // Laranja
-        '#b01030', // Vermelho escuro
-        '#8c003c'  // Magenta escuro
-      ];
+        const fetchSetor = fetch('dados_por_setor.php')
+                  .then(res => res.json())
+                  .then(data => {
+                    const labels = data.map(item => item.bloco);
+                    const valores = data.map(item => item.total);
+                    const total = valores.reduce((a, b) => a + b, 0);
 
-          new Chart(document.getElementById('graficoSetor'), {
-            type: 'doughnut',
-            data: {
-              labels: labels,
-              datasets: [{
-                data: valores,
-                backgroundColor: cores.slice(0, valores.length),
-                borderWidth: 0
-              }]
-            },
-            options: {
-              responsive: true,
-              rotation: -90,
-              circumference: 180,
-              cutout: '55%',
-              plugins: {
-                legend: {
-                  display: false
-                },
-                tooltip: {
-                  enabled: false
-                },
-                datalabels: {
-                  color: '#fff',
-                  font: {
-                    weight: 'bold',
-                    size: 14
-                  },
-                  formatter: function(value, ctx) {
-                    const label = ctx.chart.data.labels[ctx.dataIndex];
-                    const percent = ((value / total) * 100).toFixed(1) + '%';
-                    return `${label}\n${percent}`;
-                  }
-                }
-              }
-            },
-            plugins: [ChartDataLabels]
+                    const graficoSetor = new Chart(document.getElementById('graficoSetor'), {
+                      type: 'doughnut',
+                      data: {
+                        labels: labels,
+                        datasets: [{
+                          data: valores,
+                          backgroundColor: cores.slice(0, valores.length),
+                          borderWidth: 0
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        rotation: -90,
+                        circumference: 180,
+                        cutout: '55%',
+                        plugins: {
+                          legend: {
+                            display: false
+                          },
+                          tooltip: {
+                            enabled: false
+                          },
+                          datalabels: {
+                            color: '#fff',
+                            font: {
+                              weight: 'bold',
+                              size: 14
+                            },
+                            formatter: function(value, ctx) {
+                              const label = ctx.chart.data.labels[ctx.dataIndex];
+                              const percent = ((value / total) * 100).toFixed(1) + '%';
+                              return `${label}\n${percent}`;
+                            }
+                          }
+                        }
+                      },
+                      plugins: [ChartDataLabels]
+                    });
           });
-        });
+
+    // Dados iniciais: 12 meses
+    const multiLineLabels = <?= json_encode($labelsMeses) ?>;
+  const multiLineData = {
+    'Pendente': <?= json_encode($dadosMesStatus['Pendente']) ?>,
+    'Em Andamento': <?= json_encode($dadosMesStatus['Em Andamento']) ?>,
+    'Concluído': <?= json_encode($dadosMesStatus['Concluído']) ?>
+  };
+
+  const multiLineChart = new Chart(multiLineChartCtx, {
+    type: 'line',
+    data: {
+      labels: multiLineLabels,
+      datasets: [
+        {
+          label: 'Pendente',
+          borderColor: '#e91e63',
+          data: multiLineData['Pendente'],
+          fill: false
+        },
+        {
+          label: 'Em Andamento',
+          borderColor: '#ff9800',
+          data: multiLineData['Em Andamento'],
+          fill: false
+        },
+        {
+          label: 'Concluído',
+          borderColor: '#8bc34a',
+          data: multiLineData['Concluído'],
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Pedidos por Status nos Últimos 12 Meses'
+        }
+      },
+      onClick: (evt, elems) => {
+        if (!elems.length) return;
+        const month = elems[0].index + 1;
+        // Drill-down: busca dados diários do mês clicado
+        fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
+          .then(r=>r.json()).then(json=>{
+            multiLineChart.data.labels = json.labels;
+            multiLineChart.data.datasets = Object.entries(json.datasets).map(
+              ([label,data],i)=>({
+                label,
+                borderColor: ['#e91e63','#ff9800','#8bc34a'][i],
+                data,
+                fill: false
+              })
+            );
+            multiLineChart.options.plugins.title.text = `Pedidos por Status em ${multiLineLabels[month-1]}`;
+            multiLineChart.update();
+            document.getElementById('backMultiLine').style.display = 'inline-block';
+          });
+      }
+    }
+  });
+
+                // botão de voltar ao mês (drill-up)
+                document.getElementById('backMes').addEventListener('click', ()=>{
+                mesChart.data.labels = <?= json_encode($labelsMeses) ?>;
+                mesChart.data.datasets.forEach(ds => {
+                  ds.data = <?= json_encode($dadosMesStatus) ?>[ds.label];
+                });
+                mesChart.options.scales.x.stacked = true;
+                mesChart.options.scales.y.stacked = true;
+                mesChart.update();
+                document.getElementById('backMes').style.display = 'none';
+                });
+
+  // Botão drill-up
+  const backBtn = document.createElement('button');
+  backBtn.id = 'backMultiLine';
+  backBtn.textContent = 'Voltar';
+  backBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+  backBtn.style.display = 'none';
+  document.getElementById('multiLineChart').parentNode.prepend(backBtn);
+
+  backBtn.addEventListener('click', ()=>{
+    multiLineChart.data.labels = multiLineLabels;
+    multiLineChart.data.datasets.forEach((ds,i) => {
+      ds.data = Object.values(multiLineData)[i];
+    });
+    multiLineChart.options.plugins.title.text = 'Pedidos por Status nos Últimos 12 Meses';
+    multiLineChart.update();
+    backBtn.style.display = 'none';
+  });        
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/fontawesome.min.js" integrity="sha512-j12pXc2gXZL/JZw5Mhi6LC7lkiXL0e2h+9ZWpqhniz0DkDrO01VNlBrG3LkPBn6DgG2b8CDjzJT+lxfocsS1Vw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>
 
     </body>

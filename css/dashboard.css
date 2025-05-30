@@ -12,6 +12,7 @@
   text-decoration: none;
   text-align: center;
 }
+
 .dashboard-container,
 .cards-container {
   display: inline-flex;
@@ -44,7 +45,7 @@
   user-select: none;
 }
 
-.card .title{
+.card .title {
   margin: 10px auto;
 }
 
@@ -62,31 +63,39 @@
   -webkit-backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
 .bg-pendente {
   background: #f39c12;
 }
+
 .bg-andamento {
   background: #3498db;
 }
+
 .bg-finalizado {
   background: #2ecc71;
 }
+
 .bg-rejeitado {
   background: #e74c3c;
 }
+
 .chart-container {
   max-width: 500px;
   max-height: 400px;
   margin: auto;
 }
+
 .bg-secondary {
   background: #6c757d;
 }
+
 .chart-container {
   max-width: 100%;
   height: 400px;
   margin: 0 auto;
 }
+
 .analise-extra-container {
   display: flex;
   flex-wrap: wrap;
@@ -94,6 +103,7 @@
   margin-top: 30px;
   justify-content: space-evenly;
 }
+
 .analise-card {
   background: #ffffff;
   padding: 20px;
@@ -102,6 +112,7 @@
   flex: 1 1 350px;
   min-width: 300px;
 }
+
 .analise-card h5 {
   margin-bottom: 15px;
   text-align: center;
@@ -109,10 +120,12 @@
   font-weight: bold;
   color: #333;
 }
+
 .analise-card ul {
   list-style: none;
   padding-left: 0;
 }
+
 .analise-card ul li {
   padding: 5px 0;
   border-bottom: 1px solid #ddd;
@@ -123,20 +136,25 @@
   text-align: center;
   font-size: 0.9rem;
 }
+
 .analise-card table thead tr {
   background-color: #f2f2f2;
   font-weight: bold;
 }
+
 .analise-card canvas {
   width: 100% !important;
   height: 300px !important;
 }
+
 table {
   border-collapse: collapse;
 }
-table thead{
+
+table thead {
   border: 1px solid transparent;
 }
+
 table thead tr th:first-child {
   border-top-left-radius: 0.75rem;
 }
@@ -144,20 +162,25 @@ table thead tr th:first-child {
 table thead tr th:last-child {
   border-top-right-radius: 0.75rem;
 }
-table td{
+
+table td {
   transition: all 0.2s ease-in-out;
 }
-table tr:last-child{
+
+table tr:last-child {
   border-bottom: 1px solid #03a9f4;
 }
+
 th.status-pendente {
   background-color: #e91e63;
   color: white;
 }
+
 th.status-andamento {
   background-color: #ff9800;
   color: white;
 }
+
 th.status-concluido {
   background-color: #8bc34a;
   color: white;
@@ -167,19 +190,28 @@ td.status-pendente {
   color: #e91e63;
   font-weight: bolder;
 }
+
 td.status-andamento {
   color: #ff9800;
   font-weight: bolder;
 }
+
 td.status-concluido {
   color: #8bc34a;
   font-weight: bolder;
 }
-td.nomeAtendente{
+
+td.nomeAtendente {
   font-weight: bolder;
   color: #333;
+  text-decoration: none;
 }
-td.nomeAtendente:hover{
+
+.nomeAtendente a {
+  text-decoration: none;
+}
+
+td.nomeAtendente:hover {
   color: #03a9f4;
 }
 
@@ -192,6 +224,7 @@ td.nomeAtendente:hover{
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
+
 .box h2 {
   color: #fff;
   background: #03a9f4;
@@ -201,13 +234,16 @@ td.nomeAtendente:hover{
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
+
 .box ul {
   position: relative;
   background: #fff;
 }
+
 .box ul:hover li {
   opacity: 0.2;
 }
+
 .box ul li {
   list-style: none;
   padding: 10px;
@@ -216,6 +252,7 @@ td.nomeAtendente:hover{
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
   transition: transform 0.5s;
 }
+
 .box ul li:hover {
   transform: scale(1.1);
   z-index: 5;
@@ -224,6 +261,7 @@ td.nomeAtendente:hover{
   color: #fff;
   opacity: 1;
 }
+
 .box ul li span {
   width: 20px;
   height: 20px;
@@ -238,10 +276,12 @@ td.nomeAtendente:hover{
   font-weight: 600;
   transform: translateY(-2px);
 }
+
 .box ul li:hover span {
   background: #fff;
   color: #25bcff;
 }
+
 #backMes {
   display: inline-flex;
   text-align: center;
@@ -250,9 +290,11 @@ td.nomeAtendente:hover{
   justify-content: center;
   align-content: center;
 }
+
 .dashboard-cards {
   width: 100%;
 }
+
 .info-box {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   min-width: fit-content;
@@ -275,6 +317,7 @@ td.nomeAtendente:hover{
   padding: 7px 10px;
   color: white;
 }
+
 .info-box .content .text {
   font-size: 13px;
   margin-top: 11px;
@@ -305,9 +348,11 @@ td.nomeAtendente:hover{
   margin-top: -4px;
   color: #555;
 }
+
 .info-box.hover-zoom-effect .icon {
   overflow: hidden;
 }
+
 .info-box.hover-zoom-effect .icon i {
   -moz-transition: all 0.3s ease;
   -o-transition: all 0.3s ease;
@@ -328,7 +373,8 @@ td.nomeAtendente:hover{
   content: "";
   position: absolute;
   top: 0;
-  left: 0; /* Começa da borda esquerda */
+  left: 0;
+  /* Começa da borda esquerda */
   width: 0;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.05);
@@ -341,34 +387,42 @@ td.nomeAtendente:hover{
 .info-box.hover-expand-effect:hover::after {
   width: 100%;
 }
+
 .bg-pink {
   background-color: #e91e63 !important;
   color: #fff;
 }
+
 .bg-pink .content .text,
 .bg-pink .content .number {
   color: #fff !important;
 }
+
 .bg-orange {
   background-color: #ff9800 !important;
   color: #fff;
 }
+
 .bg-orange .content .text,
 .bg-orange .content .number {
   color: #fff !important;
 }
+
 .bg-light-green {
   background-color: #8bc34a !important;
   color: #fff;
 }
+
 .bg-light-green .content .text,
 .bg-light-green .content .number {
   color: #fff !important;
 }
+
 .bg-cyan {
   background-color: #00bcd4 !important;
   color: #fff;
 }
+
 .bg-cyan .content .text,
 .bg-cyan .content .number {
   color: #fff !important;
@@ -377,8 +431,10 @@ td.nomeAtendente:hover{
 /* define largura 100% e altura fixa para todos os wrappers de gráfico */
 .chart-wrapper {
   width: 100%;
-  height: 300px; /* escolha um valor que funcione para você */
-  position: relative; /* necessário para o Chart.js preencher todo o wrapper */
+  height: 300px;
+  /* escolha um valor que funcione para você */
+  position: relative;
+  /* necessário para o Chart.js preencher todo o wrapper */
 }
 
 /* força o <canvas> a ocupar todo o espaço do pai */
@@ -386,19 +442,21 @@ td.nomeAtendente:hover{
   width: 100% !important;
   height: 100% !important;
 }
+
 .chart-card:hover,
 .chart-container:hover {
   transform: scale(1.1);
 }
 
-@media (min-width: 1024px){
-  #topo{
+@media (min-width: 1024px) {
+  #topo {
     display: inline-flex;
     align-items: flex-start;
     align-content: flex-start;
     justify-content: space-evenly;
+  }
 }
-}
+
 @media (max-width: 1024px) {
   .dashboard-container {
     width: 100%;
@@ -409,7 +467,8 @@ td.nomeAtendente:hover{
     align-items: flex-start;
     align-content: flex-start;
   }
-  .dashboard-group{
+
+  .dashboard-group {
     max-width: 1024px;
     gap: 10px;
     display: inline-flex;
@@ -418,50 +477,56 @@ td.nomeAtendente:hover{
     flex-wrap: wrap;
     flex-direction: column;
   }
+
   #topo {
     display: inline-flex;
     flex-direction: column !important;
   }
+
   #cards-metricas {
     display: inline-flex;
     order: 1;
     align-items: flex-start;
     align-content: flex-start;
-}
+  }
 
-#status-hoje {
-  order: 2;
-  width: fit-content;
-}
-#tecnicos {
-  order: 3;
-  width: 70%;
-}
+  #status-hoje {
+    order: 2;
+    width: fit-content;
+  }
 
-#status-hoje + #tecnicos,
-#tecnicos + #status-hoje {
-  display: inline-block;
-  vertical-align: top;
-}
+  #tecnicos {
+    order: 3;
+    width: 70%;
+  }
 
-.dashboard-group .chart-container{
-  width: fit-content;
-  height: fit-content;
-}
-.p-2:has(.chart-container){
-  width: fit-content;
-  height: fit-content;
-  text-align: left;
-  margin: auto 0;
-  left: 0;
-}
-.chart-container .title {
-  text-align: left;
-  width: 100%;
-  display: inline-flex;
-  align-content: center;
-  justify-content: flex-start;
-}
+  #status-hoje+#tecnicos,
+  #tecnicos+#status-hoje {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .dashboard-group .chart-container {
+    width: fit-content;
+    height: fit-content;
+  }
+
+  .p-2:has(.chart-container) {
+    width: fit-content;
+    height: fit-content;
+    text-align: left;
+    margin: auto 0;
+    left: 0;
+  }
+
+  .chart-container .title {
+    text-align: left;
+    width: 100%;
+    display: inline-flex;
+    align-content: center;
+    justify-content: flex-start;
+  }
+
   .dashboard-cards {
     width: 100%;
     display: inline-flex;
@@ -472,15 +537,18 @@ td.nomeAtendente:hover{
     align-content: center;
     margin: auto;
     gap: 25px;
-}
-  .dashboard-container + div {
+  }
+
+  .dashboard-container+div {
     display: inline-flex;
     flex-wrap: wrap;
   }
+
   .table-wrapper {
     width: 100%;
     overflow-x: auto;
   }
+
   table {
     border: 0;
   }
@@ -514,10 +582,12 @@ td.nomeAtendente:hover{
     background-color: #e91e63;
     color: white !important;
   }
+
   .status-andamento {
     background-color: #ff9800;
     color: white !important;
   }
+
   .status-concluido {
     background-color: #8bc34a;
     color: white !important;
@@ -526,7 +596,7 @@ td.nomeAtendente:hover{
 
 @media (max-width: 820px) {
 
-  .dashboard-container + div {
+  .dashboard-container+div {
     display: inline-flex;
     flex-wrap: wrap;
   }

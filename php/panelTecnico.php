@@ -20,6 +20,45 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
+        .search-container {
+position: relative;
+margin: auto;
+display: inline-block;
+transition: all 0.3s ease-in-out;
+}
+
+.search-input {
+width: 130px;
+padding: 10px 40px 10px 20px;
+border-radius: 30px;
+border: none;
+outline: none;
+transition: all 0.3s ease;
+background: #f0f0f0;
+color: #333;
+text-align:left;
+}
+
+.search-input:focus,
+.search-input:not(:placeholder-shown) {
+width: 280px;
+background: #fff;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-icon {
+position: absolute;
+right: 12px;
+top: 50%;
+transform: translateY(-50%);
+pointer-events: none;
+}
+
+.search-icon svg {
+width: 20px;
+height: 20px;
+fill: #6c7587;
+}
 
     </style>
 </head>
@@ -68,66 +107,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
             </div>
     </header>
     <section class="cards-container" id="resultado">
-    <?php
-        if ($result->num_rows == 0) {
-            ?>
-                <div class="no-results">
-                    <img src="../img/no-results 1.svg" alt="Sem pedidos" style="width: 200px; height: 300px;">
-                    <p>Nenhum pedido de manutenção foi encontrado.</p>
-                </div>
-            <?php
-                } else {
-                    while ($row = $result->fetch_assoc()) {
-                        $flagColor = match ($row['status']) {
-                            'Pendente' => '#a0352b',
-                            'Em Andamento' => ' #e9963e',
-                            'Concluído' => '#5b7f2e',
-                            default => 'gray',
-                        };
-
-                        $link = 'detalhe.php?numero_os=' . urlencode($row['numero_os']);
-            ?>
-                <a href="<?php echo $link; ?>" class="card-link  animate__animated animate__fadeInUp">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="avatar"><?php echo strtoupper(substr($row['nome_responsavel'], 0, 1)); ?></div>
-                            <span><?php echo htmlspecialchars($row['nome_responsavel']); ?></span>
-                            <div class="flag" style="background-color: <?php echo $flagColor; ?>;"></div>
-                        </div>
-                        <div class="card-body card-image">
-                            <?php
-                                if (!empty($row['foto'])) {
-                                    $fotoBase64 = base64_encode($row['foto']);
-                                    echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção'>";
-                                }
-                            ?>
-                        </div>
-                                <div class="d-flex conjunto">
-                                <p><strong>Nº OS:</strong> <?php echo htmlspecialchars($row['numero_os']); ?></p>
-                                </div>                    
-                                <div class="d-flex conjunto os-texto" id="">
-                                                    <h4><?php echo htmlspecialchars($row['titulo']); ?></h4>
-                                                    <p><strong>Localização:</strong> <?php echo htmlspecialchars($row['localizacao_ambiente']); ?></p>
-                                    <?php if (!empty($row['nome_executante'])): ?>
-                                        <p><strong>Executante:</strong> <?php echo htmlspecialchars($row['nome_executante']); ?></p>
-                                    <?php endif; ?>       
-                                    </div>
-                                
-                                <div class="d-flex w-100 h-100 card-footer">
-                                    <span class="tag"><?php echo htmlspecialchars($row['bloco']); ?></span>
-                                    <span class="status <?php echo strtolower(str_replace(' ', '-', $row['status'])); ?>">
-                                        <?php echo htmlspecialchars($row['status']); ?>
-                                    </span>
-                                    <span class="badge prioridade-<?= strtolower($row['prioridade']) ?>">
-                                    <?= htmlspecialchars($row['prioridade']) ?>
-                                    </span>                 
-                                </div>
-                            </div>
-                        </a>
-                    <?php
-                        }
-                    }
-                    ?>
+  
                     </section>
                     <div class="paginacao mt-3  animate__animated animate__fadeInUp"></div>
                         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
