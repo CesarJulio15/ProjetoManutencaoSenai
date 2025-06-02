@@ -509,11 +509,14 @@
       return $dados;
     }
     
-
-    function gerarFrequenciasPalavras(mysqli $conn): array {
+    function gerarFrequenciasPalavras(mysqli $conn, int $ano): array {
       $frequencias = [];
-      $sql = "SELECT descricao FROM manutencao WHERE descricao IS NOT NULL";
-      $res = $conn->query($sql);
+  
+      // Apenas descrições do ano selecionado
+      $stmt = $conn->prepare("SELECT descricao FROM manutencao WHERE descricao IS NOT NULL AND YEAR(data_abertura) = ?");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
   
       while ($row = $res->fetch_assoc()) {
           $desc = strtolower($row['descricao']);
@@ -528,6 +531,8 @@
           }
       }
   
+      $stmt->close();
+  
       // Formata para ECharts
       $palavras = [];
       foreach ($frequencias as $texto => $peso) {
@@ -536,7 +541,7 @@
   
       return $palavras;
   }
-
+  
     // =====================
     // ENDPOINTS AJAX PARA DRILL-DOWN/UP
     // =====================
@@ -670,7 +675,8 @@
 foreach ($responsaveis as $i => $r) {
     $cores[] = sprintf("hsl(%d, 70%%, 60%%)", ($i * 60) % 360);
 }
-$dadosWordCloud = gerarFrequenciasPalavras($conn);
+$dadosWordCloud = gerarFrequenciasPalavras($conn, $anoSelecionado);
+
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -690,7 +696,10 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
               #anoForm{
                 width: fit-content;
               }
-
+              #statusChart {
+                width: 100%;
+                height: 500px;
+              }
               select {
                 appearance: none;
                 /* remove a aparência padrão do sistema */
@@ -772,6 +781,7 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                   </select>
                 </form>
               </div>
+              <?php if ($anoSelecionado == date('Y')): ?>
                     <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
@@ -784,6 +794,7 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                             </ul>
                         </div>
                     </div>
+                    <?php endif; ?>
                     <div class="card p-3 m-auto shadow-sm h-100 d-flex flex-column" id="tecnicos">
                         <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
                         <div class="table-wrapper" style="overflow-x:auto;">
@@ -877,9 +888,9 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                     <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
+                        <div class="chart-container card p-3 shadow-sm" style="min-width:520px; min-height: 420px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-pie"></i> Distribuição por Status</h5>
-                            <canvas id="statusChart"></canvas>
+                            <div id="statusChart" style="width: 100%; height: 400px;"></div>
                         </div>
                     </div>
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
@@ -893,13 +904,13 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap" >
                     <!-- Gráfico de Pizza (à esquerda) -->
-                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
-                            <canvas id="graficoSetor"></canvas>
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width:200px; min-height: 300px;">
+                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content; min-width:300px;">
+                        <div id="graficoSetor" style="width: 100%; min-height:200px;"></div>
                         </div>
                     </div>
-                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp" style="min-width: 300px; flex:1;">
+                        <div class="chart-container card p-3 shadow-sm w-100">
                             <div class="chart-wrapper">
                                 <canvas id="backlogChart"></canvas>
                             </div>
@@ -918,7 +929,7 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                     <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
                             <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
                                 <div class="chart-wrapper w-100">
-                                    <canvas id="chartSLA" style="width:100%; height: 300px;"></canvas>
+                                    <canvas id="chartSLA" style="width:100%;"></canvas>
                                 </div>
                             </div>
                       </div>
@@ -945,20 +956,7 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
                         </div>
                     </div>
                 </div>
-                <div class="dashboard-group d-fkex flex-row justify-content-evenly">
-                  
-                <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
-                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
-                            <div class="chart-wrapper w-100">
-                                <div id="wordCloud" style="min-width: 450px;"></div>
-                            </div>
-                        </div>
-                    </div>
 
-
-                  </div>
-
-            </div>
             </div>
             </div>
             </div>
@@ -1011,71 +1009,86 @@ $dadosWordCloud = gerarFrequenciasPalavras($conn);
     // -----------------------------
     // 1) Instância os charts em variáveis (exceto mesChart)
     // -----------------------------
-    const statusCtx   = document.getElementById('statusChart').getContext('2d');
+    //const statusCtx   = document.getElementById('statusChart').getContext('2d');
     const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
     /*const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');*/
 
-    const statusChart = new Chart(statusCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Pendente', 'Em andamento', 'Concluído', 'Rejeitado'],
-        datasets: [{
-          data: [<?= $pendentes ?>, <?= $emAndamento ?>, <?= $finalizados ?>, <?= $rejeitados ?>],
-          backgroundColor: infoColors
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,  
-        plugins: {
-          legend: { position: 'bottom' },
-          datalabels: {
-            formatter: (v, ctx) => {
-              let sum = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
-              return (v*100/sum).toFixed(1)+'%';
-            },
-            color: '#fff', font:{weight:'bold',size:14}
-          }
-        },
-        onClick: (evt, elems) => {
-          if (!elems.length) return;
-          const status = statusChart.data.labels[elems[0].index];
-          // atualiza rankingChart via AJAX
-          fetch(`?action=ranking_por_status&status=${encodeURIComponent(status)}&year=${yearSelected}`)
-            .then(r=>r.json()).then(json=>{
-              rankingChart.data.labels = json.labels;
-              rankingChart.data.datasets[0].data = json.data;
-              rankingChart.update();
-            });
-        }
-      },
-      plugins: [ChartDataLabels]
-    });
+    const statusChart = echarts.init(document.getElementById('statusChart'), null, {
+  devicePixelRatio: 2
+});
 
-    const rankingChart = new Chart(rankingCtx, {
-        type: 'polarArea',
-        data: {
-          labels: <?= json_encode($responsaveis) ?>,
-          datasets: [{
-            label: 'Chamados por Responsável',
-            data: <?= json_encode($totais) ?>,
-            backgroundColor: cores.slice(0, <?= count($responsaveis) ?>)
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            title: {
-              display: true,
-              text: 'Chamados por Responsável'
-            }
-          }
-        }
-        });
+const rankingChart = new Chart(rankingCtx, {
+  type: 'polarArea',
+  data: {
+    labels: <?= json_encode($responsaveis) ?>,
+    datasets: [{
+      label: 'Chamados por Responsável',
+      data: <?= json_encode($totais) ?>,
+      backgroundColor: <?= json_encode($cores) ?>
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: {
+        display: true,
+        text: 'Chamados por Responsável'
+      }
+    }
+  }
+});
 
+
+const optionStatusChart = {
+  legend: {
+  type: 'scroll',           // ativa rolagem se necessário
+  orient: 'horizontal',     // horizontal (embaixo do gráfico)
+  bottom: 10,               // espaçamento do fundo
+  align: 'auto',            // alinha automaticamente
+  textStyle: {
+    fontSize: 12
+  },
+  pageIconSize: 12          // tamanho dos ícones de página se for scrollável
+},
+  toolbox: {
+    show: true,
+    feature: {
+      mark: { show: true },
+      dataView: { show: true, readOnly: false },
+      restore: { show: true },
+      saveAsImage: { show: true }
+    }
+  },
+  tooltip: {
+    trigger: 'item',
+    formatter: '{b}: {c} ({d}%)'
+  },
+  series: [{
+  name: 'Distribuição por Status',
+  type: 'pie',
+  roseType: 'area',
+  radius: [40, 150],
+  center: ['50%', '45%'],
+  itemStyle: {
+    borderRadius: 8
+  },
+  label: {
+    show: true,
+    formatter: '{b}\n{c} ({d}%)'
+  },
+  data: [
+    { value: <?= $pendentes ?>, name: 'Pendente', itemStyle: { color: '#ec1961' } },
+    { value: <?= $emAndamento ?>, name: 'Em Andamento', itemStyle: { color: '#ff9800' } },
+    { value: <?= $finalizados ?>, name: 'Concluído', itemStyle: { color: '#8bc34a' } },
+    { value: <?= $rejeitados ?>, name: 'Rejeitado', itemStyle: { color: '#00bcd4' } } // ou ajuste conforme sua paleta
+  ]
+}]
+
+
+};
+
+statusChart.setOption(optionStatusChart);
         // 2) Gráfico de idade
   // Dados gerados pelo PHP
   const labelsAge = <?= json_encode($labelsAge) ?>;
@@ -1357,95 +1370,54 @@ const optionRadarCross = {
 
 chartCross.setOption(optionRadarCross);
 
-  const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
-      .then(res => res.json())
-      .then(data => {
-        const labels = data.map(item => item.bloco);
-        const valores = data.map(item => item.total);
-        const total = valores.reduce((a, b) => a + b, 0);
+const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
+  .then(res => res.json())
+  .then(data => {
+    const labels = data.map(item => item.bloco);
+    const valores = data.map(item => item.total);
+    const total = valores.reduce((a, b) => a + b, 0);
 
-        const graficoSetor = new Chart(document.getElementById('graficoSetor'), {
-          type: 'doughnut',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Ordens de serviço por Bloco',
-              data: valores,
-              backgroundColor: cores.slice(0, valores.length),
-              borderWidth: 0
-            }]
-          },
-          options: {
-            responsive: true,
-            rotation: -90,
-            circumference: 180,
-            cutout: '55%',
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                enabled: false
-              },
-              title: {
-                display: true,
-                text: 'Ordens de serviço por Bloco',
-              },
-              datalabels: {
-                color: '#fff',
-                font: {
-                  weight: 'bold',
-                  size: 14
-                },
-                formatter: function(value, ctx) {
-                  const label = ctx.chart.data.labels[ctx.dataIndex];
-                  const percent = ((value / total) * 100).toFixed(1) + '%';
-                  return `${label}\n${percent}`;
-                }
-              }
-            }
-          },
-          plugins: [ChartDataLabels]
-        });
-      });
+    const chartSetor = echarts.init(document.getElementById('graficoSetor'));
+
+    chartSetor.setOption({
+  title: {
+    text: 'Ordens de Serviço por Bloco',
+    left: 'center',
+    top: 5, // Reduz o espaço superior
+    textStyle: { fontSize: 16 }
+  },
+  tooltip: {
+    trigger: 'item',
+    formatter: '{b}: {c} ({d}%)'
+  },
+  legend: {
+    bottom: 10,
+    orient: 'horizontal',
+    type: 'scroll',
+    textStyle: { fontSize: 12 }
+  },
+  series: [{
+    name: 'OS por Bloco',
+    type: 'pie',
+    radius: ['70%', '95%'],          // Tamanho interno e externo do arco
+    center: ['50%', '65%'],          // Posição mais próxima da legenda
+    startAngle: 180,
+    endAngle: 0,
+    avoidLabelOverlap: true,
+    itemStyle: { borderRadius: 8 },
+    label: { show: false },
+    labelLine: { show: false },
+    data: labels.map((bloco, i) => ({
+      value: valores[i],
+      name: bloco
+    }))
+  }]
+});
+
+  });
 
   </script>
-<script>
-  const wordCloudChart = echarts.init(document.getElementById('wordCloud'));
 
-  const wordCloudOptions = {
-    tooltip: { show: true },
-    series: [{
-      type: 'wordCloud',
-      gridSize: 8,
-      sizeRange: [14, 60],
-      rotationRange: [-45, 45],
-      shape: 'circle',
-      width: '100%',
-      height: '100%',
-      drawOutOfBound: false,
-      textStyle: {
-        fontFamily: 'Arial',
-        color: () => `rgb(${Math.round(Math.random()*200)}, ${Math.round(Math.random()*200)}, ${Math.round(Math.random()*200)})`,
-        emphasis: {
-          shadowBlur: 10,
-          shadowColor: '#333'
-        }
-      },
-      data: <?php echo json_encode($dadosWordCloud); ?>
-    }]
-  };
-
-  wordCloudChart.setOption(wordCloudOptions);
-
-  wordCloudChart.on('click', function (params) {
-    alert('Você clicou na palavra: ' + params.name);
-    // Aqui você pode redirecionar, filtrar ou abrir modal com a palavra
-  });
-</script>
-<script>
-
-</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>
 
