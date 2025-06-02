@@ -7,7 +7,6 @@
   }
   include 'conexao.php';
   $tipo = $_SESSION['tipo'];
-
 // Obter anos disponíveis
 $sqlAnos = "SELECT DISTINCT YEAR(data_abertura) as ano FROM manutencao ORDER BY ano DESC";
 $resultAnos = $conn->query($sqlAnos);
@@ -15,17 +14,20 @@ $resultAnos = $conn->query($sqlAnos);
 $anosDisponiveis = [];
 if ($resultAnos && $resultAnos->num_rows > 0) {
     while ($row = $resultAnos->fetch_assoc()) {
-        $anosDisponiveis[] = $row['ano'];
+        $anosDisponiveis[] = (int)$row['ano'];
     }
 }
 if (empty($anosDisponiveis)) {
-    $anosDisponiveis = ['2021', '2022'];
+    $anosDisponiveis = [date('Y') - 1, date('Y')];
 }
 
-// Definir anos para comparação (padrão ou selecionados pelo usuário)
-$ano1 = isset($_POST['ano1']) && is_numeric($_POST['ano1']) ? (int)$_POST['ano1'] : (int)$anosDisponiveis[0];
-$ano2 = isset($_POST['ano2']) && is_numeric($_POST['ano2']) ? (int)$_POST['ano2'] : ((count($anosDisponiveis) > 1) ? (int)$anosDisponiveis[1] : (int)$anosDisponiveis[0]);
+// Ano atual e anterior
+$anoAtual = (int)date('Y');
+$anoAnterior = $anoAtual - 1;
 
+// Definir anos para comparação (padrão ou selecionados pelo usuário)
+$ano1 = isset($_POST['ano1']) && is_numeric($_POST['ano1']) ? (int)$_POST['ano1'] : $anoAnterior;
+$ano2 = isset($_POST['ano2']) && is_numeric($_POST['ano2']) ? (int)$_POST['ano2'] : $anoAtual;
 // Inicializar valores padrão caso não haja dados
 $tempoCiclo1 = $tempoCiclo2 = 1;
 $eficiencia1 = $eficiencia2 = 1;
@@ -115,6 +117,7 @@ $insights[] = $eficiencia2 > $eficiencia1
 $insights[] = $eficacia2 > $eficacia1
     ? "Percentual de manutenções preventivas aumentou em $ano2"
     : "Percentual de manutenções preventivas diminuiu em $ano2";
+
 ?>
 
 <!DOCTYPE html>
@@ -399,6 +402,7 @@ $insights[] = $eficacia2 > $eficacia1
             <?php endif; ?>
         </div>
     </div>
+
 </section>
 
 </main>

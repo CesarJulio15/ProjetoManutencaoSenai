@@ -310,6 +310,7 @@ header::after {
     justify-content: center;
     align-items: center;
     color: white;
+    text-align: center;
     font-weight: bold;
     z-index: 2;
     transition: all 0.3s ease-in-out;
