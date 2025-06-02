@@ -264,29 +264,37 @@
     }
     
     // --- Backlog e envelhecimento ---
-    function calcularBacklogAge($conn) {
+    function calcularBacklogAge($conn, $anoSelecionado) {
       $labelsAge = ['0–3 dias','4–7 dias','>7 dias'];
       $dataAge   = array_fill(0, count($labelsAge), 0);
-
+    
       $sqlBacklog = "
         SELECT 
-        CASE 
-          WHEN DATEDIFF(CURDATE(), data_abertura) <= 3 THEN 1
-          WHEN DATEDIFF(CURDATE(), data_abertura) <= 7 THEN 2
-          ELSE 3
-        END AS faixa,
-        COUNT(*) AS total
+          CASE 
+            WHEN DATEDIFF(CURDATE(), data_abertura) <= 3 THEN 1
+            WHEN DATEDIFF(CURDATE(), data_abertura) <= 7 THEN 2
+            ELSE 3
+          END AS faixa,
+          COUNT(*) AS total
         FROM manutencao
         WHERE status <> 'Concluído'
+          AND YEAR(data_abertura) = ?
         GROUP BY faixa
       ";
-      $resBacklog = $conn->query($sqlBacklog);
-      while($r = $resBacklog->fetch_assoc()){
+      $stmt = $conn->prepare($sqlBacklog);
+      $stmt->bind_param('i', $anoSelecionado);
+      $stmt->execute();
+      $resBacklog = $stmt->get_result();
+    
+      while ($r = $resBacklog->fetch_assoc()) {
         $idx = (int)$r['faixa'] - 1;
         $dataAge[$idx] = (int)$r['total'];
       }
+    
+      $stmt->close();
       return [$labelsAge, $dataAge];
     }
+    
         // Função para calcular SLA (% concluído em <= 3 dias)
     function calcularSLA($conn, $ano) {
           $stmt = $conn->prepare("
@@ -501,6 +509,34 @@
       return $dados;
     }
     
+
+    function gerarFrequenciasPalavras(mysqli $conn): array {
+      $frequencias = [];
+      $sql = "SELECT descricao FROM manutencao WHERE descricao IS NOT NULL";
+      $res = $conn->query($sql);
+  
+      while ($row = $res->fetch_assoc()) {
+          $desc = strtolower($row['descricao']);
+          $desc = preg_replace('/[^\p{L}\p{N}\s]/u', '', $desc); // remove pontuação
+          $tokens = explode(" ", $desc);
+  
+          foreach ($tokens as $palavra) {
+              $palavra = trim($palavra);
+              if (strlen($palavra) > 3) {
+                  $frequencias[$palavra] = ($frequencias[$palavra] ?? 0) + 1;
+              }
+          }
+      }
+  
+      // Formata para ECharts
+      $palavras = [];
+      foreach ($frequencias as $texto => $peso) {
+          $palavras[] = ['name' => $texto, 'value' => $peso];
+      }
+  
+      return $palavras;
+  }
+
     // =====================
     // ENDPOINTS AJAX PARA DRILL-DOWN/UP
     // =====================
@@ -569,7 +605,7 @@
     // Busca fechamentos do ano selecionado agrupadas por mês
     $fechadosMes = buscarFechamentosPorMes($conn, $anoSelecionado);
 
-    list($labelsAge, $dataAge) = calcularBacklogAge($conn);
+    list($labelsAge, $dataAge) = calcularBacklogAge($conn, $anoSelecionado);
 
     // array de prioridades
     $prioridades = ['Alta','Média','Baixa'];
@@ -634,6 +670,7 @@
 foreach ($responsaveis as $i => $r) {
     $cores[] = sprintf("hsl(%d, 70%%, 60%%)", ($i * 60) % 360);
 }
+$dadosWordCloud = gerarFrequenciasPalavras($conn);
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -647,45 +684,50 @@ foreach ($responsaveis as $i => $r) {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js" integrity="sha512-XSmbX3mhrD2ix5fXPTRQb2FwK22sRMVQTpBP2ac8hX7Dh/605hA2QDegVWiAvZPiXIxOV0CbkmUjGionDpbCmw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <style>
-          #anoForm{
-            width: fit-content;
-          }
+              #anoForm{
+                width: fit-content;
+              }
 
-          select {
-    appearance: none;
-    /* remove a aparência padrão do sistema */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 100%;
-    padding: 10px 40px 10px 15px;
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    box-shadow: inset -4px -4px 6px -1px white,
-        inset 2px 2px 8px -1px rgba(72, 79, 96, 0.3);
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%232a9d8f" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 20px;
-    transition: all 0.3s ease-in-out;
-    cursor: pointer;
-    user-select: none;
-}
+              select {
+                appearance: none;
+                /* remove a aparência padrão do sistema */
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                width: 100%;
+                padding: 10px 40px 10px 15px;
+                font-size: 16px;
+                font-weight: 500;
+                color: #333;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 12px;
+                box-shadow: inset -4px -4px 6px -1px white,
+                    inset 2px 2px 8px -1px rgba(72, 79, 96, 0.3);
+                background-image: url('data:image/svg+xml;utf8,<svg fill="%232a9d8f" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 20px;
+                transition: all 0.3s ease-in-out;
+                cursor: pointer;
+                user-select: none;
+            }
 
-select:focus {
-    outline: none;
-    border-color: #2a9d8f;
-    box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.3);
-}
+            select:focus {
+                outline: none;
+                border-color: #2a9d8f;
+                box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.3);
+            }
 
-select:hover {
-    border-color: #8bc34a;
-}
+            select:hover {
+                border-color: #8bc34a;
+            }
+            #graficoArea {
+        width: 100%;
+        height: 500px;
+      }
         </style>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
@@ -842,14 +884,9 @@ select:hover {
                     </div>
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                        <div class="d-flex flex-row justify-content-around">
-                                  <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Distribuição Mensal por status
-                                      <button id="backMultiLine" class="btn btn-sm btn-outline-secondary ms-auto" style="display:none;"><span class="material-symbols-outlined">
-                                      filter_alt_off
-                                      </span></button>
-                                  </h5>
-                              </div>
-                            <canvas id="multiLineChart" height="320px" ></canvas>
+
+                            <!---<canvas id="multiLineChart" height="320px" ></canvas>-->
+                            <div id="graficoArea"></div>
                         </div>
                     </div>
 
@@ -863,7 +900,6 @@ select:hover {
                     </div>
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title"><i class="fa-solid fa-hourglass-half"></i> Backlog (idade)</h5>
                             <div class="chart-wrapper">
                                 <canvas id="backlogChart"></canvas>
                             </div>
@@ -880,18 +916,18 @@ select:hover {
                     </div>
 
                     <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
-                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
-                            <div class="chart-wrapper w-100">
-                                <canvas id="chartSLA" style="width:100%; height: 300px;"></canvas>
+                            <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
+                                <div class="chart-wrapper w-100">
+                                    <canvas id="chartSLA" style="width:100%; height: 300px;"></canvas>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                      </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap"  style="flex:1; min-width: 300px;">
                     <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
                             <div class="chart-wrapper">
-                                <canvas id="chartCross"></canvas>
+                            <div id="chartCross" style="width: 500px; height: 400px;"></div>
                             </div>
                         </div>
                     </div>
@@ -909,6 +945,19 @@ select:hover {
                         </div>
                     </div>
                 </div>
+                <div class="dashboard-group d-fkex flex-row justify-content-evenly">
+                  
+                <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
+                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
+                            <div class="chart-wrapper w-100">
+                                <div id="wordCloud" style="min-width: 450px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                  </div>
+
             </div>
             </div>
             </div>
@@ -964,7 +1013,7 @@ select:hover {
     // -----------------------------
     const statusCtx   = document.getElementById('statusChart').getContext('2d');
     const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
-    const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');
+    /*const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');*/
 
     const statusChart = new Chart(statusCtx, {
       type: 'doughnut',
@@ -1004,46 +1053,83 @@ select:hover {
     });
 
     const rankingChart = new Chart(rankingCtx, {
-  type: 'polarArea',
-  data: {
-    labels: <?= json_encode($responsaveis) ?>,
-    datasets: [{
-      label: 'Chamados por Responsável',
-      data: <?= json_encode($totais) ?>,
-      backgroundColor: cores.slice(0, <?= count($responsaveis) ?>)
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Chamados por Responsável'
-      }
-    }
-  }
-});
+        type: 'polarArea',
+        data: {
+          labels: <?= json_encode($responsaveis) ?>,
+          datasets: [{
+            label: 'Chamados por Responsável',
+            data: <?= json_encode($totais) ?>,
+            backgroundColor: cores.slice(0, <?= count($responsaveis) ?>)
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Chamados por Responsável'
+            }
+          }
+        }
+        });
 
-    const backlogCtx = document.getElementById('backlogChart').getContext('2d');
-    new Chart(backlogCtx, {
-      type: 'bar',
-      data: {
-        labels: <?= json_encode($labelsAge) ?>,
-        datasets: [{
-          label: 'Tickets Pendentes',
-          data: <?= json_encode($dataAge) ?>,
-          borderWidth: 1
-        }]
+        // 2) Gráfico de idade
+  // Dados gerados pelo PHP
+  const labelsAge = <?= json_encode($labelsAge) ?>;
+  const dataAge = <?= json_encode($dataAge) ?>;
+
+  // Instanciando o gráfico com ECharts
+  const backlogOption = {
+      title: {
+        text: 'Tickets Pendentes por Idade',
+        left: 'center',
+        top: 'top',
+        textStyle: {
+          fontSize: 10
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,  
-        scales: { y: { beginAtZero: true, precision: 0 } }
-      }
-    });  
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }
+      },
+      grid: {
+        left: '10%',
+        right: '10%',
+        bottom: '10%',
+        top: '20%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'value',
+        min: 0
+      },
+      yAxis: {
+        type: 'category',
+        data: <?= json_encode($labelsAge) ?>,
+        axisLabel: {
+          rotate: 0 // sem rotação agora
+        }
+      },
+      series: [{
+        name: 'Tickets Pendentes por Idade',
+        type: 'bar',
+        data: <?= json_encode($dataAge) ?>,
+        itemStyle: {
+          color: '#3f51b5'
+        },
+        barWidth: '50%'
+      }]
+    };
+
+    const backlogChart = echarts.init(
+      document.getElementById('backlogChart'),
+      null,
+      { devicePixelRatio: 2 } // aumenta nitidez em telas retina/4K
+    );
+    backlogChart.setOption(backlogOption);
 
     // 1) SLA Compliance por Prioridade
     const chartSLA = new Chart(
@@ -1085,6 +1171,101 @@ select:hover {
       }
     );
 
+    let estadoAtual = {
+  ano: new Date().getFullYear(),
+  mes: null
+};
+
+function carregarGrafico(ano, mes = null) {
+  const url = mes ? `grafico_area.php?ano=${ano}&mes=${mes}` : `grafico_area.php?ano=${ano}`;
+  
+  fetch(url)
+    .then(res => res.json())
+    .then(({ labels, dados }) => {
+      const cores = {
+        'Baixa - Pendente': '#e91e63',
+        'Baixa - Em Andamento': '#ff9800',
+        'Baixa - Concluído': '#8bc34a',
+        'Média - Pendente': '#9c27b0',
+        'Média - Em Andamento': '#ffc107',
+        'Média - Concluído': '#4caf50',
+        'Alta - Pendente': '#03a9f4',
+        'Alta - Em Andamento': '#ff5722',
+        'Alta - Concluído': '#009688',
+        'Urgente - Pendente': '#f44336',
+        'Urgente - Em Andamento': '#ffeb3b',
+        'Urgente - Concluído': '#607d8b'
+      };
+
+      const series = [];
+      for (const chave in dados) {
+        series.push({
+          name: chave,
+          type: 'line',
+          stack: 'total',
+          areaStyle: {},
+          emphasis: { focus: 'series' },
+          data: labels.map(p => dados[chave][p] || 0),
+          color: cores[chave] || undefined
+        });
+      }
+
+      const chart = echarts.init(document.getElementById('graficoArea'));
+      const titulo = mes 
+        ? `Detalhes do mês ${estadoAtual.ano}-${String(mes).padStart(2, '0')}`
+        : `Visão geral de ${estadoAtual.ano}`;
+
+      chart.setOption({
+        title: { text: titulo, left: 'center' ,  textStyle: {
+    fontSize: 16
+  }},
+        tooltip: { trigger: 'axis' },
+        legend: {
+          orient: 'vertical',
+          right: 10, // ou left: 10
+          top: 'middle',
+          type: 'scroll',
+          textStyle: {
+            fontSize: 12
+          }
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {},
+            myDrillUp: {
+              show: !!mes,
+              title: 'Voltar',
+              icon: 'path://M512 64L96 320l416 256V64z',
+              onclick: function () {
+                estadoAtual.mes = null;
+                carregarGrafico(estadoAtual.ano);
+              }
+            }
+          }
+        },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', boundaryGap: false, data: labels },
+        yAxis: { type: 'value' },
+        series: series
+      });
+
+      chart.off('click');
+      chart.on('click', function (params) {
+        if (!estadoAtual.mes && params.name.includes('-')) {
+          const partes = params.name.split('-');
+          const mesClicado = parseInt(partes[1]);
+          estadoAtual.mes = mesClicado;
+          carregarGrafico(estadoAtual.ano, mesClicado);
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Erro ao carregar gráfico:', error);
+    });
+}
+
+carregarGrafico(estadoAtual.ano);
+
  
     const chartYoY = new Chart(document.getElementById('chartYoY'), {
   type: 'line',
@@ -1118,65 +1299,63 @@ select:hover {
   }
 });
 
-    // 3) Cross-Trend: Tempo Médio × Volume de Chamados
-    $prioridades = ['Urgente', 'Média', 'Baixa'];
-    const chartCross = new Chart(
-  document.getElementById('chartCross').getContext('2d'),
-  {
-    type: 'bar',
-    data: {
-  labels: <?= json_encode($prioridades) ?>,
-  datasets: [
-    {
-      type: 'line',
-      label: 'Tempo Médio (dias)',
-      yAxisID: 'A',
-      data: <?= json_encode($mediaHoras) ?>,
-      borderColor: '#43434f',
-      backgroundColor: '#f7e3ff',
-    },
-    {
-      type: 'bar',
-      label: 'Total de Chamados',
-      yAxisID: 'B',
-      data: <?= json_encode($totaisCross) ?>,      backgroundColor: [
-        '#dc3545', // Urgente
-        '#007bff', // Média
-        '#6c757d'  // Baixa
-      ],
-      borderColor: [
-        '#dc3545',
-        '#007bff',
-        '#6c757d'
-      ],
-      borderWidth: 1
-    }
-  ]
-},
-    options: {
-      plugins: {
-        title: {
-          display: true,
-          text: 'Resolução (dias) × Volume de Chamados' // ← alterado aqui também
-        }
-      },
-      scales: {
-        A: {
-          type: 'linear',
-          position: 'left',
-          title: { display: true, text: 'Dias' } // ← alterado
-        },
-        B: {
-          type: 'linear',
-          position: 'right',
-          title: { display: true, text: 'Chamados' },
-          grid: { drawOnChartArea: false }
-        }
-      }
-    }
-  }
+const prioridades = <?= json_encode($prioridades) ?>;
+  const tempoMedio = <?= json_encode($mediaHoras) ?>;
+  const totalChamados = <?= json_encode($totaisCross) ?>;
+  const chartCross = echarts.init(
+    document.getElementById('chartCross'),
+    null,
+    { devicePixelRatio: 2 }
 );
 
+const optionRadarCross = {
+  title: {
+    text: 'Resolução (dias) × Volume de Chamados',
+    left: 'center',
+    textStyle: { fontSize: 16 }
+  },
+  legend: {
+    top: 'bottom',
+    textStyle: { fontSize: 12 }
+  },
+  tooltip: {
+    trigger: 'item',
+    formatter: function (params) {
+      const valores = params.value;
+      const prioridadeLabels = <?= json_encode($prioridades) ?>;
+      let detalhes = valores.map((v, i) => `${prioridadeLabels[i]}: ${v}`).join('<br>');
+      return `<b>${params.seriesName} - ${params.name}</b><br>${detalhes}`;
+    }
+  },
+  radar: {
+    indicator: prioridades.map((p, i) => ({
+      name: p,
+      max: Math.max(tempoMedio[i], totalChamados[i]) + 10
+    }))
+  },
+  series: [
+    {
+      name: 'Comparação',
+      type: 'radar',
+      data: [
+        {
+          value: tempoMedio,
+          name: 'Tempo Médio (dias)',
+          lineStyle: { color: '#007bff' },
+          areaStyle: { color: 'rgba(0,123,255,0.2)' }
+        },
+        {
+          value: totalChamados,
+          name: 'Total de Chamados',
+          lineStyle: { color: '#28a745' },
+          areaStyle: { color: 'rgba(40,167,69,0.2)' }
+        }
+      ]
+    }
+  ]
+};
+
+chartCross.setOption(optionRadarCross);
 
   const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
       .then(res => res.json())
@@ -1230,117 +1409,43 @@ select:hover {
         });
       });
 
-    
-      // Dados iniciais: 12 meses
-    const multiLineLabels = <?= json_encode($labelsMeses) ?>;
-    const multiLineData = {
-      'Pendente': <?= json_encode($dadosMesStatus['Pendente']) ?>,
-      'Em Andamento': <?= json_encode($dadosMesStatus['Em Andamento']) ?>,
-      'Concluído': <?= json_encode($dadosMesStatus['Concluído']) ?>
-    };
+  </script>
+<script>
+  const wordCloudChart = echarts.init(document.getElementById('wordCloud'));
 
-    const multiLineChart = new Chart(multiLineChartCtx, {
-  type: 'line',
-  data: {
-    labels: multiLineLabels,
-    datasets: [
-      {
-        label: 'Pendente',
-        borderColor: '#e91e63',
-        data: multiLineData['Pendente'],
-        fill: false
+  const wordCloudOptions = {
+    tooltip: { show: true },
+    series: [{
+      type: 'wordCloud',
+      gridSize: 8,
+      sizeRange: [14, 60],
+      rotationRange: [-45, 45],
+      shape: 'circle',
+      width: '100%',
+      height: '100%',
+      drawOutOfBound: false,
+      textStyle: {
+        fontFamily: 'Arial',
+        color: () => `rgb(${Math.round(Math.random()*200)}, ${Math.round(Math.random()*200)}, ${Math.round(Math.random()*200)})`,
+        emphasis: {
+          shadowBlur: 10,
+          shadowColor: '#333'
+        }
       },
-      {
-        label: 'Em Andamento',
-        borderColor: '#ff9800',
-        data: multiLineData['Em Andamento'],
-        fill: false
-      },
-      {
-        label: 'Concluído',
-        borderColor: '#8bc34a',
-        data: multiLineData['Concluído'],
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      title: {
-        display: true,
-        text: 'Pedidos por Status nos Últimos 12 Meses'
-      }
-    },
-    onClick: (evt, elems) => {
-      if (!elems.length) return;
-      const month = elems[0].index + 1;
-      fetch(`?action=drill_mes&year=${yearSelected}&month=${month}`)
-        .then(r => r.text()) // ← Primeiro lê como texto
-        .then(text => {
-          try {
-            const json = JSON.parse(text);
-            multiLineChart.data.labels = json.labels;
-            multiLineChart.data.datasets = Object.entries(json.datasets).map(
-              ([label, data], i) => ({
-                label,
-                borderColor: ['#e91e63', '#ff9800', '#8bc34a'][i],
-                data,
-                fill: false
-              })
-            );
-            const monthLabel = month > 0 && month <= multiLineLabels.length ? multiLineLabels[month - 1] : 'Mês Inválido';
-            multiLineChart.options.plugins.title.text = `Pedidos por Status em ${monthLabel}`;
-            multiLineChart.update();
-            document.getElementById('backMultiLine').style.display = 'inline-block';
-          } catch (e) {
-            console.error('Resposta não JSON:', text);
-            alert('Erro ao processar os dados do drill-down.');
-          }
-        })
-        .catch(error => {
-          console.error('Erro ao buscar dados de drill-down:', error);
-          alert('Falha ao buscar os dados. Tente novamente.');
-        });
-    }
-  }
-});
+      data: <?php echo json_encode($dadosWordCloud); ?>
+    }]
+  };
 
-// Correção: uso do ID correto
-const backBtn = document.getElementById('backMultiLine');
-backBtn.style.display = 'none';
-//document.getElementById('multiLineChart').parentNode.prepend(backBtn);
+  wordCloudChart.setOption(wordCloudOptions);
 
-backBtn.addEventListener('click', () => {
-  multiLineChart.data.labels = multiLineLabels;
-  const multiLineDataValues = Object.values(multiLineData);
-  multiLineChart.data.datasets.forEach((ds, i) => {
-    ds.data = multiLineDataValues[i];
+  wordCloudChart.on('click', function (params) {
+    alert('Você clicou na palavra: ' + params.name);
+    // Aqui você pode redirecionar, filtrar ou abrir modal com a palavra
   });
-  multiLineChart.options.plugins.title.text = 'Pedidos por Status nos Últimos 12 Meses';
-  multiLineChart.update();
-  backBtn.style.display = 'none';
-});
-  </script>
-  <script>
-const dadosCompleto = <?= json_encode($estilos) ?>;
+</script>
+<script>
 
-function atualizarGraficoYoY(filtroPrioridade) {
-  const datasetsFiltrados = filtroPrioridade === 'Todas'
-    ? dadosCompleto
-    : dadosCompleto.filter(ds => ds.label.includes(filtroPrioridade));
-  
-  chartYoY.data.datasets = datasetsFiltrados;
-  chartYoY.update();
-}
-
-document.getElementById('prioridadeFiltro').addEventListener('change', e => {
-  atualizarGraficoYoY(e.target.value);
-});
-
-// Inicializa com todas
-atualizarGraficoYoY('Todas');
-  </script>
+</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>
 
