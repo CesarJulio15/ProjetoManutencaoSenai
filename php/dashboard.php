@@ -8,6 +8,14 @@
   $tipo = $_SESSION['tipo'];
     
     include 'conexao.php';
+
+    $anosDisponiveis = [];
+    $sqlAnos = "SELECT DISTINCT YEAR(data_abertura) as ano FROM manutencao ORDER BY ano DESC";
+    $resAnos = $conn->query($sqlAnos);
+    while ($r = $resAnos->fetch_assoc()) {
+        $anosDisponiveis[] = (int)$r['ano'];
+    }
+    $anoSelecionado = (int)($_GET['ano'] ?? date('Y'));
     // Função para buscar totais por status hoje (aberturas + conclusões)
     function buscarTotaisHoje($conn) {
       $hoje = date('Y-m-d');
@@ -30,10 +38,19 @@
       return $totaisHoje;
     }
     // Função para obter totais por status
-    function obterTotaisPorStatus($conn) {
-      $dados = $conn->query("SELECT status, total FROM vw_pedidos_por_status");
+    function obterTotaisPorStatus($conn, $ano) {
+      $stmt = $conn->prepare("
+        SELECT status, COUNT(*) AS total
+        FROM manutencao
+        WHERE YEAR(data_abertura) = ?
+        GROUP BY status
+      ");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
       $pendentes = $emAndamento = $finalizados = $rejeitados = 0;
-      while ($row = $dados->fetch_assoc()) {
+      while ($row = $res->fetch_assoc()) {
         switch ($row['status']) {
           case 'Pendente': $pendentes = $row['total']; break;
           case 'Em Andamento': $emAndamento = $row['total']; break;
@@ -41,31 +58,32 @@
           case 'Rejeitado': $rejeitados = $row['total']; break;
         }
       }
+      $stmt->close();
       return [$pendentes, $emAndamento, $finalizados, $rejeitados];
     }
-    // Função para obter ranking de responsáveis
-    function obterRankingResponsaveis($conn, $limite = 5) {
-          $sql = "
-            SELECT d.nome AS responsavel_nome, COUNT(*) as total
-            FROM manutencao m
-            JOIN docentes d ON m.responsavel = d.id
-            GROUP BY d.nome
-            ORDER BY total DESC
-            LIMIT ?
-          ";
-          $stmt = $conn->prepare($sql);
-          $stmt->bind_param('i', $limite);
-          $stmt->execute();
-          $res = $stmt->get_result();
     
-          $responsaveis = [];
-          $totais = [];
-          while ($r = $res->fetch_assoc()) {
-            $responsaveis[] = $r['responsavel_nome'];
-            $totais[] = $r['total'];
-          }
-          $stmt->close();
-          return [$responsaveis, $totais];
+    // Função para obter ranking de responsáveis
+    function obterRankingResponsaveis($conn, $ano) {
+      $stmt = $conn->prepare("
+        SELECT d.nome AS responsavel_nome, COUNT(*) as total
+        FROM manutencao m
+        JOIN docentes d ON m.responsavel = d.id
+        WHERE YEAR(m.data_abertura) = ?
+        GROUP BY d.nome
+        ORDER BY total DESC
+      ");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
+      $responsaveis = [];
+      $totais = [];
+      while ($r = $res->fetch_assoc()) {
+        $responsaveis[] = $r['responsavel_nome'];
+        $totais[] = $r['total'];
+      }
+      $stmt->close();
+      return [$responsaveis, $totais];
     }
     function obterRankingExecutantes($conn, $limite = 5) {
           $sql = "
@@ -88,29 +106,27 @@
           return [$responsaveis, $totais];
         }    
     // Função para calcular a média de dias de conclusão
-    function calcularMediaDiasConclusao($conn) {
-          $sqlMedia = "
-            SELECT AVG(
-              GREATEST(
-                DATEDIFF(data_encerramento, data_abertura),
-                0
-              )
-            ) AS media_dias
-            FROM manutencao
-            WHERE status = 'Concluído'
-              AND data_encerramento IS NOT NULL
-          ";
-          $resultMedia = $conn->query($sqlMedia);
+    function calcularMediaDiasConclusao($conn, $ano) {
+      $stmt = $conn->prepare("
+        SELECT AVG(GREATEST(DATEDIFF(data_encerramento, data_abertura), 0)) AS media_dias
+        FROM manutencao
+        WHERE status = 'Concluído'
+          AND data_encerramento IS NOT NULL
+          AND YEAR(data_encerramento) = ?
+      ");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      $mediaDias = 0;
     
-          $mediaDias = 0;
-          if ($row = $resultMedia->fetch_assoc()) {
-            $mediaBruta = $row['media_dias'];
-            $mediaDias = $mediaBruta !== null
-              ? round($mediaBruta, 1)
-              : 0;
-          }
-          return $mediaDias;
-        }
+      if ($row = $res->fetch_assoc()) {
+        $mediaBruta = $row['media_dias'];
+        $mediaDias = $mediaBruta !== null ? round($mediaBruta, 1) : 0;
+      }
+      $stmt->close();
+      return $mediaDias;
+    }
+    
         function buscarDadosPorSemana($conn, $anos, $status, $prioridade) {
           $placeholders = implode(',', array_fill(0, count($anos), '?'));
           $tipos = str_repeat('i', count($anos)) . 'ss';
@@ -209,30 +225,44 @@
       return $resultados;
     }
     // Função para buscar tickets por atendente (executante) com paginação
-    function buscarAtendentes($conn, $pagina = 1, $limite = 8) {
+    function buscarAtendentes($conn, $ano, $pagina = 1, $limite = 8) {
       $offset = ($pagina - 1) * $limite;
-      $totalRegistros = $conn->query("SELECT COUNT(DISTINCT d.id) AS total FROM docentes d WHERE d.tipo = 'Técnico'")->fetch_assoc()['total'];
+    
+      $totalRegistros = $conn->query("
+        SELECT COUNT(DISTINCT d.id) AS total 
+        FROM docentes d 
+        WHERE d.tipo = 'Técnico'
+      ")->fetch_assoc()['total'];
+      
       $totalPaginas = ceil($totalRegistros / $limite);
-
-      $sqlAtendentes = "
-      SELECT d.nome, d.nif,
-        SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
-        SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
-        SUM(CASE WHEN m.status = 'Concluído' THEN 1 ELSE 0 END) AS concluido
-      FROM docentes d
-      LEFT JOIN manutencao m ON d.id = m.executante
-      WHERE d.tipo = 'Técnico'
-      GROUP BY d.nome
-      ORDER BY d.nome
-      LIMIT $limite OFFSET $offset";
-
-      $resAtendentes = $conn->query($sqlAtendentes);
+    
+      $stmt = $conn->prepare("
+        SELECT d.nome, d.nif,
+          SUM(CASE WHEN m.status = 'Pendente' THEN 1 ELSE 0 END) AS pendente,
+          SUM(CASE WHEN m.status = 'Em Andamento' THEN 1 ELSE 0 END) AS andamento,
+          SUM(CASE WHEN m.status = 'Concluído' THEN 1 ELSE 0 END) AS concluido
+        FROM docentes d
+        LEFT JOIN manutencao m 
+          ON d.id = m.executante AND YEAR(m.data_abertura) = ?
+        WHERE d.tipo = 'Técnico'
+        GROUP BY d.nome
+        ORDER BY d.nome
+        LIMIT ? OFFSET ?
+      ");
+    
+      $stmt->bind_param('iii', $ano, $limite, $offset);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
       $atendentes = [];
-      while ($row = $resAtendentes->fetch_assoc()) {
+      while ($row = $res->fetch_assoc()) {
         $atendentes[] = $row;
       }
+    
+      $stmt->close();
       return [$atendentes, $totalPaginas];
     }
+    
     // --- Backlog e envelhecimento ---
     function calcularBacklogAge($conn) {
       $labelsAge = ['0–3 dias','4–7 dias','>7 dias'];
@@ -258,25 +288,29 @@
       return [$labelsAge, $dataAge];
     }
         // Função para calcular SLA (% concluído em <= 3 dias)
-    function calcularSLA($conn) {
-      $sqlSLA = "
-          SELECT COUNT(*) as total,
-               SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
-          FROM manutencao
-          WHERE status = 'Concluído' AND data_encerramento IS NOT NULL
-      ";
-          $resSLA = $conn->query($sqlSLA);
-          $rowSLA = $resSLA->fetch_assoc();
-          $sla = $rowSLA['total'] > 0 ? round(($rowSLA['dentro_prazo'] / $rowSLA['total']) * 100, 2) : 0;
-          return $sla;
+    function calcularSLA($conn, $ano) {
+          $stmt = $conn->prepare("
+            SELECT COUNT(*) as total,
+                   SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) as dentro_prazo
+            FROM manutencao
+            WHERE status = 'Concluído'
+              AND data_encerramento IS NOT NULL
+              AND YEAR(data_encerramento) = ?
+          ");
+          $stmt->bind_param('i', $ano);
+          $stmt->execute();
+          $res = $stmt->get_result();
+          $row = $res->fetch_assoc();
+          $stmt->close();
+        
+          return $row['total'] > 0 ? round(($row['dentro_prazo'] / $row['total']) * 100, 2) : 0;
     }
     // Função para calcular SLA por prioridade (% concluído em ≤3 dias)
-    function calcularSlaPorPrioridade($conn, $prioridades) {
-      // Monta a lista de prioridades para o IN
+    function calcularSlaPorPrioridade($conn, $prioridades, $ano) {
       $prioridadesEscapadas = array_map([$conn, 'real_escape_string'], $prioridades);
       $prioridadesIn = "'" . implode("','", $prioridadesEscapadas) . "'";
-
-      $sqlSLAprioridade = "
+    
+      $stmt = $conn->prepare("
         SELECT
           prioridade,
           SUM(CASE WHEN DATEDIFF(data_encerramento, data_abertura) <= 3 THEN 1 ELSE 0 END) AS dentro_prazo,
@@ -284,27 +318,31 @@
         FROM manutencao
         WHERE prioridade IN ($prioridadesIn)
           AND status = 'Concluído'
+          AND data_encerramento IS NOT NULL
+          AND YEAR(data_encerramento) = ?
         GROUP BY prioridade
-      ";
-      $resSLAprioridade = $conn->query($sqlSLAprioridade);
-
-      // Inicializa com zeros
+      ");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
       $slaPorPrioridade = array_fill(0, count($prioridades), 0);
-      while ($row = $resSLAprioridade->fetch_assoc()) {
-        $p = $row['prioridade'];
-        $idx = array_search($p, $prioridades);
+      while ($row = $res->fetch_assoc()) {
+        $idx = array_search($row['prioridade'], $prioridades);
         if ($idx !== false && $row['total'] > 0) {
           $slaPorPrioridade[$idx] = round(($row['dentro_prazo'] / $row['total']) * 100, 2);
         }
       }
+      $stmt->close();
       return $slaPorPrioridade;
     }
+    
     // Função para calcular médias de horas e totais por prioridade para o Cross-Trend
-    function calcularCrossTrend($conn, $prioridades) {
-      $prioridadesLower = array_map('mb_strtolower', $prioridades); // ['alta', 'média', 'baixa']
+    function calcularCrossTrend($conn, $prioridades, $ano) {
+      $prioridadesLower = array_map('mb_strtolower', $prioridades);
       $prioridadesIn = "'" . implode("','", $prioridadesLower) . "'";
-      
-      $sqlCross = "
+    
+      $stmt = $conn->prepare("
         SELECT LOWER(prioridade) as prioridade,
                AVG(TIMESTAMPDIFF(DAY, data_abertura, data_encerramento)) AS media_d,
                COUNT(*) AS tot
@@ -312,17 +350,20 @@
         WHERE status = 'Concluído'
           AND prioridade IS NOT NULL
           AND LOWER(prioridade) IN ($prioridadesIn)
+          AND YEAR(data_encerramento) = ?
         GROUP BY LOWER(prioridade)
-      ";
-      
-      $resCross = $conn->query($sqlCross);
+      ");
+      $stmt->bind_param('i', $ano);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
       $mediaDias = [];
       $totaisCross = [];
       foreach ($prioridades as $p) {
         $mediaDias[$p] = 0;
         $totaisCross[$p] = 0;
       }
-      while ($row = $resCross->fetch_assoc()) {
+      while ($row = $res->fetch_assoc()) {
         $p = $row['prioridade'];
         $idx = array_search(mb_strtolower($p), array_map('mb_strtolower', $prioridades));
         if ($idx !== false) {
@@ -330,10 +371,13 @@
           $totaisCross[$prioridades[$idx]] = (int)$row['tot'];
         }
       }
-      $mediaDias = array_values(array_map(fn($p) => $mediaDias[$p], $prioridades));
-      $totaisCross = array_values(array_map(fn($p) => $totaisCross[$p], $prioridades));      
-      return [$mediaDias, $totaisCross];
+      $stmt->close();
+      return [
+        array_values(array_map(fn($p) => $mediaDias[$p], $prioridades)),
+        array_values(array_map(fn($p) => $totaisCross[$p], $prioridades))
+      ];
     }
+    
     // Função para obter pedidos por mês para um responsável e ano
     function obterPedidosPorMesResponsavel($conn, $responsavel, $ano) {
           $stmt = $conn->prepare("
@@ -500,20 +544,20 @@
     }
 
     // Uso das funções agrupadas
-    list($pendentes, $emAndamento, $finalizados, $rejeitados) = obterTotaisPorStatus($conn);
-    list($responsaveis, $totais) = obterRankingResponsaveis($conn);
-    $mediaDias = calcularMediaDiasConclusao($conn);
+    list($pendentes, $emAndamento, $finalizados, $rejeitados) = obterTotaisPorStatus($conn, $anoSelecionado);
+    list($responsaveis, $totais) = obterRankingResponsaveis($conn, $anoSelecionado);
+    $mediaDias = calcularMediaDiasConclusao($conn, $anoSelecionado);
     $labelsMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    $anoSelecionado = (int)($_GET['ano'] ?? date('Y'));
+
     $dadosMesStatus = buscarDadosMesStatus($conn, $anoSelecionado);
 
     $totaisHoje = buscarTotaisHoje($conn);
     $totalHoje = array_sum($totaisHoje);
 
-    $sla = calcularSLA($conn);
+    $sla = calcularSLA($conn, $anoSelecionado);
 
     $pagina = isset($_GET['pagina_atendentes']) ? (int)$_GET['pagina_atendentes'] : 1;
-    list($atendentes, $totalPaginas) = buscarAtendentes($conn, $pagina);
+    list($atendentes, $totalPaginas) = buscarAtendentes($conn, $anoSelecionado, $pagina);
 
     // --- Tendência mensal de aberturas vs. fechamentos (sem consultas no loop) ---
     $labelsTrend  = [];
@@ -530,21 +574,21 @@
     // array de prioridades
     $prioridades = ['Alta','Média','Baixa'];
     // SLA por prioridade (% concluído em ≤3 dias)
-    $slaPorPrioridade = calcularSlaPorPrioridade($conn, $prioridades);
+    $slaPorPrioridade = calcularSlaPorPrioridade($conn, $prioridades, $anoSelecionado);
 
     // para o comparativo ano a ano (sem consultas dentro do loop)
     $meses = range(1,12);
-    $anoAtual   = (int) date('Y');
+    $anoAtual   = $anoSelecionado;
     $anoAnterior = $anoAtual - 1;
     // Busca aberturas do ano anterior agrupadas por mês
     $anterior = buscarAberturasPorMes($conn, $anoAnterior);
-    $abertosMes   = buscarAberturasPorMes($conn, $anoAtual);
+    $abertosMes   = buscarAberturasPorMes($conn, $anoSelecionado);
     $fechadosMes  = buscarAberturasPorMes($conn, $anoAnterior);
 
     // Uso da função
-    list($mediaHoras, $totaisCross) = calcularCrossTrend($conn, $prioridades);
+    list($mediaHoras, $totaisCross) = calcularCrossTrend($conn, $prioridades, $anoSelecionado);
 
-    $anos = [$anoAnterior, $anoAtual];
+    $anos = [$anoAnterior, $anoSelecionado];
     $statusList = ['Pendente', 'Em Andamento', 'Concluído'];
     $prioridades = ['Urgente', 'Média', 'Baixa'];
     $dadosYoYDetalhado = buscarDadosYoYDetalhado($conn, $anos, $statusList, $prioridades);
@@ -586,12 +630,16 @@
     }
   }
   
+  $cores = [];
+foreach ($responsaveis as $i => $r) {
+    $cores[] = sprintf("hsl(%d, 70%%, 60%%)", ($i * 60) % 360);
+}
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
     <head>
         <meta charset="UTF-8">
-        <title>Dashboard Gerencial</title>
+        <title>Dashboard de Desempenho de Manutenção</title>
         <link rel="stylesheet" href="../css/padrao.css">
         <link rel="stylesheet" href="../css/dashboard.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -600,6 +648,45 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <style>
+          #anoForm{
+            width: fit-content;
+          }
+
+          select {
+    appearance: none;
+    /* remove a aparência padrão do sistema */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    box-shadow: inset -4px -4px 6px -1px white,
+        inset 2px 2px 8px -1px rgba(72, 79, 96, 0.3);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%232a9d8f" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    user-select: none;
+}
+
+select:focus {
+    outline: none;
+    border-color: #2a9d8f;
+    box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.3);
+}
+
+select:hover {
+    border-color: #8bc34a;
+}
+        </style>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
         <aside class="sidebar">
@@ -610,7 +697,7 @@
         <main class="main-content d-flex flex-md-column w-100 h-100">
             <header class="top-bar mt-2 animate__animated animate__fadeInDown">
                 <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-                <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
+                <h2 class="title text-center mb-4">Dashboard de Desempenho de Manutenção</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
                   <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                       <?= htmlspecialchars($_SESSION['nome']) ?>
@@ -625,8 +712,24 @@
                     </a>
                 </div>
             </header>
-            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">
+            
+            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">                
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100" id="topo">
+                <div class="d-flex justify-content-end px-4 w-100" id="ano-selector" class="d-flex animate_animated animate__fadeInDownBig">
+                <form method="get" id="anoForm" class="form-inline d-flex animate_animated animate__fadeInDownBig" style="width: fit-content; min-width: 200px; flex-direction: row; align-items: center; gap:10px;">
+                <a href="insights.php" title="Comparativo entre anos" class="btn btn-outline-secondary" style="border-radius: 50%; padding: 0.5rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-symbols-outlined">query_stats</span>
+                  </a><label for="ano" class="me-2">Ano: 
+                </label>
+                  <select name="ano" id="ano" class="form-select w-auto" onchange="document.getElementById('anoForm').submit();">
+                    <?php foreach ($anosDisponiveis as $ano): ?>
+                      <option value="<?= $ano ?>" <?= $ano == $anoSelecionado ? 'selected' : '' ?>>
+                        <?= $ano ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </form>
+              </div>
                     <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
@@ -681,7 +784,7 @@
                                 </nav>
                           </div>
                     </div>
-                    <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight" id="cards-metricas">
+                    <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight" id="cards-metricas" style="min-width: 200px; flex:1;">
                             <div class="info-box bg-pink hover-expand-effect">
                                 <div class="icon">
                                     <span class="material-symbols-outlined">
@@ -755,9 +858,6 @@
                     <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm" style="height: 420px;">
-                            <h5 class="title text-center">
-                              <span class="material-symbols-outlined">pie_chart</span> 
-                              Pedidos por bloco</h5>
                             <canvas id="graficoSetor"></canvas>
                         </div>
                     </div>
@@ -771,25 +871,23 @@
                     </div>
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
-                <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-                            <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
-                            <div class="chart-wrapper">
-                                <canvas id="rankingChart" hei style="width: 100%; min-height: 520px;"></canvas>
+                <div class="p-2 m-auto animate__animated animate__fadeInUp"  style="flex:1; min-width: 150px; min-height: 300px;">
+                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
+                            <div class="chart-wrapper"  style="width:300px; overflow-x: auto;">
+                                <canvas id="rankingChart"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-2 m-auto animate__animated animate__fadeInUp">
-                        <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
-
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
+                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
                             <div class="chart-wrapper w-100">
-                                <canvas id="chartSLA"></canvas>
+                                <canvas id="chartSLA" style="width:100%; height: 300px;"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
+                <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap"  style="flex:1; min-width: 300px;">
                     <div class="p-2  m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
                             <div class="chart-wrapper">
@@ -797,7 +895,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2  w-75 h-100 m-auto animate__animated animate__fadeInUp">
+                    <div class="p-2  w-75 h-100 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width: 450px; min-height: 300px;">
                         <div class="chart-container card p-3 shadow-sm">
                         <select id="prioridadeFiltro" class="form-select w-auto mb-2">
                           <option value="Todas">Todas as Prioridades</option>
@@ -805,7 +903,7 @@
                           <option value="Média">Média</option>
                           <option value="Baixa">Baixa</option>
                         </select>
-                            <div class="chart-wrapper">
+                            <div class="chart-wrapper" height="100%">
                                 <canvas id="chartYoY" width="85%" ></canvas>
                             </div>
                         </div>
@@ -818,8 +916,8 @@
             </div>
             <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
             <a href="listar_funcionarios.php" class="" title="Visualizar funcionários">
-        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img animate__animated animate__fadeInUp">
-    </a>
+                <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img animate__animated animate__fadeInUp">
+            </a>
             <a href="export_data.php" class="" title="Exportar dados">
             <img src="../img/exportar-arquivo.png" alt="add-user" class="add-dash-img animate__animated animate__fadeInUp">
             </a>
@@ -906,35 +1004,28 @@
     });
 
     const rankingChart = new Chart(rankingCtx, {
-      type: 'bar',
-      data: {
-        labels: <?= json_encode($responsaveis) ?>,
-        datasets: [{
-          label: 'Problemas Reportados',
-          data: <?= json_encode($totais) ?>,
-          backgroundColor: infoCyan,
-          borderColor: infoCyan,
-          borderWidth: 1
-        }]
+  type: 'polarArea',
+  data: {
+    labels: <?= json_encode($responsaveis) ?>,
+    datasets: [{
+      label: 'Chamados por Responsável',
+      data: <?= json_encode($totais) ?>,
+      backgroundColor: cores.slice(0, <?= count($responsaveis) ?>)
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,  
-        plugins: { legend:{display:false} },
-        scales: { y:{beginAtZero:true,precision:0} },
-        onClick: (evt, elems) => {
-          if (!elems.length) return;
-          const resp = rankingChart.data.labels[elems[0].index];
-          // status para esse responsável
-          fetch(`?action=ranking_por_status&status=${encodeURIComponent(resp)}&year=${yearSelected}`)
-            .then(r=>r.json()).then(json=>{
-              statusChart.data.labels = json.labels;
-              statusChart.data.datasets[0].data = json.data;
-              statusChart.update();
-            });
-        }
+      title: {
+        display: true,
+        text: 'Chamados por Responsável'
       }
-    });
+    }
+  }
+});
 
     const backlogCtx = document.getElementById('backlogChart').getContext('2d');
     new Chart(backlogCtx, {
@@ -1087,7 +1178,7 @@
 );
 
 
-    const fetchSetor = fetch('dados_por_setor.php')
+  const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
       .then(res => res.json())
       .then(data => {
         const labels = data.map(item => item.bloco);
@@ -1099,6 +1190,7 @@
           data: {
             labels: labels,
             datasets: [{
+              label: 'Ordens de serviço por Bloco',
               data: valores,
               backgroundColor: cores.slice(0, valores.length),
               borderWidth: 0
@@ -1115,6 +1207,10 @@
               },
               tooltip: {
                 enabled: false
+              },
+              title: {
+                display: true,
+                text: 'Ordens de serviço por Bloco',
               },
               datalabels: {
                 color: '#fff',

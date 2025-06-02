@@ -448,6 +448,14 @@ td.nomeAtendente:hover {
   transform: scale(1.1);
 }
 
+#anoForm {
+  position: absolute;
+  left: 5%;
+  width: fit-content;
+  height: fit-content;
+  transition: all 0.3s ease-in-out;
+}
+
 @media (min-width: 1024px) {
   #topo {
     display: inline-flex;
@@ -458,6 +466,11 @@ td.nomeAtendente:hover {
 }
 
 @media (max-width: 1024px) {
+  #anoForm {
+    position: relative;
+    width: 100%;
+  }
+
   .dashboard-container {
     width: 100%;
     display: inline-flex;

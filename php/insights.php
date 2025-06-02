@@ -125,7 +125,7 @@ $insights[] = $eficacia2 > $eficacia1
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Desempenho de Manutenção</title>
+    <title>Painel de indicadores de manutenção</title>
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/insights.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -165,7 +165,7 @@ $insights[] = $eficacia2 > $eficacia1
 
 <header class="top-bar mt-2 animate__animated animate__fadeInDown" style="height: 80px;">
             <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2 class="title text-center mb-4">Dashboard de Desempenho de Manutenção</h2>
+            <h2 class="title text-center mb-4">Painel de Indicadores de Manutenção</h2>
             <div class="welcome-msg me-3 text-dark fw-bold">
               <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                   <?= htmlspecialchars($_SESSION['nome']) ?>

@@ -1,16 +1,23 @@
 <?php
-    session_start();
-    if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
-        header("Location: index.php");
-        exit();
-    }
 include 'conexao.php';
-$result = $conn->query("SELECT bloco, COUNT(*) as total FROM manutencao GROUP BY bloco");
-$data = [];
 
-while ($row = $result->fetch_assoc()) {
-    $data[] = ['bloco' => $row['bloco'], 'total' => (int)$row['total']];
+$ano = isset($_GET['ano']) && is_numeric($_GET['ano']) ? (int)$_GET['ano'] : date('Y');
+
+$stmt = $conn->prepare("
+  SELECT bloco, COUNT(*) as total
+  FROM manutencao
+  WHERE bloco IS NOT NULL
+    AND YEAR(data_abertura) = ?
+  GROUP BY bloco
+");
+$stmt->bind_param('i', $ano);
+$stmt->execute();
+$res = $stmt->get_result();
+
+$dados = [];
+while ($row = $res->fetch_assoc()) {
+    $dados[] = $row;
 }
 
 header('Content-Type: application/json');
-echo json_encode($data);
+echo json_encode($dados);
