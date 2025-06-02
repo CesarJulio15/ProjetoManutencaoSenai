@@ -1,0 +1,506 @@
+main {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    /* cor de respaldo, caso browser não suporte gradientes */
+    background-color: #e1e1e1;
+
+    /* a ordem importa: 
+           – primeiro vem o gradiente que ficará por cima,
+           – depois o próximo, e assim por diante,
+           – por último a cor sólida (background-color) */
+    background-image: linear-gradient(135deg, #f5f7fa, #c3cfe2),
+        /* camada 1 */
+        repeating-radial-gradient(circle at 0 0,
+            /* camada 2 */
+            transparent 0,
+            #e1e1e1 10px),
+        repeating-linear-gradient(
+            /* camada 3 */
+            #dbdbdb55, #dbdbdb);
+
+    /* controla blendagem entre camadas, opcional */
+    background-blend-mode: normal, normal, normal;
+
+    /* se não quiser afetar o conteúdo (textos, botões) com opacity,
+           é melhor usar um pseudo-elemento só para o background */
+    /* opacity: 0.8;  <-- evite usar no próprio elemento */
+}
+
+.container {
+    max-width: 1000px;
+    width: 100%;
+}
+
+/* Estilos do cabeçalho */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-size: 36px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 32px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+    position: relative;
+}
+
+header::after {
+    content: '';
+    display: block;
+    width: 80%;
+    height: 1px;
+    background-color: #ccc;
+    margin: 10px auto;
+}
+
+/* Estilos adicionais para o formulário de seleção de anos */
+.year-selector {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.year-selector form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.year-selector select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: white;
+}
+
+.year-selector button {
+    padding: 8px 20px;
+    background-color: #2a9d8f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.year-selector button:hover {
+    background-color: #238b7e;
+}
+
+/* Estilos para barras dinâmicas */
+.teal-track,
+.green-track {
+    transition: width 0.5s ease-in-out;
+}
+
+/* Estilos para posicionamento dinâmico das bolhas */
+.slider-container {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.slider-track {
+    position: relative;
+}
+
+.slider-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background-color: #2a9d8f;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    z-index: 2;
+    transition: all 0.5s ease-in-out;
+    float: right;
+    margin-right: -30px;
+    margin-top: -25px;
+}
+
+.green-circle {
+    background-color: #8bc34a;
+}
+
+
+.right-metric .slider-container {
+    direction: ltr;
+}
+
+.slider-dot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+}
+
+/* Estilos dos anos */
+.years-container {
+    display: flex;
+    justify-content: space-evenly;
+    /* margin-bottom: 30px; */
+    align-items: center;
+}
+
+.year-column {
+    width: 45%;
+    display: flex;
+    justify-content: center;
+}
+
+.year-label {
+    display: inline-block;
+    position: relative;
+    padding: 8px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0px 0.5em 0.5em 0px;
+    user-select: none;
+}
+
+.year-previous .year-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #2a9d8f;
+}
+
+.year-next .year-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #8bc34a;
+}
+
+/* Estilos das métricas */
+.metrics-container {
+    width: 100%;
+    padding: 20px;
+    /* margin-bottom: 40px; */
+    user-select: none;
+    background: #f8f9fa;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* margin-bottom: 20px; */
+    height: 100%;
+}
+
+.left-metric,
+.right-metric {
+    width: 45%;
+    position: relative;
+}
+
+.left-metric .slider-container {
+    direction: rtl;
+}
+
+.left-metric .slider-track {
+    direction: ltr;
+}
+
+.center-metric {
+    width: 22%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    /* Sombra apenas nas laterais */
+    box-shadow: -6px 0 10px -4px rgba(0, 0, 0, 0.1),
+        6px 0 10px -4px rgba(0, 0, 0, 0.1)
+}
+
+.icon-container {
+    width: 40px;
+    height: 40px;
+    font-size: x-large;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.icon-container i {
+    font-size: 24px;
+    color: #666;
+}
+
+.metric-label {
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.2;
+    text-align: center;
+    text-wrap: pretty;
+    font-weight: 600;
+}
+
+/* Estilos dos sliders */
+.slider-container {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.slider-track {
+    height: 24px;
+    /* Aumentado de 10px para 24px para barras mais grossas */
+    width: 100%;
+    border-radius: 12px;
+    /* Ajustado para metade da altura para manter proporção */
+}
+
+.teal-track {
+    background-color: #2a9d8f;
+}
+
+.green-track {
+    background-color: #8bc34a;
+}
+
+.slider-circle {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: #2a9d8f;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    z-index: 2;
+    transition: all 0.3s ease-in-out;
+}
+
+
+.slider-circle::after {
+    content: "";
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    border: 0.007em solid #f8f9fa;
+    z-index: 3;
+    user-select: none;
+}
+
+.green-circle {
+    background-color: #8bc34a;
+}
+
+.left-metric .slider-track {
+    border-radius: 20px 0px 00px 20px;
+    direction: ltr;
+}
+
+.left-metric .slider-circle {
+    right: 85%;
+    transform: translate(-30%, 15%);
+}
+
+.right-metric .slider-circle {
+    right: 15%;
+    transform: translate(30%, 15%);
+}
+
+.slider-dot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+}
+
+.left-metric .slider-dot {
+    display: none;
+    /* right: 0; */
+    left: 4%;
+    transform: translateX(-55%);
+}
+
+.right-metric .slider-dot {
+    display: none;
+    right: 0;
+    transform: translateX(50%);
+}
+
+.right-metric .slider-track {
+    border-radius: 0 20px 20px 0px;
+    direction: ltr;
+}
+
+/* Estilos dos insights */
+.insights-container {
+    margin-top: 10px;
+    background: #f8f9fa;
+}
+
+.insights-header {
+    position: relative;
+    display: inline-block;
+    padding: 8px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 0px 0.5em 0.5em 0px;
+}
+
+.insights-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #2a9d8f;
+}
+
+.insights-content {
+    width: 100%;
+    min-height: 90px;
+    height: 100%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    align-content: flex-start;
+    padding-left: 20px;
+    gap: 8px;
+    background: #f8f9fa;
+}
+
+.insights-content p {
+    display: inline-flex;
+    margin-bottom: 10px;
+    gap: 5px;
+    font-size: 14px;
+    color: #333;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: flex-start;
+}
+
+.insights-content i {
+    margin-right: 5px;
+    color: #666;
+}
+
+/* Ícones específicos */
+.fa-clock,
+.fa-users,
+.fa-chart-line,
+.fa-cogs,
+.fa-gears {
+    color: #2a9d8f;
+}
+
+select {
+    appearance: none;
+    /* remove a aparência padrão do sistema */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    box-shadow: inset -4px -4px 6px -1px white,
+        inset 2px 2px 8px -1px rgba(72, 79, 96, 0.3);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%232a9d8f" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    user-select: none;
+}
+
+select:focus {
+    outline: none;
+    border-color: #2a9d8f;
+    box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.3);
+}
+
+select:hover {
+    border-color: #8bc34a;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    .metric-row {
+        flex-direction: column;
+        margin-bottom: 40px;
+    }
+
+    .left-metric,
+    .right-metric,
+    .center-metric {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .center-metric {
+        order: -1;
+        margin-bottom: 20px;
+    }
+}

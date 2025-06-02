@@ -52,3 +52,13 @@ SELECT
 FROM manutencao
 WHERE status = 'Concluído'
 GROUP BY bloco;
+
+CREATE OR REPLACE VIEW vw_ano_semana_status_prioridade AS
+SELECT 
+    YEAR(data_abertura) AS ano,
+    WEEK(data_abertura, 1) AS semana,
+    status,
+    prioridade,
+    COUNT(*) AS total
+FROM manutencao
+GROUP BY ano, semana, status, prioridade;

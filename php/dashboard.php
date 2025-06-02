@@ -111,7 +111,35 @@
           }
           return $mediaDias;
         }
-    
+        function buscarDadosPorSemana($conn, $anos, $status, $prioridade) {
+          $placeholders = implode(',', array_fill(0, count($anos), '?'));
+          $tipos = str_repeat('i', count($anos)) . 'ss';
+          $sql = "
+              SELECT 
+                  YEAR(data_abertura) AS ano,
+                  WEEK(data_abertura, 1) AS semana,
+                  COUNT(*) AS total
+              FROM manutencao
+              WHERE YEAR(data_abertura) IN ($placeholders)
+                AND status = ?
+                AND prioridade = ?
+              GROUP BY ano, semana
+              ORDER BY ano, semana
+          ";
+          $stmt = $conn->prepare($sql);
+          $params = array_merge($anos, [$status, $prioridade]);
+          $stmt->bind_param($tipos, ...$params);
+          $stmt->execute();
+          $res = $stmt->get_result();
+      
+          $dados = [];
+          while ($row = $res->fetch_assoc()) {
+              $dados[$row['ano']][$row['semana']] = (int)$row['total'];
+          }
+      
+          return $dados;
+      }
+      
     // Função para buscar dados por mês e status (visão mensal)
     function buscarDadosMesStatus($conn, $anoSelecionado) {
       $dados = [
@@ -385,6 +413,49 @@
 
           return ['labels' => $labels, 'datasets' => $datasets];
     }
+
+    function buscarDadosYoYDetalhado($conn, $anos, $statusList, $prioridades) {
+      $placeholders = implode(',', array_fill(0, count($anos), '?'));
+      $tipos = str_repeat('i', count($anos));
+      $sql = "
+          SELECT 
+              YEAR(data_abertura) AS ano,
+              MONTH(data_abertura) AS mes,
+              status,
+              prioridade,
+              COUNT(*) AS total
+          FROM manutencao
+          WHERE YEAR(data_abertura) IN ($placeholders)
+          GROUP BY ano, mes, status, prioridade
+      ";
+    
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param($tipos, ...$anos);
+      $stmt->execute();
+      $res = $stmt->get_result();
+    
+      // Inicializa estrutura corretamente
+      $dados = [];
+      foreach ($anos as $a) {
+          foreach ($statusList as $s) {
+              foreach ($prioridades as $p) {
+                  $dados[$a][$s][$p] = array_fill(1, 12, 0);
+              }
+          }
+      }
+    
+      while ($row = $res->fetch_assoc()) {
+          $a = $row['ano'];
+          $m = (int)$row['mes'];
+          $s = $row['status'];
+          $p = $row['prioridade'];
+          if (isset($dados[$a][$s][$p][$m])) {
+              $dados[$a][$s][$p][$m] = (int)$row['total'];
+          }
+      }
+    
+      return $dados;
+    }
     
     // =====================
     // ENDPOINTS AJAX PARA DRILL-DOWN/UP
@@ -472,6 +543,49 @@
 
     // Uso da função
     list($mediaHoras, $totaisCross) = calcularCrossTrend($conn, $prioridades);
+
+    $anos = [$anoAnterior, $anoAtual];
+    $statusList = ['Pendente', 'Em Andamento', 'Concluído'];
+    $prioridades = ['Urgente', 'Média', 'Baixa'];
+    $dadosYoYDetalhado = buscarDadosYoYDetalhado($conn, $anos, $statusList, $prioridades);
+
+    $coresBase = [
+      'Urgente' => '#dc3545',
+      'Média'   => '#007bff',
+      'Baixa'   => '#6c757d',
+    ];
+    $paleta = [
+      '#872361', '#75ff85', '#8747ff', // ano 1
+      '#e00b55', '#00e988', ' #feb43c', // ano 2
+      '#f44336', '#2196f3', '#607d8b', // ano 3
+      '#ff5722', '#00bcd4', '#8bc34a', // ano 4
+      '#795548', '#009688', '#ffc107', // ano 5
+  ];
+  $estilos = [];
+  $corIndex = 0;
+  foreach ($anos as $ano) {
+    foreach ($statusList as $status) {
+      foreach ($prioridades as $prioridade) {
+        $label = "$ano - $prioridade - $status";
+        $dadosMes = $dadosYoYDetalhado[$ano][$status][$prioridade] ?? [];
+        $data = array_map(fn($i) => $dadosMes[$i] ?? 0, range(1, 12));
+        
+        $cor = $paleta[$corIndex % count($paleta)];
+        $estilos[] = [
+          'label' => $label,
+          'data' => $data,
+          'fill' => true,
+          'backgroundColor' => $cor . '33',
+          'borderColor' => $cor,
+          'borderWidth' => 1,
+          'tension' => 0.3,
+          'stack' => "$ano-$status"
+        ];
+        $corIndex++;
+      }
+    }
+  }
+  
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -632,7 +746,7 @@
                                       </span></button>
                                   </h5>
                               </div>
-                            <canvas id="multiLineChart" height="320" ></canvas>
+                            <canvas id="multiLineChart" height="320px" ></canvas>
                         </div>
                     </div>
 
@@ -661,7 +775,7 @@
                         <div class="chart-container card p-3 shadow-sm" style="width: 700px;">
                             <h5 class="title text-center"><i class="fa-solid fa-chart-simple"></i> Top 5 Responsáveis</h5>
                             <div class="chart-wrapper">
-                                <canvas id="rankingChart"></canvas>
+                                <canvas id="rankingChart" hei style="width: 100%; min-height: 520px;"></canvas>
                             </div>
                         </div>
                     </div>
@@ -683,10 +797,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-2  m-auto animate__animated animate__fadeInUp">
+                    <div class="p-2  w-75 h-100 m-auto animate__animated animate__fadeInUp">
                         <div class="chart-container card p-3 shadow-sm">
+                        <select id="prioridadeFiltro" class="form-select w-auto mb-2">
+                          <option value="Todas">Todas as Prioridades</option>
+                          <option value="Urgente">Urgente</option>
+                          <option value="Média">Média</option>
+                          <option value="Baixa">Baixa</option>
+                        </select>
                             <div class="chart-wrapper">
-                                <canvas id="chartYoY"></canvas>
+                                <canvas id="chartYoY" width="85%" ></canvas>
                             </div>
                         </div>
                     </div>
@@ -856,49 +976,56 @@
           scales: {
             y: {
               beginAtZero: true,
-              max: 100,
-              ticks: {
-                callback: v => v + '%'
+              stacked: false,
+              title: {
+                display: true,
+                text: 'Total de Pedidos'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Mês'
               }
             }
           }
+
         }
       }
     );
 
-    // 2) Comparativo Ano a Ano (Aberturas)
-    const chartYoY = new Chart(
-      document.getElementById('chartYoY').getContext('2d'),
-      {
-        type: 'line',
-        data: {
-          labels: <?= json_encode(array_map(fn($m)=>sprintf('%02d',$m), $meses)) ?>,
-          datasets: [
-            {
-              label: '<?= $anoAtual ?>',
-              data: <?= json_encode($abertosMes) ?>,
-              fill: false
-            },
-            {
-              label: '<?= $anoAnterior ?>',
-              data: <?= json_encode($fechadosMes) ?>,
-              fill: false
-            }
-          ]
-        },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: 'Comparativo Ano a Ano (aberturas)'
-            }
-          },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
+ 
+    const chartYoY = new Chart(document.getElementById('chartYoY'), {
+  type: 'line',
+  data: {
+    labels: <?= json_encode(['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']) ?>,
+    datasets: <?= json_encode($estilos) ?>
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Comparativo Ano a Ano por Prioridade e Status'
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false
+      },
+      legend: {
+        position: 'bottom'
       }
-    );
+    },
+    interaction: {
+      mode: 'index',
+      intersect: false
+    },
+    scales: {
+  y: { beginAtZero: true, stacked: true },
+  x: { stacked: true }
+}
+  }
+});
 
     // 3) Cross-Trend: Tempo Médio × Volume de Chamados
     $prioridades = ['Urgente', 'Média', 'Baixa'];
@@ -1098,6 +1225,25 @@ backBtn.addEventListener('click', () => {
   multiLineChart.update();
   backBtn.style.display = 'none';
 });
+  </script>
+  <script>
+const dadosCompleto = <?= json_encode($estilos) ?>;
+
+function atualizarGraficoYoY(filtroPrioridade) {
+  const datasetsFiltrados = filtroPrioridade === 'Todas'
+    ? dadosCompleto
+    : dadosCompleto.filter(ds => ds.label.includes(filtroPrioridade));
+  
+  chartYoY.data.datasets = datasetsFiltrados;
+  chartYoY.update();
+}
+
+document.getElementById('prioridadeFiltro').addEventListener('change', e => {
+  atualizarGraficoYoY(e.target.value);
+});
+
+// Inicializa com todas
+atualizarGraficoYoY('Todas');
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>
