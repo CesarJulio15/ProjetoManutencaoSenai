@@ -1,4 +1,9 @@
 <?php
+  session_start();
+if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+  header("Location: index.php");
+  exit();
+}
 include 'conexao.php';
 
 function getDadosAno($conn, $ano) {
