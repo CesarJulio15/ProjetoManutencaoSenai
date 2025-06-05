@@ -62,7 +62,7 @@ $total_paginas = ceil($total_registros / $limite);
 <main class="main-content">
     <div class="top-bar animate__animated animate__fadeInDown">
     <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-    <h2 class="title text-center mb-4">Lista de Docentes</h2>
+    <h2 class="title text-center mb-4">Lista de Funcionários</h2>
         <form method="get" class="search-box ">
             <select name="tipo">
                 <option value="">Todos os tipos</option>

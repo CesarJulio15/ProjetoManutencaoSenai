@@ -1,9 +1,9 @@
 <?php
 // Detalhes da conexão
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_plano";
+$servername = "sh-pro66.hostgator.com.br";
+$username = "devgom44_gomesfelipe";
+$password = "Fgs@31447489";
+$dbname = "devgom44_db_plano";
 $charset = 'utf8mb4';
 
 // Cria a conexão

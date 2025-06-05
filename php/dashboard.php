@@ -32,7 +32,6 @@
               }
               select {
                 appearance: none;
-                /* remove a aparência padrão do sistema */
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 width: 100%;
@@ -64,12 +63,13 @@
                 border-color: #8bc34a;
             }
             #graficoArea {
-        width: 100%;
-        height: 500px;
-      }
+              width: 100%;
+              height: 500px;
+            }       
         </style>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
+
         <aside class="sidebar">
             <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
             <div class="spacer"></div>
@@ -94,7 +94,7 @@
                 </div>
             </header>
             
-            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100">                
+            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100" style="position:relative;left:0;">                
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100" id="topo">
                 <div class="d-flex justify-content-end px-4 w-100" id="ano-selector" class="d-flex animate_animated animate__fadeInDownBig">
                 <form method="get" id="anoForm" class="form-inline d-flex animate_animated animate__fadeInDownBig" style="width: fit-content; min-width: 200px; flex-direction: row; align-items: center; gap:10px;">
@@ -112,23 +112,23 @@
                 </form>
               </div>
               <?php if ($anoSelecionado == date('Y')): ?>
-                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:300px"  id="status-hoje">
+                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:270px; position:relative;left:0;"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
                             <ul class="list-group">
                                 <li class="list-group-item "><b>Pendente:</b> <?= $totaisHoje['Pendente'] ?></li>
                                 <li class="list-group-item"><b>Em Andamento:</b> <?= $totaisHoje['Em Andamento'] ?></li>
                                 <li class="list-group-item"><b>Concluído:</b> <?= $totaisHoje['Concluído'] ?></li>
-                                <li class="list-group-item fw-bold">Total: <?= $totalHoje ?></li>
-                                <li class="list-group-item text-success">SLA (<= 3 dias): <?= $sla ?>%</li>
+                                <li class="list-group-item fw-bold"><b>Total:</b> <?= $totalHoje ?></li>
+                                <li class="list-group-item text-success"><b>SLA (<= 3 dias): </b><?= $sla ?>%</li>
                             </ul>
                         </div>
                     </div>
                     <?php endif; ?>
-                    <div class="card p-3 m-auto shadow-sm h-100 d-flex flex-column" id="tecnicos">
+                    <div class="card p-3 m-auto shadow-sm h-100 d-flex flex-column" style="min-width:500px;" id="tecnicos">
                         <h5 class="title"><i class="fa-solid fa-ticket"></i> Tickets por Atendente</h5>
-                        <div class="table-wrapper" style="overflow-x:auto;">
-                                <table class="" style="border-radius:15px 15px 0 0; ">
+                        <div class="table-wrapper w-100" style="overflow-x:auto; width:100%;">
+                                <table class="w-100" style="border-radius:15px 15px 0 0; ">
                                     <thead>
                                         <tr>
                                             <th>Nome</th>
@@ -344,462 +344,462 @@
     /*const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');*/
 
     const statusChart = echarts.init(document.getElementById('statusChart'), null, {
-  devicePixelRatio: 2
-});
+    devicePixelRatio: 2
+    });
 
-const rankingChart = new Chart(rankingCtx, {
-  type: 'polarArea',
-  data: {
-    labels: <?= json_encode($responsaveis) ?>,
-    datasets: [{
-      label: 'Chamados por Responsável',
-      data: <?= json_encode($totais) ?>,
-      backgroundColor: <?= json_encode($cores) ?>
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Chamados por Responsável'
+    const rankingChart = new Chart(rankingCtx, {
+      type: 'polarArea',
+      data: {
+        labels: <?= json_encode($responsaveis) ?>,
+        datasets: [{
+          label: 'Chamados por Responsável',
+          data: <?= json_encode($totais) ?>,
+          backgroundColor: <?= json_encode($cores) ?>
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: {
+            display: true,
+            text: 'Chamados por Responsável'
+          }
+        }
       }
-    }
-  }
-});
+    });
 
 
-const optionStatusChart = {
-  legend: {
-  type: 'scroll',           // ativa rolagem se necessário
-  orient: 'horizontal',     // horizontal (embaixo do gráfico)
-  bottom: 10,               // espaçamento do fundo
-  align: 'auto',            // alinha automaticamente
-  textStyle: {
-    fontSize: 12
-  },
-  pageIconSize: 12          // tamanho dos ícones de página se for scrollável
-},
-  toolbox: {
-    show: true,
-    feature: {
-      mark: { show: true },
-      dataView: { show: true, readOnly: false },
-      restore: { show: true },
-      saveAsImage: { show: true }
-    }
-  },
-  tooltip: {
-    trigger: 'item',
-    formatter: '{b}: {c} ({d}%)'
-  },
-  series: [{
-  name: 'Distribuição por Status',
-  type: 'pie',
-  roseType: 'area',
-  radius: [40, 150],
-  center: ['50%', '45%'],
-  itemStyle: {
-    borderRadius: 8
-  },
-  label: {
-    show: true,
-    formatter: '{b}\n{c} ({d}%)'
-  },
-  data: [
-    { value: <?= $pendentes ?>, name: 'Pendente', itemStyle: { color: '#ec1961' } },
-    { value: <?= $emAndamento ?>, name: 'Em Andamento', itemStyle: { color: '#ff9800' } },
-    { value: <?= $finalizados ?>, name: 'Concluído', itemStyle: { color: '#8bc34a' } },
-    { value: <?= $rejeitados ?>, name: 'Rejeitado', itemStyle: { color: '#00bcd4' } } // ou ajuste conforme sua paleta
-  ]
-}]
-
-
-};
-
-statusChart.setOption(optionStatusChart);
-        // 2) Gráfico de idade
-  // Dados gerados pelo PHP
-  const labelsAge = <?= json_encode($labelsAge) ?>;
-  const dataAge = <?= json_encode($dataAge) ?>;
-
-  // Instanciando o gráfico com ECharts
-  const backlogOption = {
-      title: {
-        text: 'Tickets Pendentes por Idade',
-        left: 'center',
-        top: 'top',
-        textStyle: {
-          fontSize: 10
+    const optionStatusChart = {
+      legend: {
+      type: 'scroll',           // ativa rolagem se necessário
+      orient: 'horizontal',     // horizontal (embaixo do gráfico)
+      bottom: 10,               // espaçamento do fundo
+      align: 'auto',            // alinha automaticamente
+      textStyle: {
+        fontSize: 12
+      },
+      pageIconSize: 12          // tamanho dos ícones de página se for scrollável
+    },
+      toolbox: {
+        show: true,
+        feature: {
+          mark: { show: true },
+          dataView: { show: true, readOnly: false },
+          restore: { show: true },
+          saveAsImage: { show: true }
         }
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' }
-      },
-      grid: {
-        left: '10%',
-        right: '10%',
-        bottom: '10%',
-        top: '20%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'value',
-        min: 0
-      },
-      yAxis: {
-        type: 'category',
-        data: <?= json_encode($labelsAge) ?>,
-        axisLabel: {
-          rotate: 0 // sem rotação agora
-        }
+        trigger: 'item',
+        formatter: '{b}: {c} ({d}%)'
       },
       series: [{
-        name: 'Tickets Pendentes por Idade',
-        type: 'bar',
-        data: <?= json_encode($dataAge) ?>,
-        itemStyle: {
-          color: '#3f51b5'
-        },
-        barWidth: '50%'
-      }]
-    };
-
-    const backlogChart = echarts.init(
-      document.getElementById('backlogChart'),
-      null,
-      { devicePixelRatio: 2 } // aumenta nitidez em telas retina/4K
-    );
-    backlogChart.setOption(backlogOption);
-
-    // 1) SLA Compliance por Prioridade
-    const chartSLA = new Chart(
-      document.getElementById('chartSLA').getContext('2d'),
-      {
-        type: 'bar',
-        data: {
-          labels: <?= json_encode($prioridades) ?>,
-          datasets: [{
-            label: '% Compliance SLA',
-            data: <?= json_encode($slaPorPrioridade) ?>,
-          }]
-        },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: 'SLA Compliance por Prioridade'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              stacked: false,
-              title: {
-                display: true,
-                text: 'Total de Pedidos'
-              }
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Mês'
-              }
-            }
-          }
-
-        }
-      }
-    );
-
-    let estadoAtual = {
-  ano: new Date().getFullYear(),
-  mes: null
-};
-
-function carregarGrafico(ano, mes = null) {
-  const url = mes ? `grafico_area.php?ano=${ano}&mes=${mes}` : `grafico_area.php?ano=${ano}`;
-  
-  fetch(url)
-    .then(res => res.json())
-    .then(({ labels, dados }) => {
-      const cores = {
-        'Baixa - Pendente': '#e91e63',
-        'Baixa - Em Andamento': '#ff9800',
-        'Baixa - Concluído': '#8bc34a',
-        'Média - Pendente': '#9c27b0',
-        'Média - Em Andamento': '#ffc107',
-        'Média - Concluído': '#4caf50',
-        'Alta - Pendente': '#03a9f4',
-        'Alta - Em Andamento': '#ff5722',
-        'Alta - Concluído': '#009688',
-        'Urgente - Pendente': '#f44336',
-        'Urgente - Em Andamento': '#ffeb3b',
-        'Urgente - Concluído': '#607d8b'
-      };
-
-      const series = [];
-      for (const chave in dados) {
-        series.push({
-          name: chave,
-          type: 'line',
-          stack: 'total',
-          areaStyle: {},
-          emphasis: { focus: 'series' },
-          data: labels.map(p => dados[chave][p] || 0),
-          color: cores[chave] || undefined
-        });
-      }
-
-      const chart = echarts.init(document.getElementById('graficoArea'));
-      const titulo = mes 
-        ? `Detalhes do mês ${estadoAtual.ano}-${String(mes).padStart(2, '0')}`
-        : `Visão geral de ${estadoAtual.ano}`;
-
-      chart.setOption({
-        title: { text: titulo, left: 'center' ,  textStyle: {
-    fontSize: 16
-  }},
-        tooltip: { trigger: 'axis' },
-        legend: {
-          orient: 'vertical',
-          right: 10, // ou left: 10
-          top: 'middle',
-          type: 'scroll',
-          textStyle: {
-            fontSize: 12
-          }
-        },
-        toolbox: {
-          feature: {
-            saveAsImage: {},
-            myDrillUp: {
-              show: !!mes,
-              title: 'Voltar',
-              icon: 'path://M512 64L96 320l416 256V64z',
-              onclick: function () {
-                estadoAtual.mes = null;
-                carregarGrafico(estadoAtual.ano);
-              }
-            }
-          }
-        },
-        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'category', boundaryGap: false, data: labels },
-        yAxis: { type: 'value' },
-        series: series
-      });
-
-      chart.off('click');
-      chart.on('click', function (params) {
-        if (!estadoAtual.mes && params.name.includes('-')) {
-          const partes = params.name.split('-');
-          const mesClicado = parseInt(partes[1]);
-          estadoAtual.mes = mesClicado;
-          carregarGrafico(estadoAtual.ano, mesClicado);
-        }
-      });
-    })
-    .catch(error => {
-      console.error('Erro ao carregar gráfico:', error);
-    });
-}
-
-carregarGrafico(estadoAtual.ano);
-
- 
-    const chartYoY = new Chart(document.getElementById('chartYoY'), {
-  type: 'line',
-  data: {
-    labels: <?= json_encode(['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']) ?>,
-    datasets: <?= json_encode($estilos) ?>
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      title: {
-        display: true,
-        text: 'Comparativo Ano a Ano por Prioridade e Status'
+      name: 'Distribuição por Status',
+      type: 'pie',
+      roseType: 'area',
+      radius: [40, 150],
+      center: ['50%', '45%'],
+      itemStyle: {
+        borderRadius: 8
       },
-      tooltip: {
-        mode: 'index',
-        intersect: false
+      label: {
+        show: true,
+        formatter: '{b}\n{c} ({d}%)'
       },
-      legend: {
-        position: 'bottom'
-      }
-    },
-    interaction: {
-      mode: 'index',
-      intersect: false
-    },
-    scales: {
-  y: { beginAtZero: true, stacked: true },
-  x: { stacked: true }
-}
-  }
-});
-
-const prioridades = <?= json_encode($prioridades) ?>;
-  const tempoMedio = <?= json_encode($mediaHoras) ?>;
-  const totalChamados = <?= json_encode($totaisCross) ?>;
-  const chartCross = echarts.init(
-    document.getElementById('chartCross'),
-    null,
-    { devicePixelRatio: 2 }
-);
-
-const optionRadarCross = {
-  title: {
-    text: 'Resolução (dias) × Volume de Chamados',
-    left: 'center',
-    textStyle: { fontSize: 16 }
-  },
-  legend: {
-    top: 'bottom',
-    textStyle: { fontSize: 12 }
-  },
-  tooltip: {
-    trigger: 'item',
-    formatter: function (params) {
-      const valores = params.value;
-      const prioridadeLabels = <?= json_encode($prioridades) ?>;
-      let detalhes = valores.map((v, i) => `${prioridadeLabels[i]}: ${v}`).join('<br>');
-      return `<b>${params.seriesName} - ${params.name}</b><br>${detalhes}`;
-    }
-  },
-  radar: {
-    indicator: prioridades.map((p, i) => ({
-      name: p,
-      max: Math.max(tempoMedio[i], totalChamados[i]) + 10
-    }))
-  },
-  series: [
-    {
-      name: 'Comparação',
-      type: 'radar',
       data: [
-        {
-          value: tempoMedio,
-          name: 'Tempo Médio (dias)',
-          lineStyle: { color: '#007bff' },
-          areaStyle: { color: 'rgba(0,123,255,0.2)' }
-        },
-        {
-          value: totalChamados,
-          name: 'Total de Chamados',
-          lineStyle: { color: '#28a745' },
-          areaStyle: { color: 'rgba(40,167,69,0.2)' }
-        }
-      ]
-    }
-  ]
-};
-
-chartCross.setOption(optionRadarCross);
-
-const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
-  .then(res => res.json())
-  .then(data => {
-    const labels = data.map(item => item.bloco);
-    const valores = data.map(item => item.total);
-    const total = valores.reduce((a, b) => a + b, 0);
-
-    const chartSetor = echarts.init(document.getElementById('graficoSetor'));
-
-    chartSetor.setOption({
-  title: {
-    text: 'Ordens de Serviço por Bloco',
-    left: 'center',
-    top: 5, // Reduz o espaço superior
-    textStyle: { fontSize: 16 }
-  },
-  tooltip: {
-    trigger: 'item',
-    formatter: '{b}: {c} ({d}%)'
-  },
-  legend: {
-    bottom: 10,
-    orient: 'horizontal',
-    type: 'scroll',
-    textStyle: { fontSize: 12 }
-  },
-  series: [{
-    name: 'OS por Bloco',
-    type: 'pie',
-    radius: ['70%', '95%'],          // Tamanho interno e externo do arco
-    center: ['50%', '65%'],          // Posição mais próxima da legenda
-    startAngle: 180,
-    endAngle: 0,
-    avoidLabelOverlap: true,
-    itemStyle: { borderRadius: 8 },
-    label: { show: false },
-    labelLine: { show: false },
-    data: labels.map((bloco, i) => ({
-      value: valores[i],
-      name: bloco
-    }))
-  }]
-});
-
-  });
-
-  function aplicarFiltroPorStatus(status) {
-  // Atualiza título do gráfico YoY
-  chartYoY.options.plugins.title.text = `Comparativo Ano a Ano - Status: ${status}`;
-  chartYoY.data.datasets = <?= json_encode($estilos) ?>.filter(ds => ds.label.includes(status));
-  chartYoY.update();
-
-  // Atualiza gráfico radar CrossTrend (tempo médio e volume por prioridade e status)
-  const filtroCross = <?= json_encode($dadosYoYDetalhado) ?>;
-  const tempo = [];
-  const volume = [];
-
-  <?= json_encode($prioridades) ?>.forEach(p => {
-    const valores = filtroCross[yearSelected][status]?.[p] ?? Array(12).fill(0);
-    tempo.push((valores.reduce((a,b)=>a+b,0) / 12).toFixed(1));
-    volume.push(valores.reduce((a,b)=>a+b,0));
-  });
-
-  chartCross.setOption({
-    title: { text: `Resolução × Volume (${status})` },
-    series: [{
-      data: [
-        { value: tempo, name: 'Tempo Médio' },
-        { value: volume, name: 'Total Chamados' }
+        { value: <?= $pendentes ?>, name: 'Pendente', itemStyle: { color: '#ec1961' } },
+        { value: <?= $emAndamento ?>, name: 'Em Andamento', itemStyle: { color: '#ff9800' } },
+        { value: <?= $finalizados ?>, name: 'Concluído', itemStyle: { color: '#8bc34a' } },
+        { value: <?= $rejeitados ?>, name: 'Rejeitado', itemStyle: { color: '#00bcd4' } } // ou ajuste conforme sua paleta
       ]
     }]
-  });
 
-  // Recarrega gráfico de área por prioridade e status
-  carregarGrafico(yearSelected); // mantém estadoAtual.mes se desejar
 
-  // Exemplo: filtro no gráfico por setor (se quiser implementar)
-  fetch(`dados_por_setor.php?ano=${yearSelected}&status=${encodeURIComponent(status)}`)
-    .then(res => res.json())
-    .then(data => {
-      const labels = data.map(item => item.bloco);
-      const valores = data.map(item => item.total);
-      const chartSetor = echarts.init(document.getElementById('graficoSetor'));
+    };
 
-      chartSetor.setOption({
-        title: { text: `Ordens por Bloco (${status})` },
+    statusChart.setOption(optionStatusChart);
+            // 2) Gráfico de idade
+      // Dados gerados pelo PHP
+      const labelsAge = <?= json_encode($labelsAge) ?>;
+      const dataAge = <?= json_encode($dataAge) ?>;
+
+      // Instanciando o gráfico com ECharts
+      const backlogOption = {
+          title: {
+            text: 'Tickets Pendentes por Idade',
+            left: 'center',
+            top: 'top',
+            textStyle: {
+              fontSize: 10
+            }
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' }
+          },
+          grid: {
+            left: '10%',
+            right: '10%',
+            bottom: '10%',
+            top: '20%',
+            containLabel: true
+          },
+          xAxis: {
+            type: 'value',
+            min: 0
+          },
+          yAxis: {
+            type: 'category',
+            data: <?= json_encode($labelsAge) ?>,
+            axisLabel: {
+              rotate: 0 // sem rotação agora
+            }
+          },
+          series: [{
+            name: 'Tickets Pendentes por Idade',
+            type: 'bar',
+            data: <?= json_encode($dataAge) ?>,
+            itemStyle: {
+              color: '#3f51b5'
+            },
+            barWidth: '50%'
+          }]
+        };
+
+        const backlogChart = echarts.init(
+          document.getElementById('backlogChart'),
+          null,
+          { devicePixelRatio: 2 } // aumenta nitidez em telas retina/4K
+        );
+        backlogChart.setOption(backlogOption);
+
+        // 1) SLA Compliance por Prioridade
+        const chartSLA = new Chart(
+          document.getElementById('chartSLA').getContext('2d'),
+          {
+            type: 'bar',
+            data: {
+              labels: <?= json_encode($prioridades) ?>,
+              datasets: [{
+                label: '% Compliance SLA',
+                data: <?= json_encode($slaPorPrioridade) ?>,
+              }]
+            },
+            options: {
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'SLA Compliance por Prioridade'
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  stacked: false,
+                  title: {
+                    display: true,
+                    text: 'Total de Pedidos'
+                  }
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Mês'
+                  }
+                }
+              }
+
+            }
+          }
+        );
+
+        let estadoAtual = {
+      ano: new Date().getFullYear(),
+      mes: null
+    };
+
+    function carregarGrafico(ano, mes = null) {
+      const url = mes ? `grafico_area.php?ano=${ano}&mes=${mes}` : `grafico_area.php?ano=${ano}`;
+      
+      fetch(url)
+        .then(res => res.json())
+        .then(({ labels, dados }) => {
+          const cores = {
+            'Baixa - Pendente': '#e91e63',
+            'Baixa - Em Andamento': '#ff9800',
+            'Baixa - Concluído': '#8bc34a',
+            'Média - Pendente': '#9c27b0',
+            'Média - Em Andamento': '#ffc107',
+            'Média - Concluído': '#4caf50',
+            'Alta - Pendente': '#03a9f4',
+            'Alta - Em Andamento': '#ff5722',
+            'Alta - Concluído': '#009688',
+            'Urgente - Pendente': '#f44336',
+            'Urgente - Em Andamento': '#ffeb3b',
+            'Urgente - Concluído': '#607d8b'
+          };
+
+          const series = [];
+          for (const chave in dados) {
+            series.push({
+              name: chave,
+              type: 'line',
+              stack: 'total',
+              areaStyle: {},
+              emphasis: { focus: 'series' },
+              data: labels.map(p => dados[chave][p] || 0),
+              color: cores[chave] || undefined
+            });
+          }
+
+          const chart = echarts.init(document.getElementById('graficoArea'));
+          const titulo = mes 
+            ? `Detalhes do mês ${estadoAtual.ano}-${String(mes).padStart(2, '0')}`
+            : `Visão geral de ${estadoAtual.ano}`;
+
+          chart.setOption({
+            title: { text: titulo, left: 'center' ,  textStyle: {
+        fontSize: 16
+      }},
+            tooltip: { trigger: 'axis' },
+            legend: {
+              orient: 'vertical',
+              right: 10, // ou left: 10
+              top: 'middle',
+              type: 'scroll',
+              textStyle: {
+                fontSize: 12
+              }
+            },
+            toolbox: {
+              feature: {
+                saveAsImage: {},
+                myDrillUp: {
+                  show: !!mes,
+                  title: 'Voltar',
+                  icon: 'path://M512 64L96 320l416 256V64z',
+                  onclick: function () {
+                    estadoAtual.mes = null;
+                    carregarGrafico(estadoAtual.ano);
+                  }
+                }
+              }
+            },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', boundaryGap: false, data: labels },
+            yAxis: { type: 'value' },
+            series: series
+          });
+
+          chart.off('click');
+          chart.on('click', function (params) {
+            if (!estadoAtual.mes && params.name.includes('-')) {
+              const partes = params.name.split('-');
+              const mesClicado = parseInt(partes[1]);
+              estadoAtual.mes = mesClicado;
+              carregarGrafico(estadoAtual.ano, mesClicado);
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Erro ao carregar gráfico:', error);
+        });
+    }
+
+    carregarGrafico(estadoAtual.ano);
+
+    
+        const chartYoY = new Chart(document.getElementById('chartYoY'), {
+      type: 'line',
+      data: {
+        labels: <?= json_encode(['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']) ?>,
+        datasets: <?= json_encode($estilos) ?>
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Comparativo Ano a Ano por Prioridade e Status'
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            position: 'bottom'
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        scales: {
+      y: { beginAtZero: true, stacked: true },
+      x: { stacked: true }
+    }
+      }
+    });
+
+    const prioridades = <?= json_encode($prioridades) ?>;
+      const tempoMedio = <?= json_encode($mediaHoras) ?>;
+      const totalChamados = <?= json_encode($totaisCross) ?>;
+      const chartCross = echarts.init(
+        document.getElementById('chartCross'),
+        null,
+        { devicePixelRatio: 2 }
+    );
+
+    const optionRadarCross = {
+      title: {
+        text: 'Resolução (dias) × Volume de Chamados',
+        left: 'center',
+        textStyle: { fontSize: 16 }
+      },
+      legend: {
+        top: 'bottom',
+        textStyle: { fontSize: 12 }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: function (params) {
+          const valores = params.value;
+          const prioridadeLabels = <?= json_encode($prioridades) ?>;
+          let detalhes = valores.map((v, i) => `${prioridadeLabels[i]}: ${v}`).join('<br>');
+          return `<b>${params.seriesName} - ${params.name}</b><br>${detalhes}`;
+        }
+      },
+      radar: {
+        indicator: prioridades.map((p, i) => ({
+          name: p,
+          max: Math.max(tempoMedio[i], totalChamados[i]) + 10
+        }))
+      },
+      series: [
+        {
+          name: 'Comparação',
+          type: 'radar',
+          data: [
+            {
+              value: tempoMedio,
+              name: 'Tempo Médio (dias)',
+              lineStyle: { color: '#007bff' },
+              areaStyle: { color: 'rgba(0,123,255,0.2)' }
+            },
+            {
+              value: totalChamados,
+              name: 'Total de Chamados',
+              lineStyle: { color: '#28a745' },
+              areaStyle: { color: 'rgba(40,167,69,0.2)' }
+            }
+          ]
+        }
+      ]
+    };
+
+    chartCross.setOption(optionRadarCross);
+
+    const fetchSetor = fetch(`dados_por_setor.php?ano=${yearSelected}`)
+      .then(res => res.json())
+      .then(data => {
+        const labels = data.map(item => item.bloco);
+        const valores = data.map(item => item.total);
+        const total = valores.reduce((a, b) => a + b, 0);
+
+        const chartSetor = echarts.init(document.getElementById('graficoSetor'));
+
+        chartSetor.setOption({
+      title: {
+        text: 'Ordens de Serviço por Bloco',
+        left: 'center',
+        top: 5, // Reduz o espaço superior
+        textStyle: { fontSize: 16 }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b}: {c} ({d}%)'
+      },
+      legend: {
+        bottom: 10,
+        orient: 'horizontal',
+        type: 'scroll',
+        textStyle: { fontSize: 12 }
+      },
+      series: [{
+        name: 'OS por Bloco',
+        type: 'pie',
+        radius: ['70%', '95%'],          // Tamanho interno e externo do arco
+        center: ['50%', '65%'],          // Posição mais próxima da legenda
+        startAngle: 180,
+        endAngle: 0,
+        avoidLabelOverlap: true,
+        itemStyle: { borderRadius: 8 },
+        label: { show: false },
+        labelLine: { show: false },
+        data: labels.map((bloco, i) => ({
+          value: valores[i],
+          name: bloco
+        }))
+      }]
+    });
+
+      });
+
+      function aplicarFiltroPorStatus(status) {
+      // Atualiza título do gráfico YoY
+      chartYoY.options.plugins.title.text = `Comparativo Ano a Ano - Status: ${status}`;
+      chartYoY.data.datasets = <?= json_encode($estilos) ?>.filter(ds => ds.label.includes(status));
+      chartYoY.update();
+
+      // Atualiza gráfico radar CrossTrend (tempo médio e volume por prioridade e status)
+      const filtroCross = <?= json_encode($dadosYoYDetalhado) ?>;
+      const tempo = [];
+      const volume = [];
+
+      <?= json_encode($prioridades) ?>.forEach(p => {
+        const valores = filtroCross[yearSelected][status]?.[p] ?? Array(12).fill(0);
+        tempo.push((valores.reduce((a,b)=>a+b,0) / 12).toFixed(1));
+        volume.push(valores.reduce((a,b)=>a+b,0));
+      });
+
+      chartCross.setOption({
+        title: { text: `Resolução × Volume (${status})` },
         series: [{
-          data: labels.map((bloco, i) => ({
-            value: valores[i],
-            name: bloco
-          }))
+          data: [
+            { value: tempo, name: 'Tempo Médio' },
+            { value: volume, name: 'Total Chamados' }
+          ]
         }]
       });
-    });
-}
 
-  statusChart.on('click', function (params) {
-  const statusSelecionado = params.name;
-  aplicarFiltroPorStatus(statusSelecionado);
-});
+      // Recarrega gráfico de área por prioridade e status
+      carregarGrafico(yearSelected); // mantém estadoAtual.mes se desejar
+
+      // Exemplo: filtro no gráfico por setor (se quiser implementar)
+      fetch(`dados_por_setor.php?ano=${yearSelected}&status=${encodeURIComponent(status)}`)
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.map(item => item.bloco);
+          const valores = data.map(item => item.total);
+          const chartSetor = echarts.init(document.getElementById('graficoSetor'));
+
+          chartSetor.setOption({
+            title: { text: `Ordens por Bloco (${status})` },
+            series: [{
+              data: labels.map((bloco, i) => ({
+                value: valores[i],
+                name: bloco
+              }))
+            }]
+          });
+        });
+    }
+
+      statusChart.on('click', function (params) {
+      const statusSelecionado = params.name;
+      aplicarFiltroPorStatus(statusSelecionado);
+    });
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         </main>

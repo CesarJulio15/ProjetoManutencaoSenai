@@ -11,6 +11,9 @@ function carregarPedidos(pagina = 1) {
     if (statusAtual) formData.append('status', statusAtual);
     if (meusTrabalhos) formData.append('meus', '1');
 
+    const overlay = document.getElementById('loading-overlay');
+    overlay.style.display = 'flex'; // Mostra o carregamento
+
     fetch('ajax_carregar_pedidos.php', {
         method: 'POST',
         body: formData
@@ -19,6 +22,12 @@ function carregarPedidos(pagina = 1) {
     .then(dados => {
         document.getElementById('resultado').innerHTML = dados.html;
         atualizarPaginacao(dados.total_paginas);
+    })
+    .catch(err => {
+        console.error('Erro ao carregar pedidos:', err);
+    })
+    .finally(() => {
+        overlay.style.display = 'none'; // Oculta após o carregamento
     });
 }
 
