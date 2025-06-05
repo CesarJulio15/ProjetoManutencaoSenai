@@ -5,31 +5,54 @@ let meusTrabalhos = false;
 
 function carregarPedidos(pagina = 1) {
     paginaAtual = pagina;
+
     const formData = new FormData();
     formData.append('pagina', pagina);
     formData.append('busca', buscaAtual);
     if (statusAtual) formData.append('status', statusAtual);
     if (meusTrabalhos) formData.append('meus', '1');
 
-    const overlay = document.getElementById('loading-overlay');
-    overlay.style.display = 'flex'; // Mostra o carregamento
+    //const overlay = document.getElementById('loading-overlay');
+    //if (overlay) overlay.style.display = 'flex'; // Mostra
 
     fetch('ajax_carregar_pedidos.php', {
         method: 'POST',
         body: formData
     })
-    .then(r => r.json())
-    .then(dados => {
-        document.getElementById('resultado').innerHTML = dados.html;
-        atualizarPaginacao(dados.total_paginas);
+    .then(async response => {
+        const texto = await response.text();
+        // Tenta interpretar JSON mesmo em caso de erro HTTP
+        let dados = {};
+        try {
+            dados = JSON.parse(texto);
+        } catch (e) {
+            throw new Error("Resposta não é JSON válido: " + texto);
+        }
+
+        if (!response.ok) {
+            throw new Error("Erro HTTP " + response.status + ": " + (dados?.html || ''));
+        }
+
+        if (dados?.html && typeof dados.total_paginas !== 'undefined') {
+            document.getElementById('resultado').innerHTML = dados.html;
+            atualizarPaginacao(dados.total_paginas);
+        } else {
+            throw new Error("Resposta incompleta.");
+        }
     })
     .catch(err => {
-        console.error('Erro ao carregar pedidos:', err);
+        console.error('Erro ao carregar pedidos:', err.message);
+        document.getElementById('resultado').innerHTML = `
+            <div class="no-results">
+                <img src="../img/error.svg" alt="Erro" style="width:200px;height:300px;">
+                <p>${err.message}</p>
+            </div>`;
     })
     .finally(() => {
-        overlay.style.display = 'none'; // Oculta após o carregamento
+        //if (overlay) overlay.style.display = 'none';
     });
 }
+
 
 function atualizarPaginacao(totalPaginas) {
     let paginacao = document.querySelector('.paginacao');

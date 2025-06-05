@@ -28,102 +28,71 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
         }
 
         .search-input {
-            width: 130px;
-            padding: 10px 40px 10px 20px;
-            border-radius: 30px;
-            border: none;
-            outline: none;
-            transition: all 0.3s ease;
-            background: #f0f0f0;
-            color: #333;
-            text-align:left;
+        width: 130px;
+        padding: 10px 40px 10px 20px;
+        border-radius: 30px;
+        border: none;
+        outline: none;
+        transition: all 0.3s ease;
+        background: #f0f0f0;
+        color: #333;
+        text-align:left;
         }
 
         .search-input:focus,
         .search-input:not(:placeholder-shown) {
-            width: 280px;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 280px;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .search-icon {
         position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
         }
 
         .search-icon svg {
-            width: 20px;
-            height: 20px;
-            fill: #6c7587;
+        width: 20px;
+        height: 20px;
+        fill: #6c7587;
         }
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            border: 3px solid;
-            border-color: #FFF #FFF transparent transparent;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-        .spinner::after,
-        .spinner::before {
-        content: '';  
-        box-sizing: border-box;
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        border: 3px solid;
-        border-color: transparent transparent #FF3D00 #FF3D00;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        box-sizing: border-box;
-        animation: rotationBack 0.5s linear infinite;
-        transform-origin: center center;
-        }
-        .spinner::before {
-        width: 32px;
-        height: 32px;
-        border-color: #FFF #FFF transparent transparent;
-        animation: rotation 1.5s linear infinite;
-        }
-        @keyframes rotation {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-        } 
-        @keyframes rotationBack {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(-360deg);
-        }
-        }  
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="display:flex;justify-content:center;align-items:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background-color:rgba(0,0,0,.7);z-index:9999;  backdrop-filter: blur(10px);">
-        <div class="spinner"></div>
-    </div>
+<div id="loading-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color:rgba(0, 0, 0, 0.25);backdrop-filter: blur(5px); z-index:999; align-items: center; justify-content: center;">
+    <div class="spinner"></div>
+</div>
+<script>
+    window.onload = function () {
+        <?php if (isset($_SESSION['sucesso'])): ?>
+            Swal.fire({
+                icon: 'success',
+                title: <?= json_encode($_SESSION['sucesso']) ?>,
+                showConfirmButton: false,
+                timer: 2000
+            });
+            <?php unset($_SESSION['sucesso']); ?>
+        <?php endif; ?>
 
-    <aside class="sidebar animate__animated animate__fadeInLeft" role="complementary" aria-label="Menu lateral">
-        <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
-        <div class="spacer"></div>
-        <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
-    </aside>
-
+        <?php if (isset($_SESSION['erro'])): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: <?= json_encode($_SESSION['erro']) ?>
+            });
+            <?php unset($_SESSION['erro']); ?>
+        <?php endif; ?>
+    }
+</script>
+<aside class="sidebar animate__animated animate__fadeInLeft" role="complementary" aria-label="Menu lateral">
+    <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
+    <div class="spacer"></div>
+    <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
+</aside>
 <main class="main-content d-flex flex-md-column w-100 h-100" role="main">
     <header class="top-bar  animate__animated animate__fadeInDown">
             <div class="search-container">
@@ -162,8 +131,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
             </div>
     </header>
     <section class="cards-container" id="resultado">
-  
-                    </section>
+    </section>
                     <div class="paginacao mt-3  animate__animated animate__fadeInUp"></div>
                         <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
                     <a href="listar_funcionarios.php" title="Visualizar funcionários" class="animate__animated animate__fadeInUp">
@@ -181,29 +149,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
                     </a>
                 <?php endif; ?>
 </main>
-<script>
-    
-window.onload = function () {
-    <?php if (isset($_SESSION['sucesso'])): ?>
-        Swal.fire({
-            icon: 'success',
-            title: <?= json_encode($_SESSION['sucesso']) ?>,
-            showConfirmButton: false,
-            timer: 2000
-        });
-        <?php unset($_SESSION['sucesso']); ?>
-    <?php endif; ?>
 
-    <?php if (isset($_SESSION['erro'])): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Erro!',
-            text: <?= json_encode($_SESSION['erro']) ?>
-        });
-        <?php unset($_SESSION['erro']); ?>
-    <?php endif; ?>
-}
-</script>
 <script src="../js/panelPedidos.js"></script>
 </body>
 </html>
