@@ -564,8 +564,8 @@ table tr:nth-child(even) {
   justify-content: center;
   align-items: center;
   border: none;
-  /* Remove borda */
   padding: 0;
+
 }
 
 .add-dash-img:hover {
@@ -581,6 +581,7 @@ table tr:nth-child(even) {
   bottom: 0.5rem;
   background: transparent;
   z-index: 101;
+  user-select: none;
 }
 
 .paginacao {

@@ -149,6 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $resultado = enviarEmailUsuario($email, $assunto, $mensagem);
             }
             // ✉️ Se houver técnico designado, enviar também para ele
+            $email_resultado = null;
             if (!empty($executante)) {
                 $qExec = $conn->prepare("SELECT nome, email FROM docentes WHERE id = ?");
                 $qExec->bind_param("i", $executante);

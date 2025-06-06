@@ -13,10 +13,12 @@
     <head>
         <meta charset="UTF-8">
         <title>Dashboard de Desempenho de Manutenção</title>
+        <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
         <link rel="stylesheet" href="../css/padrao.css">
         <link rel="stylesheet" href="../css/dashboard.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+        <link rel="preload" as="font" href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v249/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOej.woff2" type="font/woff2" crossorigin="anonymous">        
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -358,6 +360,7 @@
         }]
       },
       options: {
+        animation: false,
         responsive: true,
         plugins: {
           legend: { position: 'top' },
@@ -617,6 +620,7 @@
         datasets: <?= json_encode($estilos) ?>
       },
       options: {
+        animation: false,
         responsive: true,
         plugins: {
           title: {
@@ -642,9 +646,7 @@
       }
     });
 
-    const prioridades = <?= json_encode($prioridades) ?>;
-      const tempoMedio = <?= json_encode($mediaHoras) ?>;
-      const totalChamados = <?= json_encode($totaisCross) ?>;
+
       const chartCross = echarts.init(
         document.getElementById('chartCross'),
         null,
@@ -705,6 +707,10 @@
       .then(data => {
         const labels = data.map(item => item.bloco);
         const valores = data.map(item => item.total);
+        if (!Array.isArray(valores))  {
+          console.error("Erro: valores não é um array", valores);
+          return;
+        }
         const total = valores.reduce((a, b) => a + b, 0);
 
         const chartSetor = echarts.init(document.getElementById('graficoSetor'));

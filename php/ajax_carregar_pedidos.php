@@ -4,7 +4,10 @@ require_once __DIR__ . '/conexao.php';
 
 if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     http_response_code(403);
-    echo json_encode(['html' => ' class="no-results"><img src="../img/restricted-area-svgrepo-com.svg" alt="Sem permissão" style="width:200px;height:300px;"><p>Sem permissão.</p></div>', 'total_paginas' => 0]);
+   echo json_encode([
+    'html' => '<div class="no-results"><img src="../img/restricted-area-svgrepo-com.svg" alt="Sem permissão" style="width:200px;height:300px;"><p>Sem permissão.</p></div>',
+    'total_paginas' => 0
+    ]);
     exit;
 }
 

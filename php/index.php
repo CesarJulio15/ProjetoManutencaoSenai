@@ -80,14 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
+    <link rel="icon" type="image/png" href="../img/senai-logo5.svg">    
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v249/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOej.woff2" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
 </head>
 <body class="d-flex align-items-center justify-content-center w-100 px-3">
 

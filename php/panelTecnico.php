@@ -14,9 +14,11 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Senai Manutenções</title>
+    <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
     <link rel="stylesheet" href="../css/padrao.css">
     <link rel="stylesheet" href="../css/manutencao.css">
-    <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
+    <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v249/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOej.woff2" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
