@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="max-width:25%; height:max-content;user-select: none;">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="max-width:25%; max-height:fit-content;user-select: none;">
             <form method="POST" autocomplete="off" class="d-flex flex-md-column">
                 <div class="mb-2 d-flex">
                     <input type="text" name="login" class="form-control rounded" placeholder="E-mail ou NIF" required>
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 </div>
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
-                <div class="form-footer mt-1">
+                <div class="form-footer mt-1" style="line-height: normal;">
                     <p><a href="#" onclick="abrirModalRecuperacaoSenha()" class="forgot text-muted">Esqueceu a senha?</a></p>
                 </div>
             </form>
