@@ -130,7 +130,9 @@
     </aside>
     <main class="main-content d-flex flex-md-column flex-wrap w-100 h-100">
         <div class="top-bar">
-            <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-chevron-left"></i></a>
+            <a href="<?php echo ($_SESSION['tipo'] === 'coordenador' ? 'listar_funcionarios.php' : 'panelTecnico.php'); ?>" class="botao-voltar" title="Voltar">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
             <div class="title">
             <h3>Editar Funcionário</h3>
             </div>
