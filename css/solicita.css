@@ -1,4 +1,3 @@
-
 .container {
   width: 100%;
   height: 100%;
@@ -14,7 +13,6 @@
 
 .card {
   width: 600px;
-
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -44,6 +42,7 @@
   padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
   color: var(--bs-card-color);
 }
+
 .card-body label {
   display: block;
   margin-top: 10px;
@@ -56,13 +55,15 @@
   width: 100%;
   padding: 6px;
   margin-top: 5px;
-  border: 2px solid #ccc; /* Aumente o valor aqui */
+  border: 2px solid #ccc;
+  /* Aumente o valor aqui */
   border-radius: 4px;
   background-color: #ddd;
   resize: none;
 }
 
-#titulo, #localizacao {
+#titulo,
+#localizacao {
   margin: auto;
   padding: 8px 4px;
   font-size: 16px;
@@ -79,6 +80,7 @@
   color: #aaa;
   font-style: italic;
 }
+
 #descDetalhada {
   width: 100%;
   min-height: 120px;
@@ -100,6 +102,7 @@
   border-bottom: 2px solid #0056b3;
   background-color: #fff;
 }
+
 .card-body button,
 .btn-confirma,
 .botao-voltar {
@@ -148,38 +151,6 @@
   margin: auto 10px;
   box-sizing: border-box;
 }
-.card-body select {
-  appearance: none; /* Remove o estilo padrão do navegador */
-  width: max-content;
-  padding: 10px 40px 10px 15px;
-  border: 1px solid transparent;
-  border-bottom: 2px solid #007bff;
-  border-radius: 22px;
-  margin-left: 10px;
-  background-color: #f5f5f5;
-  font-size: 16px;
-  color: #444;
-  outline: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%23007bff'><polyline points='6,9 12,15 18,9' style='fill:none;stroke:%23007bff;stroke-width:2'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 15px top 50%;
-  background-size: 20px;
-  cursor: pointer;
-  transition: border-color 0.3s, background-color 0.3s;
-}
-
-.card-body select:hover {
-  background-color: #ebebeb;
-}
-
-.card-body select:focus {
-  border-color: #0056b3;
-  background-color: #ffffff;
-}
-
-.card-body select option {
-  padding: 8px;
-}
 
 .drag-area {
   height: 100%;
@@ -191,38 +162,30 @@
   flex-direction: column;
   margin: auto;
   padding: 20px;
-  background-image: repeating-linear-gradient(
-      0deg,
+  background-image: repeating-linear-gradient(0deg,
       #bb9696,
       #bb9696 10px,
       transparent 10px,
       transparent 20px,
-      #bb9696 20px
-    ),
-    repeating-linear-gradient(
-      90deg,
+      #bb9696 20px),
+    repeating-linear-gradient(90deg,
       #bb9696,
       #bb9696 10px,
       transparent 10px,
       transparent 20px,
-      #bb9696 20px
-    ),
-    repeating-linear-gradient(
-      180deg,
+      #bb9696 20px),
+    repeating-linear-gradient(180deg,
       #bb9696,
       #bb9696 10px,
       transparent 10px,
       transparent 20px,
-      #bb9696 20px
-    ),
-    repeating-linear-gradient(
-      270deg,
+      #bb9696 20px),
+    repeating-linear-gradient(270deg,
       #bb9696,
       #bb9696 10px,
       transparent 10px,
       transparent 20px,
-      #bb9696 20px
-    );
+      #bb9696 20px);
   background-size: 3px 100%, 100% 3px, 3px 100%, 100% 3px;
   background-position: 0 0, 0 0, 100% 0, 0 100%;
   background-repeat: no-repeat;
@@ -245,7 +208,11 @@
 .drag-area .icon {
   margin-top: 10px;
   font-size: 70px;
-  color: rgb(112, 35, 35);
+  color: var(--vermelho);
+}
+
+.btn-drag {
+  background: var(--vermelho);
 }
 
 .drag-area header {
@@ -275,6 +242,7 @@
 .map-wrapper {
   display: inline-flex;
 }
+
 map {
   width: 518px;
   height: 334px;
@@ -285,40 +253,31 @@ map {
 .direta {
   margin: auto;
 }
-/* width */
-::-webkit-scrollbar {
-  width: 10px;
-}
 
-/* Track */
-::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
-  border-radius: 10px;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #a0352b;
-  border-radius: 10px;
-}
 @media (max-width: 1024px) {
   .sidebar {
     display: none;
   }
 }
+
 @media (max-width: 820px) {
-  aside, .sidebar{
+
+  aside,
+  .sidebar {
     display: none;
   }
 }
+
 @media (max-width: 768px) {
   body {
     flex-direction: column;
   }
 
-  .sidebar, aside {
+  .sidebar,
+  aside {
     display: none;
   }
+
   .logo-superior,
   .logo-inferior {
     margin: 0;

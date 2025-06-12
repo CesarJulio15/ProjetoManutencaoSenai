@@ -18,20 +18,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title>Solicitação de ordem de serviço</title>
         <link rel="stylesheet" href="../css/padrao.css">
-        <link rel="stylesheet" href="../css/solicita.css" />
+        <link rel="stylesheet" href="../css/solicita.css">
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="sweetalert2.all.min.js"></script>
         <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
-        <style>
-            .btn-drag{
-                background: rgb(112, 35, 35);
-            }
-        </style>
     </head>
     <body class="d-flex flex-column bg-body">
         <header class="top-bar mt-2 animate__animated animate__fadeInDown">
@@ -53,7 +48,7 @@
         </header>
         <main class="main-content d-flex flex-md-row w-100 h-100">
         <!-- Conteúdo -->
-        <form action="conexaosolicita.php" method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-wrap justify-content-between align-items-center card w-75 animate__animated animate__fadeInUp" style="max-width: 1200px; overflow:auto;" >
+        <form action="conexaosolicita.php" method="POST" auto-complete="off" enctype="multipart/form-data" class="d-flex flex-column flex-wrap justify-content-between align-items-center card w-75 animate__animated animate__fadeInUp" style="max-width: 1200px; overflow:auto; user-select:none;" >
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="drag-area text-center p-4">
                         <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
@@ -64,8 +59,8 @@
                     </div>
                     <fieldset class="card-body d-flex flex-column flex-wrap w-100 h-100">
                         <legend><i class="fa-solid fa-pen-nib"></i> Dados do Pedido</legend>
-                        <div class="esquerda d-flex flex-column w-100 justify-content-between mt-3 gap-4">
-                        <div class="d-flex flex-md-row justify-content-evenly w-100 mb-3 gap-2">
+                        <div class="esquerda d-flex flex-column w-100 justify-content-between mt-1 gap-4">
+                        <div class="d-flex flex-md-row justify-content-evenly w-100 mb-2 gap-2">
                                 <?php
                                     // Se for coordenador ou técnico, exibe dropdown de "Responsável"
                                     // caso contrário, define automaticamente o próprio usuário como responsável
@@ -78,25 +73,23 @@
                                             ORDER BY nome
                                         ");
                                     ?>
-                                    <div class="d-flex flex-row mb-3 gap-2">
-                                        <label for="responsavel" class="form-label">
-                                        <span class="material-symbols-outlined">assignment_ind</span>
-                                        Solicitado por: </label>
-                                        <select name="responsavel" id="responsavel" class="form-select" required>
+                                    <div  class="d-flex flex-nowrap form-group" style="height:48px; user-select: none;">
+                                        <span class="icon material-symbols-rounded">assignment_ind</span>
+                                        <select name="responsavel" id="responsavel" class="form-select custom-select" required>
                                             <option value="" disabled selected>Selecione o responsável</option>
                                             <?php while ($r = $resps->fetch_assoc()): ?>
                                             <option value="<?= $r['id'] ?>">
                                                 <?= htmlspecialchars($r['nome'], ENT_QUOTES) ?>
                                             </option>
                                             <?php endwhile; ?>
-                                        </select>
+                                        </select>      
                                     </div>
                                     <br>
                                     <?php
                                         $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
-                                        echo '<div class="d-flex flex-row mb-3 gap-2">';
-                                        echo '<label for="executante">Técnico responsável:</label>';
-                                        echo '<select name="executante" id="executante" class="form-select">';
+                                        echo '<div class="d-flex flex-row mb-2 form-group">';
+                                        echo '<span class="icon material-symbols-rounded" title="Selecione o responsável">engineering</span>';
+                                        echo '<select name="executante" id="executante" class="form-select custom-select">';
                                         echo '<option value="" selected>Selecione</option>';
                                         while ($tec = $tecnicos->fetch_assoc()) {
                                             echo "<option value='{$tec['id']}'>{$tec['nome']}</option>";
@@ -104,11 +97,9 @@
                                         echo '</select>';
                                         echo '</div>';
                                     ?>
-                                            <div class="d-flex mb-3">
-                                                <label for="prioridade">
-                                                <span class="material-symbols-outlined">priority_high</span> 
-                                                Prioridade: </label>
-                                                <select name="prioridade" id="prioridade" required>
+                                            <div class="d-flex mb-2 form-group" style="user-select: none; height:48px;">
+                                                <span class="icon material-symbols-rounded" title="Selecione a prioridade">priority_high</span> 
+                                                <select name="prioridade" id="prioridade" required class="custom-select">
                                                     <option value="Baixa">Baixa</option>
                                                     <option value="Média" selected>Média</option>
                                                     <option value="Alta">Alta</option>
@@ -126,45 +117,47 @@
                               <?php endif; ?>
                                 </div>
                         <div class="conjunto d-flex flex-column gap-4">
-                        <div class="d-flex mb-3 gap-2">
+                        <div class="d-flex mb-2 gap-2">
                         <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
                         </div>                  
-                        <div class="text-center mb-3 gap-2">
+                        <div class="text-center mb-2 gap-2">
                         <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
                         </div>
-                        <div class="d-flex mb-3 gap-4">
-                            <div class="d-flex flex-md-row gap-2">
-                                    <label for="origem">Origem:</label>
-                                    <select name="origem" id="origem" class="form-control" required>
-                                        <option value="" disabled selected>Selecione</option>
-                                        <option value="Elétrica">Elétrica</option>
-                                        <option value="Hidráulica">Hidráulica</option>
-                                        <option value="Mecânica">Mecânica</option>
-                                        <option value="Infraestrutura">Infraestrutura</option>
-                                        <option value="Outros">Outros</option>
-                                    </select>
-                            </div> 
-                            <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
-                                <div class="d-flex mb-3 gap-2">
-                                    <label for="tipo_manutencao">Tipo de Manutenção:</label>
-                                    <select name="tipo_manutencao" id="tipo_manutencao" class="form-control" required>
-                                        <option value="" disabled selected>Selecione</option>
+                    <div class="d-flex flex-md-row justify-content-evenly w-100 mb-2 gap-2 conjunto" style="user-select: none">
+                        <div  class="d-flex flex-nowrap form-group" style="height:48px;">
+                            <span class="icon material-symbols-rounded" title="Selecione a categoria">category</span>
+                            <select name="origem" id="origem" class="form-control custom-select" required>
+                                <option value="" selected>Selecione a categoria</option>
+                                <option value="Elétrica">Elétrica</option>
+                                <option value="Hidráulica">Hidráulica</option>
+                                <option value="Mecânica">Mecânica</option>
+                                <option value="Infraestrutura">Infraestrutura</option>
+                                <option value="Outros">Outros</option>
+                            </select>           
+                        </div> 
+                        <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
+                                <div class="d-flex mb-2 form-group">
+                                    <span class="icon material-symbols-rounded" title="Selecione o tipo de manutenção">construction</span>
+                                    <select name="tipo_manutencao" id="tipo_manutencao" class="form-control custom-select" required>
+                                        <option value="" selected>Selecione o tipo de manutenção</option>
                                         <option value="Corretiva">Corretiva</option>
                                         <option value="Preventiva">Preventiva</option>
                                         <option value="Preditiva">Preditiva</option>
                                     </select>
                                 </div>
-                            <?php endif; ?>           
+                            <?php endif; ?>                        
+                    </div>
                         </div>
-                        <div class="direita d-flex flex-column mt-3 w-100 justify-content-between align-items-center ">
-                        <div class="d-flex flex-column mb-3">
+                        <div class="direita d-flex flex-column w-100 justify-content-between align-items-center ">
+                        <div class="d-flex flex-column mb-2">
                         <input type="hidden" id="bloco" name="bloco" required>
-                        <div class="map-wrapper mb-3" style="width: 100%; margin: auto;">
+                        <div class="map-wrapper mb-2" style="width: 85%; margin: auto;">
                         <img src="../img/mapa_bloco.png" usemap="#blocosmapa" class="img-fluid" style="max-width: 100%; height: auto;   user-select: none; z-index:0;">                  
                         </div>
-                        <div class="d-flex flex-md-row">
-                            <label><strong><i class="fa-solid fa-location-dot"></i> Selecione o setor/bloco:</strong></label>
-                            <select name="bloco" id="bloco" class="form-select" required>
+                        <div class="d-flex flex-md-row justify-content-evenly w-100 mb-2 gap-2 conjunto">
+                        <div class="d-flex flex-md-row form-group">
+                        <span class="icon material-symbols-rounded" title=" Selecione o setor/bloco:">location_on</span>
+                            <select name="bloco" id="bloco" class="form-select custom-select" required>
                                 <option value="" disabled selected>Escolha um setor</option>
                                 <option value="G0">G0 – Portaria</option>
                                 <optgroup label="D0">
@@ -189,9 +182,10 @@
                             </select>
                         </div>
                         <br>
-                        <div class="form-group d-flex flex-md-row">
-                          <label for="localizacao"><b>Localização do Ambiente: </b></label>
-                          <input type="text" class="form-control" name="localizacao" id="localizacao" placeholder="Insira o ambiente com problema (Ex: Sala 32)" required>
+                        <div class="form-group d-flex flex-md-row form-group" style="user-select: none; height:48px;">
+                            <span class="icon material-symbols-rounded" title="Insira o ambiente com problema (Ex: Sala 32)">door_front</span>
+                          <input type="text" class="form-control" name="localizacao" id="localizacao" placeholder="Insira o ambiente com problema (Ex: Sala 32)" required style="user-select: none; height:48px; min-width: 300px; max-width:600px;">
+                        </div>
                         </div>
                         </div>
                         </div>
