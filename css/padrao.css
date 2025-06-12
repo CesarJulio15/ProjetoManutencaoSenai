@@ -11,6 +11,9 @@
   backface-visibility: hidden;
 }
 
+:root {
+}
+
 body {
   display: flex;
   height: 100vh;
@@ -25,7 +28,7 @@ a {
 .sidebar {
   width: 120px;
   background: linear-gradient(15deg, #a09d9d, #cccaca);
-  color: white;
+  color: var(--white);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,6 +53,7 @@ a {
 .logo-senai {
   width: 120px;
   margin-top: 10px;
+  background: var(--vermelho);
 }
 
 .spacer {
@@ -66,12 +70,10 @@ a {
   position: sticky;
   width: 100%;
   height: fit-content;
-  /*max-height: 64px;*/
   display: flex;
   justify-content: flex-start;
   align-content: flex-start;
   align-items: center;
-  /* padding-bottom: 10px; */
   margin: 15px auto;
   margin-top: 0;
   background: transparent;
@@ -109,14 +111,15 @@ a {
 }
 
 .username:active,
+.username:active,
 .username:hover {
   background: -webkit-linear-gradient(#005bff, #00c3ff);
   background: linear-gradient(90deg, #005bff, #00c3ff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: brightness(1.2);
 }
-
 .logout-btn {
   margin: auto 10px;
 }
@@ -154,7 +157,7 @@ a {
   border-radius: 20px 0 0 20px;
 }
 
-.search-box+input {
+.search-box + input {
   padding: 0 60px;
   text-align: left;
   margin-left: 0;
@@ -206,7 +209,6 @@ a {
   font-size: larger;
   font-weight: bolder;
   text-transform: uppercase;
-
   text-wrap: pretty;
   align-content: center;
   justify-content: space-evenly;
@@ -214,7 +216,6 @@ a {
 }
 
 /* Botões genéricos */
-
 input,
 button {
   font-family: "Montserrat", sans-serif;
@@ -250,7 +251,7 @@ input:is(:focus, :valid) {
   border: 2px solid var(--focus-color);
 }
 
-input:is(:focus, :valid)+.placeholder {
+input:is(:focus, :valid) + .placeholder {
   transform: translatey(calc(-1 * var(--padding) - 12px));
   font-size: 14px;
   color: var(--focus-color);
@@ -343,12 +344,12 @@ button:active,
   border-color: rgba(255, 255, 255, 0);
 }
 
-button>*,
-.status-btn>* {
+button > *,
+.status-btn > * {
   vertical-align: middle;
 }
 
-button>span:last-child {
+button > span:last-child {
   padding-left: 8px;
 }
 
@@ -376,8 +377,6 @@ main,
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* padding: 5px; */
-  /* margin: 05px auto; */
   position: relative;
   overflow: auto;
 }
@@ -393,12 +392,13 @@ main {
   padding: 5px;
   position: relative;
   background-color: #e1e1e1;
-  background-image: repeating-radial-gradient(circle at 0 0,
+  background-image: repeating-radial-gradient(
+      circle at 0 0,
       transparent 0,
-      #e1e1e1 10px),
+      #e1e1e1 10px
+    ),
     repeating-linear-gradient(#dbdbdb55, #dbdbdb);
 }
-
 form {
   width: 100%;
   height: 100%;
@@ -430,7 +430,30 @@ fieldset {
   gap: 15px;
   align-items: center;
 }
-
+fieldset {
+  width: 100%;
+  padding: 20px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease-in-out;
+}
+legend {
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 6px 12px;
+  margin-left: 16px;
+  border-radius: 12px;
+  color: #333;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
 fieldset input[type="text"],
 fieldset input[type="email"],
 fieldset input[type="password"],
@@ -439,6 +462,42 @@ fieldset select {
   padding: 10px;
   border-radius: 10px;
   border: 1px solid #ccc;
+}
+
+select.custom-select {
+  height: 100%;
+  border-radius: 0 14px 14px 0;
+  color: #212529;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease-in-out;
+  padding: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+.form-group:focus-within select.custom-select:not([disabled]) {
+  background: var(--azul);
+  color: white;
+  box-shadow: inset -4px -4px 6px -1px white,
+    inset 2px 2px 8px -1px rgba(72, 79, 96, 0.5);
+}
+select.custom-select:disabled {
+  color: #aaa;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+select.custom-select {
+  background-image: url("data:image/svg+xml,%3Csvg fill='%23333' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
 }
 
 legend {
@@ -500,7 +559,6 @@ table th,
 table td {
   padding: 0.625em;
   text-align: center;
-  /*border: 1px solid #ddd;*/
 }
 
 table th {
@@ -547,7 +605,6 @@ table tr:nth-child(even) {
   border: none;
   /* Remove borda */
   padding: 0;
-
 }
 
 .add-user-img:hover {
@@ -565,7 +622,6 @@ table tr:nth-child(even) {
   align-items: center;
   border: none;
   padding: 0;
-
 }
 
 .add-dash-img:hover {
@@ -672,11 +728,8 @@ table tr:nth-child(even) {
 
 #loading-overlay {
   display: none;
-  /* escondido por padrão */
   visibility: hidden;
-  /* escondido por padrão */
   opacity: 0;
-  /* escondido por padrão */
   position: fixed;
   z-index: 9999;
   background-color: rgba(255, 255, 255, 0.7);
@@ -684,7 +737,6 @@ table tr:nth-child(even) {
   height: 100%;
   top: 0;
   left: 0;
-  /* <- ADICIONE isso */
   align-items: center;
   justify-content: center;
 }
@@ -696,7 +748,7 @@ table tr:nth-child(even) {
   display: inline-block;
   position: relative;
   border: 3px solid;
-  border-color: #FFF #FFF transparent transparent;
+  border-color: #fff #fff transparent transparent;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
   z-index: 10000;
@@ -704,7 +756,7 @@ table tr:nth-child(even) {
 
 .spinner::after,
 .spinner::before {
-  content: '';
+  content: "";
   box-sizing: border-box;
   position: absolute;
   left: 0;
@@ -713,7 +765,7 @@ table tr:nth-child(even) {
   bottom: 0;
   margin: auto;
   border: 3px solid;
-  border-color: transparent transparent #FF3D00 #FF3D00;
+  border-color: transparent transparent #ff3d00 #ff3d00;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -725,7 +777,7 @@ table tr:nth-child(even) {
 .spinner::before {
   width: 32px;
   height: 32px;
-  border-color: #FFF #FFF transparent transparent;
+  border-color: #fff #fff transparent transparent;
   animation: rotation 1.5s linear infinite;
 }
 
@@ -761,7 +813,6 @@ table tr:nth-child(even) {
 }
 
 @media (max-width: 900px) {
-
   .sidebar,
   aside {
     display: none;

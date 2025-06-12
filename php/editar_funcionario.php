@@ -58,36 +58,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
         <style>
-            :root {
-            --azul: #3498db;
-            }
-            form{
-                background:none;
-            }
-            fieldset {
-                width: 100%;
-                padding: 20px;
-                margin: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                border-radius: 16px;
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                backdrop-filter: blur(5px);
-                -webkit-backdrop-filter: blur(5px);
-                transition: all 0.3s ease-in-out;
-            }
-            legend {
-            font-weight: bold;
-            font-size: 1.2rem;
-            padding: 6px 12px;
-            margin-left: 16px;
-            border-radius: 12px;
-            color: #333;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            }
             input{
                 text-align:left;
             }
@@ -118,41 +88,7 @@
                 -webkit-border-radius: 0px 14px 16px 0px;
                 -moz-border-radius: 0px 14px 16px 0px;
             }
-            select.custom-select {
-            height: 100%;
-            border-radius: 0 14px 14px 0;
-            color: #212529;
-            font-family: "Montserrat", sans-serif;
-            font-size: 16px;
-            font-weight: 500;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            transition: all 0.3s ease-in-out;
-            padding: 10px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            }
-            .form-group:focus-within select.custom-select:not([disabled]) {
-            background: var(--azul);
-            color: white;
-            box-shadow: inset -4px -4px 6px -1px white,
-                        inset 2px 2px 8px -1px rgba(72, 79, 96, 0.5);
-            }
-            select.custom-select:disabled {
-            color: #aaa;
-            opacity: 0.6;
-            cursor: not-allowed;
-            }
-            select.custom-select {
-            background-image: url("data:image/svg+xml,%3Csvg fill='%23333' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 20px;
-            }
+
             .status-indicador {
                 width: 64px;
                 height: 48px;
