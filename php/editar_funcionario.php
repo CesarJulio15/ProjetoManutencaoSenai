@@ -190,7 +190,7 @@
                             <option value="Inativo" <?= $docente['docente_status'] === 'Inativo' ? 'selected' : '' ?>>Inativo</option>
                         </select>
                     </div>            
-                    <div  class="d-flex flex-nowrap form-group" style="height:48px;">
+                    <div  class="d-flex flex-nowrap form-group mb-4" style="height:48px;">
                         <span class="icon material-symbols-rounded">manage_accounts</span>
                         <select name="tipo" class="custom-select" <?= $tipoUsuario !== 'coordenador' ? 'disabled' : '' ?> style="min-width:150px;" required>
                             <option value="Coordenador" <?= $docente['tipo'] === 'Coordenador' ? 'selected' : '' ?>>Coordenador</option>
