@@ -6,69 +6,73 @@ if (isset($_SESSION['id'])) {
 }
 require 'conexao.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $identificacao = trim($_POST['login']);
-    $senha = $_POST['senha'];
+function limparNif($identificacao) {
+    return str_ireplace('sn', '', trim($identificacao));
+}
 
-    // Limpa o NIF se tiver prefixo 'sn'
-    $nif_limpo = str_ireplace('sn', '', $identificacao);
-
+function buscarUsuario($conn, $nif, $identificacao) {
     $sql = "SELECT id, nome, nif, email, senha, tipo FROM docentes 
             WHERE (nif = ? OR email = ?) AND docente_status = 'Ativo'";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $nif_limpo, $identificacao);
+    $stmt->bind_param("ss", $nif, $identificacao);
     $stmt->execute();
     $stmt->store_result();
+    return $stmt;
+}
 
+function autenticarUsuario($stmt, $senha) {
     if ($stmt->num_rows === 1) {
         $stmt->bind_result($id, $nome, $nif_db, $email_db, $senha_hash, $tipo);
         $stmt->fetch();
-
         if (password_verify($senha, $senha_hash)) {
             $_SESSION['id'] = $id;
             $_SESSION['nome'] = $nome;
             $_SESSION['tipo'] = strtolower($tipo);
-
-            // Redireciona com base no tipo
-            switch (strtolower($tipo)) {
-                case 'docente':
-                    header("Location: solicita.php");
-                    break;
-                case 'técnico':
-                    header("Location: panelTecnico.php");
-                    break;
-                case 'coordenador':
-                    header("Location: panelTecnico.php");
-                    break;
-                default:
-                    echo "<script>alert('Tipo de usuário inválido.');</script>";
-                    break;
-            }
+            redirecionarPorTipo($tipo);
             exit();
         } else {
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro',
-                    text: 'Dados invalídos',
-                    confirmButtonColor: '#d33'
-                });
-            });
-        </script>";
+            exibirErro('Dados inválidos');
         }
     } else {
+        exibirErro('Dados inválidos');
+    }
+}
+
+function redirecionarPorTipo($tipo) {
+    switch (strtolower($tipo)) {
+        case 'docente':
+            header("Location: solicita.php");
+            break;
+        case 'técnico':
+        case 'coordenador':
+            header("Location: panelTecnico.php");
+            break;
+        default:
+            echo "<script>alert('Tipo de usuário inválido.');</script>";
+            break;
+    }
+}
+
+function exibirErro($mensagem) {
     echo "<script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
-                text: 'Dados invalídos',
+                text: '$mensagem',
                 confirmButtonColor: '#d33'
             });
         });
     </script>";
-    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $identificacao = $_POST['login'];
+    $senha = $_POST['senha'];
+    $nif_limpo = limparNif($identificacao);
+
+    $stmt = buscarUsuario($conn, $nif_limpo, $identificacao);
+    autenticarUsuario($stmt, $senha);
 
     $stmt->close();
     $conn->close();
