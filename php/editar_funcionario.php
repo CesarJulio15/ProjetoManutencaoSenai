@@ -26,10 +26,16 @@ if ($tipoUsuario !== 'coordenador' && $idUsuario != $id) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT * FROM docentes WHERE id = ?");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$docente = $stmt->get_result()->fetch_assoc();
+function buscarDocentePorId($conn, $id) {
+    $stmt = $conn->prepare("SELECT * FROM docentes WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $docente = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $docente;
+}
+
+$docente = buscarDocentePorId($conn, $id);
 if (!$docente) {
     echo "Docente não encontrado.";
     exit;
@@ -37,15 +43,34 @@ if (!$docente) {
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Docente</title>
-    <link rel="stylesheet" href="../css/padrao.css">
-    <link rel="stylesheet" href="../css/manutencao.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <head>
+        <meta charset="UTF-8">
+        <title>Editar Docente</title>
+        <link rel="stylesheet" href="../css/padrao.css">
+        <link rel="stylesheet" href="../css/manutencao.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
-</head>
+        <style>
+            .form-group .icon {
+                display: inline-flex;
+                background-color: var(--light-gray-color);
+                color: var(--blue-color);
+                padding: 9px 4px;
+                margin-right: 0;
+                border-radius: 4px 0 0 4px;
+                justify-content: center;
+                align-items: center;
+                align-content: center;
+                user-select: none;
+            }
+            .form-group:focus-within .icon {
+                background-color: var(--blue-color);
+                color: var(--white-color);
+                box-shadow: var(--box-shadow);
+            }
+        </style>
+    </head>
 <body class="d-flex flex-md-row flex-wrap w-100 h-100">
 <aside class="sidebar">
     <img src="../img/LogoPortalSenai.svg" class="logo-senai" alt="Logo Senai">
@@ -79,11 +104,12 @@ if (!$docente) {
             <legend>Dados pessoais</legend>
 
             <div class="d-flex flex-wrap w100" style="gap:10px;">
-        <div class="d-flex flex-wrap" style="gap:10px;">        
+        <div class="d-flex flex-wrap form-group" style="gap:10px;">        
             <label><b>Nome:</b></label>
+            <span class="icon material-symbols-rounded">person</span>
             <input type="text" name="nome" value="<?= htmlspecialchars($docente['nome'], ENT_QUOTES) ?>" required>
         </div>
-        <div class="d-flex flex-wrap" style="gap:10px;">        
+        <div class="d-flex flex-wrap form-group" style="gap:10px;">        
             <label><b>NIF:</b></label>
             <input type="text" name="nif" value="<?= htmlspecialchars($docente['nif']) ?>" required>
         </div>

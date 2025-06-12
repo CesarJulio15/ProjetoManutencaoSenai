@@ -7,6 +7,7 @@
   $tipo = $_SESSION['tipo'];
   include 'conexao.php';
   include 'dashboard_data.php';
+  
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -24,50 +25,31 @@
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js" integrity="sha512-XSmbX3mhrD2ix5fXPTRQb2FwK22sRMVQTpBP2ac8hX7Dh/605hA2QDegVWiAvZPiXIxOV0CbkmUjGionDpbCmw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <script>
+          (function() {
+            const original = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.addEventListener = function(type, listener, options) {
+              const passiveEvents = ['touchstart', 'touchmove', 'wheel', 'scroll'];
+              if (passiveEvents.includes(type)) {
+                if (options === false) {
+                  options = { passive: false };
+                } else if (typeof options === 'object') {
+                  options = Object.assign({}, options, { passive: true });
+                } else {
+                  options = { passive: true };
+                }
+              }
+              return original.call(this, type, listener, options);
+            };
+          })();
+        </script>
         <style>
-              #anoForm{
-                width: fit-content;
-              }
-              #statusChart {
-                width: 100%;
-                height: 500px;
-              }
-              select {
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                width: 100%;
-                padding: 10px 40px 10px 15px;
-                font-size: 16px;
-                font-weight: 500;
-                color: #333;
-                background-color: #fff;
-                border: 1px solid #ccc;
-                border-radius: 12px;
-                box-shadow: inset -4px -4px 6px -1px white,
-                    inset 2px 2px 8px -1px rgba(72, 79, 96, 0.3);
-                background-image: url('data:image/svg+xml;utf8,<svg fill="%232a9d8f" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-                background-repeat: no-repeat;
-                background-position: right 10px center;
-                background-size: 20px;
-                transition: all 0.3s ease-in-out;
-                cursor: pointer;
-                user-select: none;
-            }
-
-            select:focus {
-                outline: none;
-                border-color: #2a9d8f;
-                box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.3);
-            }
-
-            select:hover {
-                border-color: #8bc34a;
-            }
-            #graficoArea {
-              width: 100%;
-              height: 500px;
-            }       
+          .top-bar{
+            margin-bottom:0;
+          }
+          .dashboard-cards, #cards-metricas{
+            height:fit-content;
+          }
         </style>
     </head>
     <body class="d-flex flex-md-row w-100 h-100">
@@ -96,7 +78,7 @@
                 </div>
             </header>
             
-            <div class="dashboard-container d-flex flex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100" style="position:relative;left:0;">                
+            <div class="dashboard-container d-flex flex-columnflex-wrap flex-md-column justify-content-evenly gap-4 mt-3 w-100" style="position:relative;left:0; min-height:100vh;overflow:auto;">                
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start align-top gap-4 w-100" id="topo">
                 <div class="d-flex justify-content-end px-4 w-100" id="ano-selector" class="d-flex animate_animated animate__fadeInDownBig">
                 <form method="get" id="anoForm" class="form-inline d-flex animate_animated animate__fadeInDownBig" style="width: fit-content; min-width: 200px; flex-direction: row; align-items: center; gap:10px;">
@@ -114,7 +96,7 @@
                 </form>
               </div>
               <?php if ($anoSelecionado == date('Y')): ?>
-                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:270px; position:relative;left:0;"  id="status-hoje">
+                    <div class="card p-3 m-auto shadow-sm w-25 h-75 animate__animated animate__fadeInLeft" style="flex:1; min-width:260px; max-width: 48%; position:relative;left:0;"  id="status-hoje">
                         <h5 class="title"><i class="fa-solid fa-list-ul"></i> Status de Hoje</h5>
                         <div class="box ">
                             <ul class="list-group">
@@ -170,6 +152,7 @@
                           </div>
                     </div>
                     <div class="dashboard-cards p-3 m-auto w-50 animate__animated animate__fadeInRight" id="cards-metricas" style="min-width: 200px; flex:1;">
+
                             <div class="info-box bg-pink hover-expand-effect">
                                 <div class="icon">
                                     <span class="material-symbols-outlined">
@@ -336,14 +319,18 @@
       infoLightGreen, // Concluído
       infoCyan        // Rejeitado (você pode realocar se quiser outro mapeamento)
     ];
-    // Ano atualmente selecionado (usado em todas as chamadas AJAX)
-    const yearSelected = <?= json_encode($anoSelecionado) ?>;
+          // Dados gerados pelo PHP
+          const labelsAge = <?= json_encode($labelsAge ?? []) ?>;
+          const dataAge = <?= json_encode($dataAge ?? []) ?>;
+      const prioridades   = <?= json_encode($prioridades ?? []) ?>;
+      const tempoMedio    = <?= json_encode($tempoMedioPorPrioridade ?? []) ?>;
+      const totalChamados = <?= json_encode($totalChamadosPorPrioridade ?? []) ?>;
+      // Ano atualmente selecionado (usado em todas as chamadas AJAX)
+      const yearSelected = <?= json_encode($anoSelecionado) ?>;
     // -----------------------------
     // 1) Instância os charts em variáveis (exceto mesChart)
     // -----------------------------
-    //const statusCtx   = document.getElementById('statusChart').getContext('2d');
     const rankingCtx  = document.getElementById('rankingChart').getContext('2d');
-    /*const multiLineChartCtx = document.getElementById('multiLineChart').getContext('2d');*/
 
     const statusChart = echarts.init(document.getElementById('statusChart'), null, {
     devicePixelRatio: 2
@@ -422,11 +409,7 @@
     };
 
     statusChart.setOption(optionStatusChart);
-            // 2) Gráfico de idade
-      // Dados gerados pelo PHP
-      const labelsAge = <?= json_encode($labelsAge) ?>;
-      const dataAge = <?= json_encode($dataAge) ?>;
-
+      // 2) Gráfico de idade
       // Instanciando o gráfico com ECharts
       const backlogOption = {
           title: {
@@ -473,7 +456,7 @@
         const backlogChart = echarts.init(
           document.getElementById('backlogChart'),
           null,
-          { devicePixelRatio: 2 } // aumenta nitidez em telas retina/4K
+          { devicePixelRatio: 2 }
         );
         backlogChart.setOption(backlogOption);
 
@@ -568,7 +551,7 @@
             tooltip: { trigger: 'axis' },
             legend: {
               orient: 'vertical',
-              right: 10, // ou left: 10
+              right: 10,
               top: 'middle',
               type: 'scroll',
               textStyle: {
