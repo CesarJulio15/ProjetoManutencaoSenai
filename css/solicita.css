@@ -76,7 +76,8 @@
 }
 
 #descDetalhada::placeholder,
-#titulo::placeholder. #localizacao::placeholder {
+#titulo::placeholder,
+#localizacao::placeholder {
   color: #aaa;
   font-style: italic;
 }
