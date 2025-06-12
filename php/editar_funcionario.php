@@ -89,7 +89,9 @@
             backdrop-filter: blur(3px);
             -webkit-backdrop-filter: blur(3px);
             }
-
+            input{
+                text-align:left;
+            }
             .form-group .icon {
             display: inline-flex;
             align-items: center;
@@ -225,6 +227,7 @@
                         <option value="Coordenador" <?= $docente['tipo'] === 'Coordenador' ? 'selected' : '' ?>>Coordenador</option>
                         <option value="Docente" <?= $docente['tipo'] === 'Docente' ? 'selected' : '' ?>>Docente</option>
                         <option value="Técnico" <?= $docente['tipo'] === 'Técnico' ? 'selected' : '' ?>>Técnico</option>
+                        <option value="Técnico" <?= $docente['tipo'] === 'Outros' ? 'selected' : '' ?>>Outros</option>
                     </select>            
                 </div>            
             </div>
