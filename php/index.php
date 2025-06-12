@@ -70,10 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $identificacao = $_POST['login'];
     $senha = $_POST['senha'];
     $nif_limpo = limparNif($identificacao);
-
     $stmt = buscarUsuario($conn, $nif_limpo, $identificacao);
     autenticarUsuario($stmt, $senha);
-
     $stmt->close();
     $conn->close();
 }
@@ -102,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="manutencao">Manutenções</span>
         </h1>
 
-        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="height:max-content;user-select: none;">
+        <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="max-width:25%; height:max-content;user-select: none;">
             <form method="POST" autocomplete="off" class="d-flex flex-md-column">
                 <div class="mb-2 d-flex">
                     <input type="text" name="login" class="form-control rounded" placeholder="E-mail ou NIF" required>
