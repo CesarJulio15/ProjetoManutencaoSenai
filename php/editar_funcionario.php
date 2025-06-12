@@ -227,7 +227,7 @@
                         <option value="Coordenador" <?= $docente['tipo'] === 'Coordenador' ? 'selected' : '' ?>>Coordenador</option>
                         <option value="Docente" <?= $docente['tipo'] === 'Docente' ? 'selected' : '' ?>>Docente</option>
                         <option value="Técnico" <?= $docente['tipo'] === 'Técnico' ? 'selected' : '' ?>>Técnico</option>
-                        <option value="Técnico" <?= $docente['tipo'] === 'Outros' ? 'selected' : '' ?>>Outros</option>
+                        <option value="Outros" <?= $docente['tipo'] === 'Outros' ? 'selected' : '' ?>>Outros</option>
                     </select>            
                 </div>            
             </div>
