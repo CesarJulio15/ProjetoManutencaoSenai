@@ -1,4 +1,6 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -43,8 +45,8 @@ body {
   /* opacity: 0.8;  <-- evite usar no próprio elemento */
 }
 
-a{
-text-decoration: none;
+a {
+  text-decoration: none;
 }
 h1 {
   font-size: clamp(28px, 6vw, 48px);
@@ -80,7 +82,7 @@ h1,
   margin-bottom: 8px;
 }
 .portal {
-  color: red;
+  color: #e30613;
   font-weight: bold;
 }
 
@@ -136,21 +138,21 @@ button {
   cursor: pointer;
 }
 input {
-height:48px;
-background-image: none;
-border: 0;
-color: inherit;
-font: inherit;
-margin: 0;
-outline: 0;
-padding: 0;
--webkit-transition: background-color 0.3s;
--o-transition: background-color 0.3s;
-transition: background-color 0.3s;
+  height: 48px;
+  background-image: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  outline: 0;
+  padding: 0;
+  -webkit-transition: background-color 0.3s;
+  -o-transition: background-color 0.3s;
+  transition: background-color 0.3s;
 }
 
 input[type="submit"] {
-cursor: pointer;
+  cursor: pointer;
 }
 
 button:hover {
@@ -184,44 +186,44 @@ form i {
   object-fit: contain;
   user-select: none;
 }
-    
-    /* Rodapé de formulário padrão */
-    .form-footer {
-      display: inline-flex;
-      width: 100%;
-      gap: 10px;
-      margin-top: 25px;
-      padding: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      align-items: center;
-    }
 
-    .forgot{
-      text-decoration: none;
-      text-align: right;
-      user-select: none;
-    }
-    .forgot:hover{
-      color: crimson;
-      font-weight: bolder;
-      border-bottom: 1px solid currentColor;
-    }
+/* Rodapé de formulário padrão */
+.form-footer {
+  display: inline-flex;
+  width: 100%;
+  gap: 10px;
+  margin-top: 25px;
+  padding: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
+.forgot {
+  text-decoration: none;
+  text-align: right;
+  user-select: none;
+}
+.forgot:hover {
+  color: crimson;
+  font-weight: bolder;
+  border-bottom: 1px solid currentColor;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsivo para telas menores (smartphones) */
-@media (min-width: 1024px){
-  .form-header{
+@media (min-width: 1024px) {
+  .form-header {
     position: relative;
     width: fit-content;
     margin: auto;
@@ -231,26 +233,26 @@ form i {
     max-width: 95%;
     padding: 25px 20px;
   }
-  
+
   input,
   button {
     font-size: 1.2rem;
   }
-  
+
   h1 {
     font-size: clamp(1.4rem, 5vw, 2rem);
   }
-  }
+}
 
 @media (max-width: 768px) {
   .form-box {
     padding: 20px;
     margin-top: 48px;
   }
-  .form-header{
+  .form-header {
     display: none;
   }
-  .form-footer{
+  .form-footer {
     margin-top: 0;
   }
   input,

@@ -1,7 +1,8 @@
 <?php
 session_start();
-include 'conexao.php';
+require_once 'conexao.php';
 
+// Redireciona se não estiver logado
 if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     header("Location: index.php");
     exit;
@@ -10,37 +11,42 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
 $idUsuario = $_SESSION['id'];
 $tipoUsuario = $_SESSION['tipo'];
 
-if (!isset($_GET['id'])) {
-    echo "ID inválido.";
-    exit;
-}
-
+// Sanitiza e valida o ID do docente
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
-    echo "ID inválido.";
-    exit;
+    http_response_code(400);
+    exit("ID inválido.");
 }
 
-if ($tipoUsuario !== 'coordenador' && $idUsuario != $id) {
-    echo "Acesso negado.";
-    exit;
-}
-
-function buscarDocentePorId($conn, $id) {
+// Busca docente no banco
+function buscarDocentePorId(mysqli $conn, int $id): ?array {
     $stmt = $conn->prepare("SELECT * FROM docentes WHERE id = ?");
+    if (!$stmt) {
+        error_log("Erro ao preparar: " . $conn->error);
+        return null;
+    }
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    $docente = $stmt->get_result()->fetch_assoc();
+    $resultado = $stmt->get_result();
+    $docente = $resultado->fetch_assoc();
     $stmt->close();
-    return $docente;
+    return $docente ?: null;
 }
 
 $docente = buscarDocentePorId($conn, $id);
+
 if (!$docente) {
-    echo "Docente não encontrado.";
+    http_response_code(404);
+    exit("Docente não encontrado.");
+}
+
+// Verifica permissão de acesso
+if ($tipoUsuario !== 'coordenador' && $idUsuario !== $id) {
+    header("Location: erro403.php");
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
     <head>

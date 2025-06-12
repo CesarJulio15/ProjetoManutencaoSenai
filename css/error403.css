@@ -1,0 +1,136 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  outline: none;
+  backface-visibility: hidden;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.container {
+  background: #fff;
+  padding: 40px 60px;
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  user-select: none;
+}
+h1 {
+  font-size: 5rem;
+  color: #e30613;
+  margin: 0 0 10px 0;
+}
+h2 {
+  font-size: 2rem;
+  margin: 0 0 20px 0;
+}
+p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #217dbb;
+}
+
+.erro-container {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 90%;
+}
+
+.erro-container h1 {
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: #e6051f;
+}
+
+.erro-container p {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 15px 0;
+}
+
+.botao-voltar {
+  margin-top: 20px;
+  background-color: #e6051f;
+  color: white;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+.botao-voltar:hover {
+  background-color: #b91d32;
+  color: #f8f8f8;
+}
+
+.conjunto {
+  line-height: 0.25;
+  padding: 10px;
+  margin: auto;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 30px 20px;
+  }
+  h1 {
+    font-size: 3rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  p {
+    font-size: 1rem;
+  }
+  .botao-voltar {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 20px 10px;
+  }
+  h1 {
+    font-size: 2.5rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+  }
+  p {
+    font-size: 0.95rem;
+  }
+  .botao-voltar {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 20px;
+  }
+}
