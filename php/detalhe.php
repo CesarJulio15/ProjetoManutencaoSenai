@@ -1,70 +1,84 @@
 <?php
     session_start();
     include 'conexao.php';
-    if (!isset($_SESSION['id']) && !in_array($_SESSION['tipo'], ['coordenador', 'técnico'])) {
+    if (empty($_SESSION['id']) || empty($_SESSION['tipo'])) {
      header("Location: index.php");
      exit();
     }
     $tecnico_id = $_SESSION['id'] ?? null;
     $tipo = isset($_SESSION['tipo']) ? $_SESSION['tipo'] : null;
-    // Candidatar ou Concluir
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numero_os']) && isset($_POST['acao'])) {
-        $numero_os = filter_input(INPUT_POST, 'numero_os', FILTER_SANITIZE_SPECIAL_CHARS);
-        
-        if ($_POST['acao'] === 'candidatar') {
+               function processarAcaoManutencao($conn, $tecnico_id, $numero_os) {
+            if ($_POST['acao'] === 'candidatar') {
             $executante = $tecnico_id;
-
             $sql = "UPDATE manutencao SET status = 'Em Andamento', executante = ? WHERE numero_os = ? AND executante IS NULL";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("is", $executante, $numero_os);
             $stmt->execute();
             $stmt->close();
-        }
+            }
 
-        if ($_POST['acao'] === 'concluir') {
+            if ($_POST['acao'] === 'concluir') {
             $sql = "
                 UPDATE manutencao
                 SET status = 'Concluído',
-                    data_encerramento = CURDATE()
+                data_encerramento = CURDATE()
                 WHERE numero_os = ? AND executante = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("si", $numero_os, $tecnico_id);
             $stmt->execute();
             $stmt->close();
+            }
         }
-
-        header("Location: panelTecnico.php");
-        exit();
-    }
-    
-    if (isset($_GET['numero_os'])) {
-        //$titulo = urldecode($_GET['titulo']);
-        $numero_os = $_GET['numero_os'] ?? '';
-    
-        // JOIN para trazer o nome do responsável
+    function buscarDetalhesManutencao($conn, $numero_os, $tecnico_id) {
         $sql = "SELECT m.*, d1.nome AS nome_responsavel, d2.nome AS nome_executante
-        FROM manutencao m
-        JOIN docentes d1 ON m.responsavel = d1.id
-        LEFT JOIN docentes d2 ON m.executante = d2.id
-        WHERE m.numero_os = ?";
+                FROM manutencao m
+                JOIN docentes d1 ON m.responsavel = d1.id
+                LEFT JOIN docentes d2 ON m.executante = d2.id
+                WHERE m.numero_os = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $numero_os);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
-           $jaExecutando = ($row['executante'] === $tecnico_id);
-           $status = $row['status'];
-           $data_abertura = $row['data_abertura']; // yyyy-mm-dd
-           $data_conclusao = $row['data_encerramento']; // pode ser null
-           $data_abertura_formatada = date("d/m/Y", strtotime($data_abertura));
-           $data_conclusao_formatada = $data_conclusao ? date("d/m/Y", strtotime($data_conclusao)) : '—';
-           switch ($status) {
-               case 'Pendente':     $statusClass = 'status-pendente';     break;
-               case 'Em Andamento': $statusClass = 'status-em-andamento'; break;
-               case 'Concluído':    $statusClass = 'status-concluido';    break;
-               case 'Rejeitado':    $statusClass = 'status-rejeitado';    break;
-               default:             $statusClass = '';
-           }
+            $jaExecutando = ($row['executante'] === $tecnico_id);
+            $status = $row['status'];
+            $data_abertura = $row['data_abertura'];
+            $data_conclusao = $row['data_encerramento'];
+            $data_abertura_formatada = date("d/m/Y", strtotime($data_abertura));
+            $data_conclusao_formatada = $data_conclusao ? date("d/m/Y", strtotime($data_conclusao)) : '—';
+            switch ($status) {
+                case 'Pendente':     $statusClass = 'status-pendente';     break;
+                case 'Em Andamento': $statusClass = 'status-em-andamento'; break;
+                case 'Concluído':    $statusClass = 'status-concluido';    break;
+                case 'Rejeitado':    $statusClass = 'status-rejeitado';    break;
+                default:             $statusClass = '';
+            }
+            return [
+                'row' => $row,
+                'jaExecutando' => $jaExecutando,
+                'statusClass' => $statusClass,
+                'data_abertura_formatada' => $data_abertura_formatada,
+                'data_conclusao_formatada' => $data_conclusao_formatada,
+                'stmt' => $stmt // para fechar depois
+            ];
+        }
+        $stmt->close();
+        return null;
+    }
+    // Candidatar ou Concluir
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numero_os']) && isset($_POST['acao'])) {
+        $numero_os = filter_input(INPUT_POST, 'numero_os', FILTER_SANITIZE_SPECIAL_CHARS);
+        processarAcaoManutencao($conn, $tecnico_id, $numero_os);
+        header("Location: panelTecnico.php");
+        exit();
+    }
+ 
+    if (isset($_GET['numero_os'])) {
+        $numero_os = $_GET['numero_os'] ?? '';
+        $detalhes = buscarDetalhesManutencao($conn, $numero_os, $tecnico_id);
+        if ($detalhes) {
+            extract($detalhes);
+        }
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -129,6 +143,7 @@
         </aside>
         <main class="">
             <header class="top-bar">
+                 <h2 class="title text-center mb-4">Ordem de serviço</h2>
                 <div class="welcome-msg me-3 text-dark fw-bold">
                     <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados" class="username">
                     <?= htmlspecialchars($_SESSION['nome']) ?>
@@ -435,12 +450,13 @@ document.querySelectorAll('.status-btn').forEach(btn => {
     </body>
 </html>
 <?php
+    } elseif (!$numero_os) {
+        echo "<p class='text-center mt-5 text-warning'>Número da OS não fornecido.</p>";
     } else {
         echo "<p class='text-center mt-5 text-danger'>Manutenção não encontrada.</p>";
     }
-    $stmt->close();
-} else {
-    echo "<p class='text-center mt-5 text-warning'>Número da OS não fornecido.</p>";
+    if (isset($stmt)) {
+        $stmt->close();
     }
     $conn->close();
     ?>

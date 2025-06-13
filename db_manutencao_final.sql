@@ -80,7 +80,7 @@ CREATE TABLE `manutencao` (
   `data_encerramento` DATE DEFAULT NULL,
   `executante` INT DEFAULT NULL,
   `prioridade` enum('Baixa','Média','Alta','Urgente') NOT NULL DEFAULT 'Média',
-  'observacoes' TEXT NULL,
+  `observacoes` TEXT NULL,
   `bloco` enum('G0','D0 - Secretaria','D0 - Auditório','A0','A1','B0 - Quadra','B0','B1','C0','C1','E0','F0') NOT NULL,
   FOREIGN KEY (responsavel) REFERENCES docentes(id) ON DELETE CASCADE,
   FOREIGN KEY (executante) REFERENCES docentes(id) ON DELETE CASCADE
