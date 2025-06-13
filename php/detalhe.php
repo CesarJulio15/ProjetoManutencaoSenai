@@ -134,7 +134,7 @@
                 </script>";
                 unset($_SESSION['executante_erro']);
             }
-            ?>
+        ?>
         <?php if (!empty($alerta)) echo $alerta; ?>
         <!-- Sidebar -->
         <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
@@ -173,13 +173,11 @@
             </div>
             <div class="info-detalhe w-100 h-100 w-100 text-start">
             <legend class="">
-                           <span class="material-symbols-outlined">list_alt</span> 
-                           Dados do Pedido
-                       </legend>
+                <span class="material-symbols-outlined">list_alt</span> Dados do Pedido
+            </legend>
                 <div class="info-container d-flex w-100">
                    <div class="info d-flex flex-column align-items-start align-center w-100">
                    <h3 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h3>
-
                        <div class="d-flex flex-md-row gap-4 align-items-start align-center  w-100">
                            <div class="info-item mt-3">
                                <label class="info-label me-1"><b>Aberto por</b>:</label>
@@ -266,13 +264,10 @@
                            <?php endif; ?>
                         </div>
                      </div>
-
                       </div>                      
-
-
                         </div>
-                                                             <!-- Rodapé com botões -->
-                                                             <div class="card-footer mt-3 mb-3 form-footer">
+                        <!-- Rodapé com botões -->
+                        <div class="card-footer mt-3 mb-3 form-footer">
                               <?php if (isset($row) && isset($row['numero_os'])): ?>
                                        <a href="exportar_word.php?numero_os=<?= urlencode($row['numero_os']) ?>" class="btn btn-primary" title="Exportar documento Word">
                                        <span class="material-symbols-outlined">file_export</span>
@@ -301,7 +296,7 @@
                                              </form>
                                           </div>
                                     </div>
-                              <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
+                                <?php elseif ($row['executante'] === null && $_SESSION['tipo'] == 'técnico') : ?>
                                     <!-- Exibir botão "Candidatar" se não há executante -->
                                     <form method="post">
                                        <input type="hidden" id="titulo" name="titulo" value="<?= htmlspecialchars($row['titulo']) ?>">
@@ -379,71 +374,71 @@
             </div>
         </div>
         <script>
-document.querySelectorAll('.status-btn').forEach(btn => {
-   btn.addEventListener('click', () => {
-      const status = btn.dataset.status;
-      const numero_os = document.getElementById('numero_os').textContent.trim();
-      Swal.fire({
-         title: 'Atualizando...',
-         text: 'Por favor, aguarde.',
-         allowOutsideClick: false,
-         didOpen: () => {
-            Swal.showLoading();
-         }
-      });
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const status = btn.dataset.status;
+                    const numero_os = document.getElementById('numero_os').textContent.trim();
+                    Swal.fire({
+                        title: 'Atualizando...',
+                        text: 'Por favor, aguarde.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
 
-      fetch('atualizar_status.php', {
-         method: 'POST',
-         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-         body: 'numero_os=' + encodeURIComponent(numero_os) + '&status=' + encodeURIComponent(status)
-      })
-      .then(response => response.text())
-      .then(data => {
-         if (data.toLowerCase().includes("sucesso")) {
-            Swal.fire({
-               icon: 'success',
-               title: 'Status atualizado!',
-               text: data,
-               confirmButtonText: 'OK'
-            }).then(() => {
-               location.reload();
+                fetch('atualizar_status.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'numero_os=' + encodeURIComponent(numero_os) + '&status=' + encodeURIComponent(status)
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.toLowerCase().includes("sucesso")) {
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Status atualizado!',
+                        text: data,
+                        confirmButtonText: 'OK'
+                        }).then(() => {
+                        location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                        icon: 'info',
+                        title: 'Aviso',
+                        text: data,
+                        confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao atualizar',
+                        text: 'Não foi possível alterar o status.',
+                        confirmButtonText: 'OK'
+                    });
+                });
             });
-         } else {
-            Swal.fire({
-               icon: 'info',
-               title: 'Aviso',
-               text: data,
-               confirmButtonText: 'OK'
             });
-         }
-      })
-      .catch(error => {
-         Swal.fire({
-            icon: 'error',
-            title: 'Erro ao atualizar',
-            text: 'Não foi possível alterar o status.',
-            confirmButtonText: 'OK'
-         });
-      });
-   });
-});
 
-         function confirmarExclusao() {
-            Swal.fire({
-               title: 'Tem certeza?',
-               text: "Esta ação é irreversível!",
-               icon: 'warning',
-               showCancelButton: true,
-               confirmButtonColor: '#d33',
-               cancelButtonColor: '#3085d6',
-               confirmButtonText: 'Sim, excluir!',
-               cancelButtonText: 'Cancelar'
-            }).then((result) => {
-               if (result.isConfirmed) {
-                     document.getElementById('form-excluir').submit();
-               }
-            });
-         }
+            function confirmarExclusao() {
+                Swal.fire({
+                title: 'Tem certeza?',
+                text: "Esta ação é irreversível!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir!',
+                cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                        document.getElementById('form-excluir').submit();
+                }
+                });
+            }
       </script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         </main>
