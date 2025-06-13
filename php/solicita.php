@@ -76,7 +76,7 @@
                                     <div  class="d-flex flex-nowrap form-group" style="height:48px; user-select: none;">
                                         <span class="icon material-symbols-rounded">assignment_ind</span>
                                         <select name="responsavel" id="responsavel" class="form-select custom-select" required>
-                                            <option value="" disabled selected>Selecione o responsável</option>
+                                            <option value="" selected>Selecione o responsável</option>
                                             <?php while ($r = $resps->fetch_assoc()): ?>
                                             <option value="<?= $r['id'] ?>">
                                                 <?= htmlspecialchars($r['nome'], ENT_QUOTES) ?>
@@ -88,9 +88,9 @@
                                     <?php
                                         $tecnicos = $conn->query("SELECT id, nome FROM docentes WHERE tipo = 'Técnico'");
                                         echo '<div class="d-flex flex-row mb-2 form-group">';
-                                        echo '<span class="icon material-symbols-rounded" title="Selecione o responsável">engineering</span>';
+                                        echo '<span class="icon material-symbols-rounded" title="Selecione o técnico responsável">engineering</span>';
                                         echo '<select name="executante" id="executante" class="form-select custom-select">';
-                                        echo '<option value="" selected>Selecione</option>';
+                                        echo '<option value="" selected>Selecione o técnico responsável</option>';
                                         while ($tec = $tecnicos->fetch_assoc()) {
                                             echo "<option value='{$tec['id']}'>{$tec['nome']}</option>";
                                         }
