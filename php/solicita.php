@@ -158,7 +158,7 @@
                         <div class="d-flex flex-md-row form-group">
                         <span class="icon material-symbols-rounded" title=" Selecione o setor/bloco:">location_on</span>
                             <select name="bloco" id="bloco" class="form-select custom-select" required>
-                                <option value="" disabled selected>Escolha um setor</option>
+                                <option value="" selected>Escolha um setor</option>
                                 <option value="G0">G0 – Portaria</option>
                                 <optgroup label="D0">
                                 <option value="D0 - Secretaria">Secretaria</option>
