@@ -1,41 +1,50 @@
 <?php
-session_start();
-include 'conexao.php';
+    session_start();
+    include 'conexao.php';
 
-if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'coordenador') {
-    header("Location: index.php");
-    exit();
-}
+    if (!isset($_SESSION['id'])) {
+        header("Location: index.php");
+        exit();
+    }
+    else if ($_SESSION['tipo'] !== 'coordenador') {
+        header("Location: error403.php");
+        exit();
+    }
 
+    function buscarFuncionarios($conn, $filtro_tipo, $pagina, $limite) {
+        $offset = ($pagina - 1) * $limite;
 
-// Filtro e paginação
-$filtro_tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
-$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$limite = 6;
-$offset = ($pagina - 1) * $limite;
+        if (!empty($filtro_tipo)) {
+            $stmt = $conn->prepare("SELECT * FROM docentes WHERE tipo = ? AND docente_status = 'Ativo' LIMIT ? OFFSET ?");
+            $stmt->bind_param("sii", $filtro_tipo, $limite, $offset);
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM docentes WHERE docente_status = 'Ativo' LIMIT ? OFFSET ?");
+            $stmt->bind_param("ii", $limite, $offset);
+        }
+        $stmt->execute();
+        return $stmt->get_result();
+    }
 
-// Query principal com filtro e paginação
-if (!empty($filtro_tipo)) {
-    $stmt = $conn->prepare("SELECT * FROM docentes WHERE tipo = ? AND docente_status = 'Ativo' LIMIT ? OFFSET ?");
-    $stmt->bind_param("sii", $filtro_tipo, $limite, $offset);
-} else {
-    $stmt = $conn->prepare("SELECT * FROM docentes WHERE docente_status = 'Ativo' LIMIT ? OFFSET ?");
-    $stmt->bind_param("ii", $limite, $offset);
-}
-$stmt->execute();
-$result = $stmt->get_result();
+    function contarFuncionarios($conn, $filtro_tipo) {
+        if (!empty($filtro_tipo)) {
+            $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE tipo = ?  AND docente_status = 'Ativo'");
+            $count_stmt->bind_param("s", $filtro_tipo);
+        } else {
+            $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE docente_status = 'Ativo'");
+        }
+        $count_stmt->execute();
+        $count_result = $count_stmt->get_result();
+        return $count_result->fetch_assoc()['total'];
+    }
 
-// Contagem total para paginação
-if (!empty($filtro_tipo)) {
-    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE tipo = ?  AND docente_status = 'Ativo'");
-    $count_stmt->bind_param("s", $filtro_tipo);
-} else {
-    $count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE docente_status = 'Ativo'");
-}
-$count_stmt->execute();
-$count_result = $count_stmt->get_result();
-$total_registros = $count_result->fetch_assoc()['total'];
-$total_paginas = ceil($total_registros / $limite);
+    // Filtro e paginação
+    $filtro_tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+    $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+    $limite = 6;
+
+    $result = buscarFuncionarios($conn, $filtro_tipo, $pagina, $limite);
+    $total_registros = contarFuncionarios($conn, $filtro_tipo);
+    $total_paginas = ceil($total_registros / $limite);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -49,7 +58,11 @@ $total_paginas = ceil($total_registros / $limite);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <style>
-
+table thead th:first-child {
+    border-top: 1px solid transparent;
+    border-left: 1px solid transparent;
+    border-radius: 25px 0px 0px 0px;
+}
 </style>
 </head>
 <body >

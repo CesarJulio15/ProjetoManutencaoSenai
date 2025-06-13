@@ -1,4 +1,9 @@
 <?php
+    session_start();
+    if (!isset($_SESSION['id'])) {
+    header("Location: index.php");
+    exit();
+  }
 require_once __DIR__ . '/../../../vendor/autoload.php';
 require_once __DIR__ . '/conexao.php';
 
@@ -11,27 +16,29 @@ if (!isset($_GET['numero_os'])) {
     die("Número da OS não informado.");
 }
 
-$numero_os = $_GET['numero_os'];
+function buscarOrdemServico($conn, $numero_os) {
+    $stmt = $conn->prepare("
+        SELECT m.*, 
+               d1.nome AS nome_responsavel, 
+               d2.nome AS nome_executante 
+        FROM manutencao m
+        JOIN docentes d1 ON m.responsavel = d1.id 
+        LEFT JOIN docentes d2 ON m.executante = d2.id 
+        WHERE m.numero_os = ?
+    ");
+    $stmt->bind_param("s", $numero_os);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-// Consulta igual a do detalhe.php
-$stmt = $conn->prepare("
-    SELECT m.*, 
-           d1.nome AS nome_responsavel, 
-           d2.nome AS nome_executante 
-    FROM manutencao m
-    JOIN docentes d1 ON m.responsavel = d1.id 
-    LEFT JOIN docentes d2 ON m.executante = d2.id 
-    WHERE m.numero_os = ?
-");
-$stmt->bind_param("s", $numero_os);
-$stmt->execute();
-$result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        die("OS não encontrada.");
+    }
 
-if ($result->num_rows === 0) {
-    die("OS não encontrada.");
+    return $result->fetch_assoc();
 }
 
-$os = $result->fetch_assoc();
+$numero_os = $_GET['numero_os'];
+$os = buscarOrdemServico($conn, $numero_os);
 
 // Cria documento Word
 $phpWord = new PhpWord();

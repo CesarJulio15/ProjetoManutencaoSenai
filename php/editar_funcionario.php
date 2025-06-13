@@ -1,16 +1,14 @@
 <?php
     session_start();
-    require_once 'conexao.php';
-
     // Redireciona se não estiver logado
     if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
         header("Location: index.php");
         exit;
     }
-
     $idUsuario = $_SESSION['id'];
     $tipoUsuario = $_SESSION['tipo'];
-
+    
+    require_once 'conexao.php';
     // Sanitiza e valida o ID do docente
     $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
     if (!$id) {
@@ -42,7 +40,7 @@
 
     // Verifica permissão de acesso
     if ($tipoUsuario !== 'coordenador' && $idUsuario !== $id) {
-        header("Location: erro403.php");
+        header("Location: error403.php");
         exit;
     }
 ?>

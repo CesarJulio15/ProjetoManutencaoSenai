@@ -5,8 +5,8 @@
      header("Location: index.php");
      exit();
     }
-    
     $tecnico_id = $_SESSION['id'] ?? null;
+    $tipo = isset($_SESSION['tipo']) ? $_SESSION['tipo'] : null;
     // Candidatar ou Concluir
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numero_os']) && isset($_POST['acao'])) {
         $numero_os = filter_input(INPUT_POST, 'numero_os', FILTER_SANITIZE_SPECIAL_CHARS);

@@ -1,13 +1,16 @@
 <?php
   session_start();
-  if (!isset($_SESSION['id']) && $_SESSION['tipo'] !== 'coordenador') {
+  $tipo = $_SESSION['tipo'];
+    if (!isset($_SESSION['id'])) {
     header("Location: index.php");
     exit();
   }
-  $tipo = $_SESSION['tipo'];
-  include 'conexao.php';
-  include 'dashboard_data.php';
-  
+  else if ($tipo !== 'coordenador') {
+    header("Location: error403.php");
+    exit();
+  }
+  require_once 'conexao.php';
+  require_once 'dashboard_data.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
