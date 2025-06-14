@@ -25,13 +25,13 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="sweetalert2.all.min.js"></script>
+        <script src="https://cdn.tiny.cloud/1/hch57g3aiddfaye64ld1inhlte3o61mvwz0h4p5kg31t0wwr/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
         <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
     </head>
     <body class="d-flex flex-column bg-body">
         <header class="top-bar mt-2 animate__animated animate__fadeInDown">
-        <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
-          <h3 class="title">Abertura de ordem de serviço</h3>
+            <a href="panelTecnico.php" class="botao-voltar" title="Voltar"><i class="fa-solid fa-arrow-left"></i></a>
+            <h3 class="title">Abertura de ordem de serviço</h3>
           <div class="welcome-msg me-3 text-dark fw-bold">
             <a href="editar_funcionario.php?id=<?= $_SESSION['id'] ?>" style="text-decoration: none; color: #212529;" title="Editar meus dados">
                 <?= htmlspecialchars($_SESSION['nome']) ?>
@@ -121,7 +121,7 @@
                         <input type="text" id="titulo" name="titulo" placeholder="Descrição breve" required />
                         </div>                  
                         <div class="text-center mb-2 gap-2">
-                        <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema" required></textarea>
+                        <textarea id="descDetalhada" name="descricao" rows="5" placeholder="Detalhe o problema"></textarea>
                         </div>
                     <div class="d-flex flex-md-row justify-content-evenly w-100 mb-2 gap-2 conjunto" style="user-select: none">
                         <div  class="d-flex flex-nowrap form-group" style="height:48px;">
@@ -318,7 +318,102 @@
         <?php unset($_SESSION['erro']); ?>
     <?php endif; ?>
 }
-        </script>
+    </script>
+    <script>
+tinymce.init({
+  selector: '#descDetalhada',
+  height: 250,
+  menubar: false,
+  plugins: 'lists link', // ❌ removido 'image'
+  toolbar: 'undo redo | bold italic underline | bullist numlist | link image | code',
+  branding: false,
+  language: 'pt_BR',
+  language_url: 'https://cdn.tiny.cloud/1/hch57g3aiddfaye64ld1inhlte3o61mvwz0h4p5kg31t0wwr/tinymce/6/langs/pt_BR.js',
+  paste_data_images: false,
+
+  images_upload_handler: function (blobInfo, success, failure) {
+  const blob = blobInfo.blob();
+  const file = new File([blob], blobInfo.filename(), { type: blob.type });
+
+  const dropArea = document.querySelector(".drag-area");
+  const inputFile = document.querySelector("#foto");
+
+  const reader = new FileReader();
+  reader.onload = function () {
+    const base64 = reader.result;
+
+    // Remove prévias anteriores
+    dropArea.querySelector("img")?.remove();
+    dropArea.querySelector(".remove-btn")?.remove();
+
+    const previewImg = document.createElement("img");
+    previewImg.src = base64;
+    previewImg.style.maxHeight = "200px";
+    previewImg.style.borderRadius = "5px";
+    previewImg.style.marginTop = "10px";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.innerText = "✖ Remover imagem";
+    removeBtn.className = "remove-btn";
+    removeBtn.style.cssText = `
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      background-color: #b81313;
+      color: #fff;
+      font-weight: bold;
+    `;
+    removeBtn.onclick = (e) => {
+      e.preventDefault();
+      previewImg.remove();
+      removeBtn.remove();
+      inputFile.value = "";
+      dropArea.classList.remove("active");
+      dropArea.querySelector(".icon").style.display = "block";
+      dropArea.querySelector("button").style.display = "inline-block";
+    };
+
+    dropArea.classList.add("active");
+    dropArea.querySelector(".icon").style.display = "none";
+    dropArea.querySelector("button").style.display = "none";
+    dropArea.appendChild(previewImg);
+    dropArea.appendChild(removeBtn);
+
+    // Simula input file preenchido
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    inputFile.files = dataTransfer.files;
+
+    // 🚫 Aqui a gente insere manualmente só o texto '[FOTO-UPLOAD]'
+    tinymce.activeEditor.execCommand('mceInsertContent', false, '[FOTO-UPLOAD]');
+
+    // Finaliza com sucesso mas sem inserir mais nada
+    success('');
+  };
+
+  reader.readAsDataURL(file);
+}
+});
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const rawContent = tinymce.get('descDetalhada').getContent({ format: 'text' }).trim();
+            if (rawContent === '' || rawContent === '[FOTO-UPLOAD]')  {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Descrição obrigatória!',
+                    text: 'Por favor, detalhe o problema antes de enviar.'
+                });
+            return false;
+        }
+        });
+    </script>
+    <script>
+
+    </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </body>
 

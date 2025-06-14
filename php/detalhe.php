@@ -80,6 +80,18 @@
             extract($detalhes);
         }
     ?>
+    <?php
+    $descricao = $row['descricao'] ?? '';
+    $fotoBinaria = $row['foto']; // campo blob
+
+    if ($fotoBinaria) {
+        $imgBase64 = base64_encode($fotoBinaria);
+        $imgTag = '<img src="data:image/jpeg;base64,' . $imgBase64 . '" alt="Imagem enviada" style="max-width:100%;border-radius:6px;">';
+        $descricao = str_replace('[FOTO-UPLOAD]', $imgTag, $descricao);
+    }
+
+    //echo $descricao; // já com imagem renderizada
+    ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
     <head>
@@ -92,6 +104,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.tiny.cloud/1/hch57g3aiddfaye64ld1inhlte3o61mvwz0h4p5kg31t0wwr/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
         <link rel="icon" type="image/png" href="../img/senai-logo5.svg">
         <style>
             button > span:last-child{
@@ -112,6 +125,11 @@
         </style>
     </head>
     <body class="">
+        <!-- Sidebar -->
+        <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
+            <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
+            <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
+        </aside>
         <?php
             $alerta = '';
             if (isset($_SESSION['executante_sucesso'])) {
@@ -136,11 +154,6 @@
             }
         ?>
         <?php if (!empty($alerta)) echo $alerta; ?>
-        <!-- Sidebar -->
-        <aside class="sidebar d-flex flex-column justify-content-between align-items-center flex-md-column flex-sm-row p-3 gap-3">
-            <img src="../img/LogoPortalSenai.svg" alt="Portal Senai Manutenções" class="logo-senai">
-            <img src="../img/TechFix.svg" alt="Techfix Facilities" class="logo-techfix">
-        </aside>
         <main class="">
             <header class="top-bar">
                  <h2 class="title text-center mb-4">Ordem de serviço</h2>
@@ -176,8 +189,27 @@
                 <span class="material-symbols-outlined">list_alt</span> Dados do Pedido
             </legend>
                 <div class="info-container d-flex w-100">
+                <div class="info d-flex flex-column align-items-start align-center w-100">
+
                    <div class="info d-flex flex-column align-items-start align-center w-100">
-                   <h3 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h3>
+                   <div class="d-flex-flex-md-row gap-4 align-center w-100">
+                    <?php if (!empty($row['foto'])): ?>
+                          <div class="info-item mb-2 w-100">
+                              <div class="container-img mt-2">
+                                  <?php 
+                                      if (!empty($row['foto'])) {
+                                                           $fotoBase64 = base64_encode($row['foto']);
+                                                           echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
+                                                        }else{
+                                                           echo "<class='no-results'><img src='../img/no-results 1.svg' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'></div>";
+                                                        }
+                                                     ?>
+                              </div>
+                          </div>
+                          <?php endif; ?>
+                        </div>
+                     </div>
+                        <h3 class="titulo-manutencao"><?php echo htmlspecialchars($row['titulo']); ?></h3>
                        <div class="d-flex flex-md-row gap-4 align-items-start align-center  w-100">
                            <div class="info-item mt-3">
                                <label class="info-label me-1"><b>Aberto por</b>:</label>
@@ -224,49 +256,44 @@
                            </div>
                            <?php endif; ?>
                        </div>
+
                        <div class="d-flex flex-md-row gap-4 align-center w-100">
+                       <div class="d-flex flex-md-row align-center w-100 h-100">
                           <div class="info-item mt-3 w-100">
                               <label class="info-label"><b>Descrição</b>:</label>
-                              <textarea id="descricao" name="observacoes" rows="5" style="width: 100%;" readonly disabled><?= htmlspecialchars($row['descricao'] ?? '') ?></textarea>
+                              <textarea id="descricao" name="descricao" rows="5" style="width: 100%; height:50%;" readonly disabled><?= htmlspecialchars($row['descricao'] ?? '') ?></textarea>
                           </div>
                       </div>
+
+                       </div>
+
+
+
+
+                       <div class="d-flex flex-md-row align-center w-100">
+                        <div class="observacoes-wrapperw-100">
+                            <label for="observacoes" class="observacoes-label"><b>Observações:</b></label>
+                            <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
+                                <form method="post" action="salvar_observacoes.php" id="form-observacoes">
+                                        <input type="hidden" name="os_id" value="<?= $row['id'] ?>">
+                                        <textarea id="observacoes" name="observacoes" placeholder="Adicione anotações relevantes..." rows="4"><?= htmlspecialchars($row['observacoes'] ?? '') ?></textarea>
+                                        <div class="form-footer">
+                                        <button type="submit" class="btn-confirma" title="Salvar observações">
+                                        <span class="material-symbols-outlined">grading</span>
+                                        </button>  
+                                        </div>
+                                </form>
+                            <?php else: ?>
+                                    <textarea id="observacoes" name="observacoes" rows="5" style="width: 100%;" readonly disabled><?= htmlspecialchars($row['observacoes'] ?? '') ?></textarea>
+                            <?php endif; ?>
+                            </div>
+                      </div>
+
                    </div>
-                   <div class="info d-flex flex-column align-items-start align-center w-100">
-                      <div class="d-flex-flex-md-row gap-4 align-center w-100">
-                          <div class="info-item mb-2 w-100">
-                              <label class="info-label mb-2"><b>Imagem anexada</b>:</label>
-                              <div class="container-img mt-2">
-                                  <?php 
-                                      if (!empty($row['foto'])) {
-                                                           $fotoBase64 = base64_encode($row['foto']);
-                                                           echo "<img src='data:image/jpeg;base64,{$fotoBase64}' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'>";
-                                                        }else{
-                                                           echo "<class='no-results'><img src='../img/no-results 1.svg' alt='Imagem da manutenção' class='img-fluid rounded mb-3 d-block mx-auto'></div>";
-                                                        }
-                                                     ?>
-                              </div>
-                          </div>
-                          <div class="observacoes-wrapper mt-4 w-100">
-                          <label for="observacoes" class="observacoes-label"><b>Observações:</b></label>
-                          <?php if (in_array($_SESSION['tipo'], ['coordenador', 'técnico'])): ?>
-                              <form method="post" action="salvar_observacoes.php" id="form-observacoes">
-                                    <input type="hidden" name="os_id" value="<?= $row['id'] ?>">
-                                    <textarea id="observacoes" name="observacoes" placeholder="Adicione anotações relevantes..." rows="4"><?= htmlspecialchars($row['observacoes'] ?? '') ?></textarea>
-                                    <div class="form-footer">
-                                       <button type="submit" class="btn-confirma" title="Salvar observações">
-                                       <span class="material-symbols-outlined">grading</span>
-                                       </button>  
-                                    </div>
-                              </form>
-                          <?php else: ?>
-                                 <textarea id="observacoes" name="observacoes" rows="5" style="width: 100%;" readonly disabled><?= htmlspecialchars($row['observacoes'] ?? '') ?></textarea>
-                              </div>
-                           <?php endif; ?>
-                        </div>
-                     </div>
-                      </div>                      
-                        </div>
-                        <!-- Rodapé com botões -->
+
+                      </div> 
+                      <br>                        
+                      <!-- Rodapé com botões -->
                         <div class="card-footer mt-3 mb-3 form-footer">
                               <?php if (isset($row) && isset($row['numero_os'])): ?>
                                        <a href="exportar_word.php?numero_os=<?= urlencode($row['numero_os']) ?>" class="btn btn-primary" title="Exportar documento Word">
@@ -329,7 +356,10 @@
                                           <button type="submit" class="btn-rejeitar" title="Rejeitar">
                                           <span class="material-symbols-outlined">person_cancel</span></button>
                                     </form>
-                              <?php endif; ?>
+                              <?php endif; ?>                     
+                        </div>                      
+                        
+
             </div>
         </main>
         <!-- Modal Designar -->
@@ -440,6 +470,30 @@
                 });
             }
       </script>
+        <script>
+        tinymce.init({
+        selector: '#observacoes:not([readonly]):not([disabled])',
+        height: 200,
+        menubar: false,
+        plugins: 'lists link image code',
+        toolbar: 'undo redo | bold italic underline | bullist numlist | link image | code',
+        branding: false,
+        language: 'pt_BR',
+        language_url: 'https://cdn.tiny.cloud/1/hch57g3aiddfaye64ld1inhlte3o61mvwz0h4p5kg31t0wwr/tinymce/6/langs/pt_BR.js'
+        });
+
+        tinymce.init({
+        selector: '#descricao',
+        height: 200,
+        menubar: false,
+        toolbar: false,
+        readonly: true,
+        plugins: 'autolink lists',
+        branding: false,
+        language: 'pt_BR',
+        language_url: 'https://cdn.tiny.cloud/1/hch57g3aiddfaye64ld1inhlte3o61mvwz0h4p5kg31t0wwr/tinymce/6/langs/pt_BR.js'
+        });
+        </script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         </main>
     </body>
