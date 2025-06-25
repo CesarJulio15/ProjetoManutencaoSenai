@@ -30,12 +30,13 @@ body {
      – por último a cor sólida (background-color) */
   background-image: linear-gradient(135deg, #f5f7fa, #c3cfe2),
     /* camada 1 */
-      repeating-radial-gradient(
-        circle at 0 0,
-        /* camada 2 */ transparent 0,
-        #e1e1e1 10px
-      ),
-    repeating-linear-gradient(/* camada 3 */ #dbdbdb55, #dbdbdb);
+    repeating-radial-gradient(circle at 0 0,
+      /* camada 2 */
+      transparent 0,
+      #e1e1e1 10px),
+    repeating-linear-gradient(
+      /* camada 3 */
+      #dbdbdb55, #dbdbdb);
 
   /* controla blendagem entre camadas, opcional */
   background-blend-mode: normal, normal, normal;
@@ -48,15 +49,18 @@ body {
 a {
   text-decoration: none;
 }
+
 h1 {
   font-size: clamp(28px, 6vw, 48px);
   margin: 10px 0;
   text-decoration: none;
 }
+
 h1,
 .manutencao {
   margin: 0;
 }
+
 .container {
   width: 100%;
   padding: 20px;
@@ -70,17 +74,20 @@ h1,
   height: auto;
   margin-bottom: 20px;
 }
+
 .logos img {
   transition: all 0.3s ease;
 }
+
 .logos img:hover {
   filter: none;
   transform: scale(1.05);
 }
 
-.container > h1 {
+.container>h1 {
   margin-bottom: 8px;
 }
+
 .portal {
   color: #e30613;
   font-weight: bold;
@@ -126,6 +133,7 @@ input:focus {
   outline: none;
   background-color: #ffffff;
 }
+
 button {
   width: 100%;
   padding: 14px;
@@ -137,6 +145,7 @@ button {
   font-size: 1.1rem;
   cursor: pointer;
 }
+
 input {
   height: 48px;
   background-image: none;
@@ -158,6 +167,7 @@ input[type="submit"] {
 button:hover {
   background: #090979;
 }
+
 #toggle {
   position: relative;
   width: FIT-CONTENT;
@@ -166,6 +176,7 @@ button:hover {
   margin: auto;
   padding: 10px;
 }
+
 form i {
   margin-left: -30px;
   cursor: pointer;
@@ -204,6 +215,7 @@ form i {
   text-align: right;
   user-select: none;
 }
+
 .forgot:hover {
   color: crimson;
   font-weight: bolder;
@@ -215,6 +227,7 @@ form i {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -228,6 +241,7 @@ form i {
     width: fit-content;
     margin: auto;
   }
+
   .form-box {
     width: 95%;
     max-width: 95%;
@@ -244,21 +258,84 @@ form i {
   }
 }
 
+/* Layout especial para celular em modo landscape */
+@media (max-width: 900px) and (orientation: landscape) {
+  body {
+    justify-content: flex-start;
+    padding-top: 30px;
+    min-height: 100vw;
+    /* previne corte lateral em alguns aparelhos */
+  }
+
+  .container {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    max-width: 100vw;
+    min-width: 0;
+    padding: 20px 10vw;
+  }
+
+  .form-box {
+    width: 60vw;
+    min-width: 300px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 24px 18px;
+  }
+
+  .logo {
+    width: 120px;
+    max-width: 120px;
+    margin: 0 36px 0 0;
+    float: left;
+  }
+
+  h1,
+  .portal,
+  .manutencao {
+    text-align: left;
+    font-size: 2.2rem;
+  }
+
+  .logos {
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 0;
+    gap: 14px;
+  }
+
+  .logos img {
+    height: 56px;
+    max-width: 90px;
+  }
+
+  input,
+  button {
+    font-size: 1.1rem;
+    padding: 14px 10px;
+  }
+}
+
 @media (max-width: 768px) {
   .form-box {
     padding: 20px;
     margin-top: 48px;
   }
+
   .form-header {
     display: none;
   }
+
   .form-footer {
     margin-top: 0;
   }
+
   input,
   select {
     font-size: 1rem;
   }
+
   .container {
     padding: 20px;
   }
@@ -336,5 +413,9 @@ form i {
   .logos {
     gap: 40px;
     margin-top: 30px;
+  }
+
+  form {
+    flex-flow: column wrap;
   }
 }
