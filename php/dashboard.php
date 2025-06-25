@@ -224,10 +224,10 @@
                     <!-- Gráfico de Pizza (à esquerda) -->
                     <div class="p-2 m-auto animate__animated animate__fadeInUp" style="flex:1; min-width:200px; min-height: 300px;">
                         <div class="chart-container card p-3 shadow-sm" style="width: fit-content; min-width:300px;">
-                        <div id="graficoSetor" style="width: 100%; min-height:200px;"></div>
+                        <div id="graficoSetor" style="width: 100%; min-height:280px; min-width:500px;"></div>
                         </div>
                     </div>
-                    <div class="p-2 m-auto animate__animated animate__fadeInUp" style="min-width: 300px; flex:1;">
+                    <div class="p-2 m-auto animate__animated animate__fadeInUp" style="min-width: 500px; flex:1;">
                         <div class="chart-container card p-3 shadow-sm w-100">
                             <div class="chart-wrapper">
                                 <canvas id="backlogChart"></canvas>
@@ -237,8 +237,8 @@
                 </div>
                 <div class="dashboard-group d-flex flex-row justify-content-evenly align-items-start gap-4 w-100 flex-wrap">
                 <div class="p-2 m-auto animate__animated animate__fadeInUp"  style="flex:1; min-width: 150px; min-height: 300px;">
-                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content;">
-                            <div class="chart-wrapper"  style="width:300px; overflow-x: auto;">
+                        <div class="chart-container card p-3 shadow-sm" style="width: fit-content; min-height: 400px;">
+                            <div class="chart-wrapper"  style="min-width:320px; min-height:350px; overflow-x: auto;">
                                 <canvas id="rankingChart"></canvas>
                             </div>
                         </div>
