@@ -135,21 +135,25 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['tipo'])) {
     <section class="cards-container" id="resultado">
     </section>
                     <div class="paginacao mt-3  animate__animated animate__fadeInUp"></div>
-                        <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
-                    <a href="listar_funcionarios.php" title="Visualizar funcionários" class="animate__animated animate__fadeInUp">
-                        <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
-                    </a>
-                    <a href="dashboard.php" title="Visualizar Dashboard" class="animate__animated animate__fadeInUp">
-                        <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
-                    </a>
-                    <a href="solicita.php" title="Abrir ordem de serviço" class="animate__animated animate__fadeInUp">
-                        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
-                    </a>
-                    <?php else :?>
-                            <a href="solicita.php" class="animate__animated animate__fadeInUp">
-                        <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
-                    </a>
-                <?php endif; ?>
+                    <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
+    <div class="acoes-mobile">
+        <a href="listar_funcionarios.php" title="Visualizar funcionários" class="animate__animated animate__fadeInUp">
+            <img src="../img/gerenciar-grupo.png" alt="add-user" class="add-user-img">
+        </a>
+        <a href="dashboard.php" title="Visualizar Dashboard" class="animate__animated animate__fadeInUp">
+            <img src="../img/painel-de-controle.png" alt="add-user" class="add-dash-img">
+        </a>
+        <a href="solicita.php" title="Abrir ordem de serviço" class="animate__animated animate__fadeInUp">
+            <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+        </a>
+    </div>
+<?php else :?>
+    <div class="acoes-mobile">
+        <a href="solicita.php" class="animate__animated animate__fadeInUp">
+            <img src="../img/documento.png" alt="Adicionar" class="add-button-img">
+        </a>
+    </div>
+<?php endif; ?>
 </main>
 
 <script src="../js/panelPedidos.js"></script>
