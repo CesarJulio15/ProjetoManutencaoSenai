@@ -53,22 +53,32 @@ function carregarPedidos(pagina = 1) {
     });
 }
 
-
 function atualizarPaginacao(totalPaginas) {
     let paginacao = document.querySelector('.paginacao');
     if (!paginacao) return;
     let html = '';
 
-    if (paginaAtual > 1) {
-        html += `<a href="#" onclick="carregarPedidos(${paginaAtual - 1})"><span class="material-symbols-outlined">arrow_back_ios</span></a>`;
+    const bloco = 5;
+    const blocoAtual = Math.floor((paginaAtual - 1) / bloco);
+    const inicio = blocoAtual * bloco + 1;
+    let fim = inicio + bloco - 1;
+    if (fim > totalPaginas) fim = totalPaginas;
+
+    // Botão primeira página
+    if (inicio > 1) {
+        html += `<a href="#" onclick="carregarPedidos(1)">&laquo;</a>`;
+        html += `<a href="#" onclick="carregarPedidos(${inicio - 1})">&lt;</a>`;
     }
 
-    for (let i = 1; i <= totalPaginas; i++) {
+    // Páginas do bloco atual
+    for (let i = inicio; i <= fim; i++) {
         html += `<a href="#" onclick="carregarPedidos(${i})" ${i === paginaAtual ? 'class="ativa"' : ''}>${i}</a>`;
     }
 
-    if (paginaAtual < totalPaginas) {
-        html += `<a href="#" onclick="carregarPedidos(${paginaAtual + 1})"><span class="material-symbols-outlined">arrow_forward_ios</span></a>`;
+    // Botão para o próximo bloco
+    if (fim < totalPaginas) {
+        html += `<a href="#" onclick="carregarPedidos(${fim + 1})">&gt;</a>`;
+        html += `<a href="#" onclick="carregarPedidos(${totalPaginas})">&raquo;</a>`;
     }
 
     paginacao.innerHTML = html;
