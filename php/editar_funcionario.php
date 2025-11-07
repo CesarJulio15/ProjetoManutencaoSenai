@@ -31,12 +31,36 @@
         return $docente ?: null;
     }
 
+    function buscarEscolasDisponiveis($conn, $id_docente) {
+        $sql = "SELECT id, nome, cfp FROM escolas WHERE id NOT IN (
+                    SELECT escola_id FROM docentes_escolas WHERE docente_id = ?
+                ) ORDER BY cfp";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_docente);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    function buscarVinculosDocente($conn, $id_docente) {
+        $sql = "SELECT e.id, e.cfp, e.nome, de.data_inicio, de.status
+                FROM escolas e
+                INNER JOIN docentes_escolas de ON e.id = de.escola_id
+                WHERE de.docente_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_docente);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
     $docente = buscarDocentePorId($conn, $id);
 
     if (!$docente) {
         http_response_code(404);
         exit("Docente não encontrado.");
     }
+
+    $escolas_disponiveis = buscarEscolasDisponiveis($conn, $id);
+    $escolas_vinculadas = buscarVinculosDocente($conn, $id);
 
     // Verifica permissão de acesso
     if ($tipoUsuario !== 'coordenador' && $idUsuario !== $id) {
@@ -55,6 +79,8 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js" integrity="sha512-b+nQTCdtTBIRIbraqNEwsjB6UvL3UEMkXnhzd8awtCYh0Kcsjl9uEgwVFVbhoj3uu1DO1ZMacNvLoyJJiNfcvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9012455024725100"
+     crossorigin="anonymous"></script>
         <style>
             input{
                 text-align:left;
@@ -118,6 +144,10 @@
             .borda-inativa {
             border: 2px solid #dc3545 !important;
             }
+            form{
+                display: flex;
+                flex-flow: row wrap;
+            }
         </style>
     </head>
 <body class="d-flex flex-row flex-wrap w-100 h-100">
@@ -149,8 +179,8 @@
                 </div>
         </div>
         <form action="atualizar_docente.php" method="post" 
-        class="form-box d-flex flex-md-column flex-wrap justify-content-between align-items-center card w-75 h-100 mt-3 
-        <?= $docente['docente_status'] === 'Ativo' ? 'borda-ativa' : 'borda-inativa' ?>" style="max-width:fit-content;">
+        class="form-box d-flex flex-md-column flex-wrap justify-content-between 
+        align-items-center card w-75 h-100 mt-3 <?= $docente['docente_status'] === 'Ativo' ? 'borda-ativa' : 'borda-inativa' ?>">
             <div class="status-indicador-container d-flex justify-content-end w-100 pe-4">
                 <div class="badge status-indicador <?= $docente['docente_status'] === 'Ativo' ? 'ativo' : 'inativo' ?>">
                 </div>
@@ -201,6 +231,31 @@
                     </div>            
                 </div>
             </fieldset>
+            <fieldset class="w-100 mt-4">
+                <legend>Vínculo com Unidades Escolares</legend>
+                <div class="mb-2">
+                    <label for="nova_escola">Adicionar vínculo:</label>
+                    <div class="d-flex" style="gap:10px;">
+                        <select id="nova_escola" class="form-select" style="min-width:300px;">
+                            <?php while ($row = $escolas_disponiveis->fetch_assoc()): ?>
+                                <option value="<?= $row['id'] ?>">
+                                    <?= 'CFP ' . htmlspecialchars($row['cfp']) . ' - ' . htmlspecialchars($row['nome']) ?>
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
+                        <button type="button" id="btnVincular" class="btn btn-primary">Vincular</button>
+                    </div>
+                </div>
+                <div id="vinculos_lista">
+                    <?php while ($row = $escolas_vinculadas->fetch_assoc()): ?>
+                        <div class="d-flex align-items-center justify-content-between border p-2 rounded mb-2">
+                            <span><strong>CFP <?= htmlspecialchars($row['cfp']) ?>:</strong> <?= htmlspecialchars($row['nome']) ?> (<?= $row['status'] ?>)</span>
+                            <button type="button" class="btn btn-danger btn-sm remover-vinculo" data-escola="<?= $row['id'] ?>">Remover</button>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+            </fieldset>
+
             <div class="form-footer">
             <button type="submit" class="btn-confirma" title="Salvar"><i class="fa-solid fa-check"></i></button>
             </div>

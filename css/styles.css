@@ -319,10 +319,16 @@ form i {
 
 @media (max-width: 768px) {
   .form-box {
+    display: inline-flex;
+    flex-flow: column wrap;
     padding: 20px;
     margin-top: 48px;
   }
-
+.form-box form {
+    width: 100%;
+    display: inline-flex;
+    flex-flow: column wrap;
+  }
   .form-header {
     display: none;
   }

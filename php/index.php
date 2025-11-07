@@ -90,6 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9012455024725100"
+     crossorigin="anonymous"></script>
 </head>
 <body class="d-flex align-items-center justify-content-center w-100 px-3">
 
@@ -101,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </h1>
 
         <div class="form-box bg-secondary bg-opacity-25 p-4 rounded-3 mx-auto mt-4 h-50 w-75 animate__animated animate__fadeInUp" style="max-width:25%; max-height:fit-content;user-select: none;">
-            <form method="POST" autocomplete="off" class="d-flex flex-md-column">
+            <form method="POST" autocomplete="off" class="d-flex flex-md-column" style="display: inline-flex; flex-flow: column wrap;">
                 <div class="mb-2 d-flex">
                     <input type="text" name="login" class="form-control rounded" placeholder="E-mail ou NIF" required>
                 </div>

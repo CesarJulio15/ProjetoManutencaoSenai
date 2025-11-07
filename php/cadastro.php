@@ -23,6 +23,8 @@ require __DIR__ . '/conexao.php';
     <link rel="stylesheet" href="../css/cadastro.css">
     <link rel="icon" type="image/png" href="../img/senai-logo 5.svg">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9012455024725100"
+     crossorigin="anonymous"></script>
     <style>
 
     </style>

@@ -173,11 +173,47 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param("sssissssssss", $numero_os, $titulo, $descricao, $responsavel, $foto, $status, $data_abertura, $prioridade, $bloco, $localizacao, $origem, $tipo_manutencao);
 
     if ($stmt->execute()) {
+        // E-mail 1: Envia para o RESPONSÁVEL (quem abriu)
         $resultado = enviarEmailResponsavel($conn, $responsavel, $numero_os, $titulo, $status, $data_abertura);
+        
         $email_resultado = null;
+        // E-mail 2: Envia para o EXECUTANTE (se designado na abertura)
         if (!empty($executante)) {
             $email_resultado = enviarEmailExecutante($conn, $executante, $titulo, $data_abertura);
         }
+
+        // --- NOVO: Notificar todos os Coordenadores ---
+        $qCoords = $conn->prepare("SELECT nome, email FROM docentes WHERE tipo = 'Coordenador' AND docente_status = 'Ativo'");
+        $qCoords->execute();
+        $resCoords = $qCoords->get_result();
+        $linkOS = "https://devgomes.com/projetos/SENAImanutencao/php/detalhe.php?numero_os=" . urlencode($numero_os);
+
+        while ($coord = $resCoords->fetch_assoc()) {
+            $nomeCoord = $coord['nome'];
+            $emailCoord = $coord['email'];
+            
+            $assuntoAdmin = "Nova OS Aberta: $titulo (Nº $numero_os)";
+            $mensagemAdmin = "
+                <p>Olá <strong>$nomeCoord</strong>,</p>
+                <p>Uma nova ordem de serviço foi registrada no sistema e requer sua atenção.</p>
+                <ul>
+                    <li><strong>Nº OS:</strong> $numero_os</li>
+                    <li><strong>Título:</strong> $titulo</li>
+                    <li><strong>Local:</strong> $bloco / $localizacao</li>
+                    <li><strong>Status:</strong> $status</li>
+                    <li><strong>Prioridade:</strong> $prioridade</li>
+                </ul>
+                <p>Acesse o painel ou o link direto para ver os detalhes:</p>
+                <p><a href='$linkOS'>$linkOS</a></p>
+            ";
+            
+            // Reutiliza a função de e-mail genérica
+            enviarEmailUsuario($emailCoord, $assuntoAdmin, $mensagemAdmin);
+        }
+        $qCoords->close();
+        // --- FIM DA NOTIFICAÇÃO PARA COORDENADORES ---
+
+
         if ($email_resultado === true || $email_resultado === null) {
             $_SESSION['sucesso'] = "Solicitação registrada com sucesso!";
         } else {
