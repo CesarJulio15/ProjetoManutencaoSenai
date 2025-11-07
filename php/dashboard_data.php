@@ -246,7 +246,7 @@ if (session_status() === PHP_SESSION_NONE) {
         LEFT JOIN manutencao m 
           ON d.id = m.executante AND YEAR(m.data_abertura) = ?
         WHERE d.tipo = 'Técnico'
-        GROUP BY d.nome
+        GROUP BY d.nome, d.nif
         ORDER BY d.nome
         LIMIT ? OFFSET ?
       ");
